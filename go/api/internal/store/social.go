@@ -256,7 +256,7 @@ func (s *Store) SearchUsers(ctx context.Context, q string, viewerID, limit int) 
 		  ELSE false END
 		FROM users u
 		WHERE u.id <> $3
-		  AND u.handle IS NOT NULL
+		  AND u.handle <> ''
 		  AND (u.handle ILIKE $1 OR u.display_name ILIKE $1)
 		ORDER BY
 		  (u.handle ILIKE $2) DESC,
@@ -469,7 +469,7 @@ func (s *Store) ListFeedSubscribers(ctx context.Context, feedID int) ([]UserProf
 		FROM subscriptions s
 		JOIN users u ON u.id = s.user_id
 		WHERE s.feed_id = $1
-		  AND u.handle IS NOT NULL
+		  AND u.handle <> ''
 		ORDER BY u.handle ASC`, feedID,
 	)
 	if err != nil {

@@ -13,8 +13,8 @@
 
 CREATE TABLE users (
   id                       SERIAL PRIMARY KEY,
-  did                      TEXT,
-  handle                   TEXT,
+  did                      TEXT NOT NULL,
+  handle                   TEXT NOT NULL DEFAULT '',
   display_name             TEXT NOT NULL DEFAULT '',
   bio                      TEXT NOT NULL DEFAULT '',
   pds_url                  TEXT,
@@ -26,8 +26,8 @@ CREATE TABLE users (
   pds_synced_at            TIMESTAMPTZ,
   created_at               TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE UNIQUE INDEX idx_users_did    ON users (did)    WHERE did IS NOT NULL;
-CREATE UNIQUE INDEX idx_users_handle ON users (handle) WHERE handle IS NOT NULL;
+CREATE UNIQUE INDEX idx_users_did    ON users (did);
+CREATE UNIQUE INDEX idx_users_handle ON users (handle) WHERE handle <> '';
 
 -- --- Folders (nested, per-user) ---
 

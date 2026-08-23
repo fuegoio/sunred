@@ -54,7 +54,7 @@ func (s *Store) CreateRemoteUser(ctx context.Context, did, handle, pdsURL string
 	err := s.DB.QueryRowContext(ctx,
 		`INSERT INTO users (did, handle, pds_url)
 		 VALUES ($1, $2, $3)
-		 ON CONFLICT (did) WHERE did IS NOT NULL DO UPDATE
+		 ON CONFLICT (did) DO UPDATE
 		   SET handle = EXCLUDED.handle, pds_url = COALESCE(users.pds_url, EXCLUDED.pds_url)
 		 RETURNING id`,
 		did, handle, pdsURL,
@@ -88,7 +88,7 @@ func (s *Store) GetOrCreateUserByDID(ctx context.Context, did, handle string) (i
 	created := false
 	err = s.DB.QueryRowContext(ctx,
 		`INSERT INTO users (did, handle) VALUES ($1, $2)
-		 ON CONFLICT (did) WHERE did IS NOT NULL DO UPDATE SET handle = EXCLUDED.handle
+		 ON CONFLICT (did) DO UPDATE SET handle = EXCLUDED.handle
 		 RETURNING id, (xmax = 0)`,
 		did, handle,
 	).Scan(&userID, &created)
