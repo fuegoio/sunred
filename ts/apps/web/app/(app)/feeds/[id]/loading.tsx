@@ -19,7 +19,7 @@ export default function FeedLoading() {
     <div className="mx-auto w-full max-w-3xl">
       {/* Header matching FeedDetail's sticky PageHeader */}
       <div className="sticky top-0 z-10 bg-background">
-        <div className="border-b border-border px-4 py-3">
+        <div className="border-b border-border px-4 py-3 lg:pl-[48px]">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-2">
               {/* Menu button — mobile only, matches PageHeader */}
@@ -51,7 +51,7 @@ export default function FeedLoading() {
           <Skeleton className="mt-1.5 h-[1.25rem] w-56 ml-[52px] lg:ml-0" />
         </div>
         {/* Action bar: mark all read, refresh, folder picker */}
-        <div className="flex items-center gap-2 border-b border-border px-4 py-2 pl-[52px] lg:pl-4">
+        <div className="flex items-center gap-2 border-b border-border px-4 py-2 pl-[52px] lg:pl-[48px]">
           <button aria-hidden="true" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "pointer-events-none")}>
             <CheckCheck />
             Mark all as read
