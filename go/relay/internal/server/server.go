@@ -11,9 +11,12 @@
 package server
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
+	"net"
 	"net/http"
 	"strconv"
 	"time"
@@ -58,6 +61,27 @@ type statusRecorder struct {
 func (r *statusRecorder) WriteHeader(code int) {
 	r.status = code
 	r.ResponseWriter.WriteHeader(code)
+}
+
+// Hijack delegates to the underlying ResponseWriter so that WebSocket
+// handlers (which need to take over the raw connection) work through the
+// logRequests middleware. Without this, the wrapped writer fails the
+// http.Hijacker type assertion and panics.
+func (r *statusRecorder) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	h, ok := r.ResponseWriter.(http.Hijacker)
+	if !ok {
+		return nil, nil, errors.New("server: underlying response writer is not an http.Hijacker")
+	}
+	return h.Hijack()
+}
+
+// Flush delegates to the underlying ResponseWriter when it implements
+// http.Flusher, so streaming responses (including WebSocket frames) are
+// flushed immediately rather than buffered.
+func (r *statusRecorder) Flush() {
+	if f, ok := r.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
 }
 
 // logRequests is an access-log middleware recording method, path, status,
