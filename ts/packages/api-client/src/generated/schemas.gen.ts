@@ -1318,12 +1318,6 @@ export const UserSchema = {
             format: 'int64',
             type: 'integer'
         },
-        is_admin: {
-            type: 'boolean'
-        },
-        is_remote: {
-            type: 'boolean'
-        },
         pds_sync_status: {
             type: 'string'
         },
@@ -1335,7 +1329,6 @@ export const UserSchema = {
     required: [
         'id',
         'handle',
-        'is_admin',
         'created_at',
         'pds_sync_status'
     ],
@@ -1379,9 +1372,6 @@ export const UserProfileSchema = {
             type: 'string'
         },
         is_following: {
-            type: 'boolean'
-        },
-        is_remote: {
             type: 'boolean'
         },
         pds_url: {
@@ -2306,12 +2296,6 @@ export const UserWritableSchema = {
             format: 'int64',
             type: 'integer'
         },
-        is_admin: {
-            type: 'boolean'
-        },
-        is_remote: {
-            type: 'boolean'
-        },
         pds_sync_status: {
             type: 'string'
         },
@@ -2323,7 +2307,6 @@ export const UserWritableSchema = {
     required: [
         'id',
         'handle',
-        'is_admin',
         'created_at',
         'pds_sync_status'
     ],
@@ -2358,9 +2341,6 @@ export const UserProfileWritableSchema = {
             type: 'string'
         },
         is_following: {
-            type: 'boolean'
-        },
-        is_remote: {
             type: 'boolean'
         },
         pds_url: {

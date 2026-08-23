@@ -47,13 +47,13 @@ func (s *Store) DeleteWebSession(ctx context.Context, token string) error {
 // --- DID-based users ---
 
 // CreateRemoteUser creates a stub user for a remote DID that has never
-// logged into this instance. The user has is_remote=true, no PDS credentials,
-// and will be populated on-demand from their PDS profile.
+// logged into this instance. The user has no PDS credentials and will be
+// populated on-demand from their PDS profile.
 func (s *Store) CreateRemoteUser(ctx context.Context, did, handle, pdsURL string) (int, error) {
 	var userID int
 	err := s.DB.QueryRowContext(ctx,
-		`INSERT INTO users (did, handle, is_remote, pds_url)
-		 VALUES ($1, $2, true, $3)
+		`INSERT INTO users (did, handle, pds_url)
+		 VALUES ($1, $2, $3)
 		 ON CONFLICT (did) WHERE did IS NOT NULL DO UPDATE
 		   SET handle = EXCLUDED.handle, pds_url = COALESCE(users.pds_url, EXCLUDED.pds_url)
 		 RETURNING id`,

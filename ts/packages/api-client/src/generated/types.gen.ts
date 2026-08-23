@@ -413,8 +413,6 @@ export type User = {
     display_name?: string;
     handle: string;
     id: number;
-    is_admin: boolean;
-    is_remote?: boolean;
     pds_sync_status: string;
     pds_synced_at?: string;
 };
@@ -432,7 +430,6 @@ export type UserProfile = {
     following_count: number;
     handle: string;
     is_following?: boolean;
-    is_remote?: boolean;
     pds_url?: string;
     user_id: number;
 };
@@ -679,8 +676,6 @@ export type UserWritable = {
     display_name?: string;
     handle: string;
     id: number;
-    is_admin: boolean;
-    is_remote?: boolean;
     pds_sync_status: string;
     pds_synced_at?: string;
 };
@@ -694,7 +689,6 @@ export type UserProfileWritable = {
     following_count: number;
     handle: string;
     is_following?: boolean;
-    is_remote?: boolean;
     pds_url?: string;
     user_id: number;
 };

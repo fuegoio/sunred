@@ -15,8 +15,6 @@ CREATE TABLE users (
   id                       SERIAL PRIMARY KEY,
   did                      TEXT,
   handle                   TEXT,
-  is_admin                 BOOLEAN NOT NULL DEFAULT false,
-  is_remote                BOOLEAN NOT NULL DEFAULT false,
   display_name             TEXT NOT NULL DEFAULT '',
   bio                      TEXT NOT NULL DEFAULT '',
   pds_url                  TEXT,

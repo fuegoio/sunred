@@ -787,10 +787,10 @@ func (s *Store) UpdateUser(ctx context.Context, id int, displayName string) (*Us
 	var u User
 	err := s.DB.QueryRowContext(ctx,
 		`UPDATE users SET display_name = $2 WHERE id = $1
-		 RETURNING id, COALESCE(handle, ''), COALESCE(did, ''), COALESCE(display_name, ''), COALESCE(bio, ''), false, is_remote, created_at,
-		           pds_sync_status, pds_synced_at`,
+		 RETURNING id, COALESCE(handle, ''), COALESCE(did, ''), COALESCE(display_name, ''), COALESCE(bio, ''),
+		           created_at, pds_sync_status, pds_synced_at`,
 		id, displayName,
-	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.IsAdmin, &u.IsRemote, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt)
+	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -811,10 +811,10 @@ func (s *Store) GetUserByID(ctx context.Context, id int) (*User, error) {
 	var u User
 	err := s.DB.QueryRowContext(ctx,
 		`SELECT id, COALESCE(handle, ''), COALESCE(did, ''), COALESCE(display_name, ''), COALESCE(bio, ''),
-		        false, is_remote, created_at, pds_sync_status, pds_synced_at
+		        created_at, pds_sync_status, pds_synced_at
 		 FROM users
 		 WHERE id = $1`, id,
-	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.IsAdmin, &u.IsRemote, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt)
+	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
