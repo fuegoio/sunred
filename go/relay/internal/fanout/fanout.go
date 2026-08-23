@@ -13,7 +13,10 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/net/websocket"
+	comatproto "github.com/bluesky-social/indigo/api/atproto"
+	"github.com/bluesky-social/indigo/events"
+	"github.com/gorilla/websocket"
+	cbg "github.com/whyrusleeping/cbor-gen"
 
 	"github.com/fuegoio/sunred/go/relay/internal/store"
 )
@@ -123,19 +126,10 @@ func (f *Fanout) runWorker(ctx context.Context, did, pdsURL string, cursorSeq in
 	}
 }
 
-// reposFrame is the JSON shape of a com.atproto.sync.subscribeRepos #commit frame.
-// AT Proto PDSes emit CBOR; we request JSON via Accept header for simplicity.
-// Production deployments should add CBOR decoding.
-type reposFrame struct {
-	Type string   `json:"$type"`
-	Seq  int64    `json:"seq"`
-	Repo string   `json:"repo"`
-	Ops  []repoOp `json:"ops"`
-}
-
+// repoOp describes a single record mutation inside a commit event.
 type repoOp struct {
-	Action string `json:"action"` // create | update | delete
-	Path   string `json:"path"`   // <collection>/<rkey>
+	Action string // create | update | delete
+	Path   string // <collection>/<rkey>
 }
 
 func (f *Fanout) subscribe(ctx context.Context, did, pdsURL string, cursorSeq *int64) error {
@@ -153,38 +147,63 @@ func (f *Fanout) subscribe(ctx context.Context, did, pdsURL string, cursorSeq *i
 		wsURL += fmt.Sprintf("&cursor=%d", *cursorSeq)
 		slog.Info("fanout: resuming subscription from cursor", "did", did, "cursor", *cursorSeq)
 	}
-	ws, err := websocket.Dial(wsURL, "", pdsURL)
+	dialer := websocket.Dialer{}
+	ws, _, err := dialer.DialContext(ctx, wsURL, nil)
 	if err != nil {
 		return fmt.Errorf("dial: %w", err)
 	}
 	defer func() { _ = ws.Close() }()
 	slog.Info("fanout: connected to PDS", "did", did)
+	cr := cbg.NewCborReader(nil)
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
 		default:
 		}
-		var raw json.RawMessage
-		if err := websocket.JSON.Receive(ws, &raw); err != nil {
+		mt, reader, err := ws.NextReader()
+		if err != nil {
 			return fmt.Errorf("receive: %w", err)
 		}
-		var frame reposFrame
-		if err := json.Unmarshal(raw, &frame); err != nil {
-			slog.Warn("fanout: unmarshal frame", "did", did, "err", err)
-			continue
+		if mt != websocket.BinaryMessage {
+			return fmt.Errorf("receive: expected binary message, got text")
 		}
-		if !strings.HasSuffix(frame.Type, "#commit") {
-			continue
+		cr.SetReader(reader)
+		var header events.EventHeader
+		if err := header.UnmarshalCBOR(cr); err != nil {
+			return fmt.Errorf("decode header: %w", err)
 		}
-		for _, op := range frame.Ops {
-			f.processOp(context.Background(), frame.Repo, pdsURL, op)
-		}
-		if frame.Seq > 0 {
-			if err := f.store.UpdateTrackedDIDCursor(context.Background(), did, frame.Seq); err != nil {
-				slog.Warn("fanout: update tracked did cursor", "did", did, "seq", frame.Seq, "err", err)
+		switch header.Op {
+		case events.EvtKindMessage:
+			// handled below
+		case events.EvtKindErrorFrame:
+			var errFrame events.ErrorFrame
+			if e := errFrame.UnmarshalCBOR(cr); e == nil && errFrame.Error != "" {
+				return fmt.Errorf("receive: stream error: %s: %s", errFrame.Error, errFrame.Message)
 			}
-			*cursorSeq = frame.Seq
+			return fmt.Errorf("receive: stream error")
+		default:
+			continue
+		}
+		if header.MsgType != "#commit" {
+			continue
+		}
+		var evt comatproto.SyncSubscribeRepos_Commit
+		if err := evt.UnmarshalCBOR(cr); err != nil {
+			slog.Warn("fanout: decode commit", "did", did, "err", err)
+			continue
+		}
+		for _, op := range evt.Ops {
+			f.processOp(context.Background(), evt.Repo, pdsURL, repoOp{
+				Action: op.Action,
+				Path:   op.Path,
+			})
+		}
+		if evt.Seq > 0 {
+			if err := f.store.UpdateTrackedDIDCursor(context.Background(), did, evt.Seq); err != nil {
+				slog.Warn("fanout: update tracked did cursor", "did", did, "seq", evt.Seq, "err", err)
+			}
+			*cursorSeq = evt.Seq
 		}
 	}
 }
