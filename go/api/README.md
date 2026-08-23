@@ -153,15 +153,21 @@ HTTP request
    `backfillComplete` events into the local cache, advancing the cursor per
    event. Reconnects with a 5s backoff.
 3. **Post-login PDS sync** (per OAuth callback) — if no relay, `syncFromPDS`
-   lists `io.sunred.graph.follow` + `io.sunred.feed.subscription` directly from
-   the PDS and upserts locally; if relay, `announceToRelay` registers the DID so
-   the relay backfills. A 3-minute safety-net timer flips a stuck `syncing`
-   status to `idle`.
+   lists the user's `io.sunred.*` records (follows, shares, feed
+   subscriptions) directly from the PDS and upserts locally; if relay,
+   `announceToRelay` registers the DID so the relay backfills. A 3-minute
+   safety-net timer flips a stuck `syncing` status to `idle`.
 4. **Followee backfill** (per follow action) — `backfillFollowee` reads the
    followed user's `io.sunred.share.article` and `io.sunred.feed.subscription`
    records directly from their PDS via unauthenticated `listRecords` and ingests
    them locally, so the follower sees their shares in the timeline and their
    subscribed feeds on their profile. Works with or without a relay.
+
+Both backfills share a single code path (`backfillUserFromPDS`) that paginates
+`com.atproto.repo.listRecords` per collection and upserts via the idempotent
+store methods. The login sync pulls all three collections; the followee
+backfill pulls only shares + feed subscriptions (the followee's own follow graph
+is irrelevant to the follower).
 
 ## Reader pipeline
 

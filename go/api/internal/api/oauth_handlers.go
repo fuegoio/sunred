@@ -3,15 +3,12 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/bluesky-social/indigo/atproto/auth/oauth"
-	"github.com/bluesky-social/indigo/atproto/syntax"
 
 	"github.com/fuegoio/sunred/go/api/internal/atproto"
 	"github.com/fuegoio/sunred/go/api/internal/auth"
@@ -223,7 +220,7 @@ func (h *OAuthHandlers) handleCallback(w http.ResponseWriter, r *http.Request) {
 		bgCtx := context.Background()
 		if h.cfg.RelayURL == "" {
 			// No relay: fall back to direct listRecords backfill.
-			if err := h.syncFromPDS(bgCtx, did, userID, sessData.SessionID); err != nil {
+			if err := h.syncFromPDS(bgCtx, did, userID, sessData.HostURL); err != nil {
 				slog.Warn("oauth: sync from pds", "did", did, "err", err)
 				if serr := h.store.SetUserSyncStatus(bgCtx, userID, "failed"); serr != nil {
 					slog.Warn("oauth: set sync status failed", "did", did, "err", serr)
@@ -311,28 +308,16 @@ func safeOAuthRedirect(value, webURL string) string {
 // --- Sync on login ---
 
 // syncFromPDS backfills the user's io.sunred.* records from their PDS into the
-// local cache using the persisted OAuth session. It is best-effort: failures
-// are logged but never fail the login.
-func (h *OAuthHandlers) syncFromPDS(ctx context.Context, did string, userID int, sessionID string) error {
-	sess, err := h.oauthApp.ResumeSession(ctx, syntax.DID(did), sessionID)
-	if err != nil {
-		return fmt.Errorf("resume session: %w", err)
-	}
-	client := sess.APIClient()
-
-	// Backfill each io.sunred.* collection by listing records newest-first.
-	// Sub-step failures are logged and collected so the caller can mark the
-	// sync as failed without aborting the remaining collections.
-	var errs []error
-	if err := syncFollows(ctx, client, h.store, userID); err != nil {
-		slog.Warn("sync: follows", "err", err)
-		errs = append(errs, err)
-	}
-	if err := syncFeedSubscriptions(ctx, client, h.store, userID); err != nil {
-		slog.Warn("sync: feed subs", "err", err)
-		errs = append(errs, err)
-	}
-	return errors.Join(errs...)
+// local cache. Uses unauthenticated listRecords (a public read), so no OAuth
+// session resume is needed. Best-effort: failures are logged but never fail
+// the login.
+func (h *OAuthHandlers) syncFromPDS(ctx context.Context, did string, userID int, pdsURL string) error {
+	c := atproto.NewClient(pdsURL, "")
+	return backfillUserFromPDS(ctx, c, h.store, userID, did, []string{
+		atproto.CollectionFollow,
+		atproto.CollectionShare,
+		atproto.CollectionSubscription,
+	})
 }
 
 // announceToRelay notifies the relay of a user DID (see atproto.go). It returns

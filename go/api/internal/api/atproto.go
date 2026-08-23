@@ -306,11 +306,11 @@ func (a *API) backfillFollowee(followeeUserID int) {
 		return
 	}
 	c := atproto.NewClient(pdsURL, "")
-	if err := backfillShares(ctx, c, a.store, followeeUserID, did); err != nil {
-		slog.Warn("backfill: followee shares", "did", did, "err", err)
-	}
-	if err := backfillFeedSubscriptions(ctx, c, a.store, followeeUserID, did); err != nil {
-		slog.Warn("backfill: followee feed subs", "did", did, "err", err)
+	if err := backfillUserFromPDS(ctx, c, a.store, followeeUserID, did, []string{
+		atproto.CollectionShare,
+		atproto.CollectionSubscription,
+	}); err != nil {
+		slog.Warn("backfill: followee", "did", did, "err", err)
 	}
 }
 
