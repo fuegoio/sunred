@@ -67,11 +67,22 @@ type PublicProfileOutput struct {
 
 type FeedSubscribersResponse struct {
 	Count       int                 `json:"count"`
+	GlobalCount int                 `json:"global_count"`
 	Subscribers []store.UserProfile `json:"subscribers"`
 }
 
 type FeedSubscribersOutput struct {
 	Body FeedSubscribersResponse
+}
+
+// ArticleShareCountResponse is the body for the article-share-count endpoint.
+type ArticleShareCountResponse struct {
+	ArticleURL string `json:"article_url"`
+	Count      int64  `json:"count"`
+}
+
+type ArticleShareCountOutput struct {
+	Body ArticleShareCountResponse
 }
 
 // registerSocialRoutes wires all social-feature endpoints.
@@ -445,7 +456,25 @@ func (a *API) registerSocialRoutes() {
 		}
 		return &FeedSubscribersOutput{Body: FeedSubscribersResponse{
 			Count:       count,
+			GlobalCount: int(a.relayGetFeedSubscriberCount(ctx, feed.FeedURL)),
 			Subscribers: subs,
+		}}, nil
+	})
+
+	// GET /api/v1/social/share-count — globally accurate share count for an
+	// article URL, sourced from the relay aggregates.
+	huma.Register(a.huma, huma.Operation{
+		OperationID: "article-share-count",
+		Method:      http.MethodGet,
+		Path:        "/api/v1/social/share-count",
+		Summary:     "Get the global share count for an article URL",
+		Tags:        []string{"social"},
+	}, func(ctx context.Context, input *struct {
+		ArticleURL string `query:"article_url" required:"true"`
+	}) (*ArticleShareCountOutput, error) {
+		return &ArticleShareCountOutput{Body: ArticleShareCountResponse{
+			ArticleURL: input.ArticleURL,
+			Count:      a.relayGetArticleShareCount(ctx, input.ArticleURL),
 		}}, nil
 	})
 }

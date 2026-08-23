@@ -41,14 +41,19 @@ import type { Feed, Folder, FeedSubscribersResponse, UserProfile } from "@/lib/t
  */
 function SubscriberBadge({
   count,
+  globalCount,
   subscribers,
 }: {
   count: number;
+  globalCount: number;
   subscribers: UserProfile[];
 }) {
   const [open, setOpen] = useState(false);
 
-  if (count === 0) return null;
+  // The relay aggregate is the federated total across all instances; fall
+  // back to the local count when no relay is configured (globalCount == 0).
+  const total = globalCount > 0 ? globalCount : count;
+  if (total === 0) return null;
 
   return (
     <div className="mt-1">
@@ -57,7 +62,12 @@ function SubscriberBadge({
         onClick={() => setOpen((v) => !v)}
         className="text-xs text-muted-foreground hover:text-foreground transition-colors"
       >
-        {count} {count === 1 ? "subscriber" : "subscribers"}
+        {total} {total === 1 ? "subscriber" : "subscribers"}
+        {globalCount > 0 && globalCount !== count && (
+          <span className="ml-1 text-muted-foreground/70">
+            ({count} here)
+          </span>
+        )}
       </button>
       {open && subscribers.length > 0 && (
         <div className="mt-1 flex flex-wrap gap-1">
@@ -230,6 +240,7 @@ export function FeedDetail({ feed, initialFolders }: { feed: Feed; initialFolder
                 {subscribers !== undefined && (
                   <SubscriberBadge
                     count={subscribers.count}
+                    globalCount={subscribers.global_count}
                     subscribers={subscribers.subscribers ?? []}
                   />
                 )}

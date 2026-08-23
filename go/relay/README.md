@@ -143,6 +143,8 @@ The HTTP/WebSocket server exposes XRPC endpoints to Sunred instances.
 | GET | `/health` | `{"status":"ok"}` liveness probe |
 | POST | `/xrpc/io.sunred.relay.announceUser` | Register a new DID; kicks off backfill if new |
 | GET | `/xrpc/io.sunred.relay.getCounts` | Global counts for a DID |
+| GET | `/xrpc/io.sunred.relay.getFeedSubscriberCount` | Global subscriber count for a feed URL |
+| GET | `/xrpc/io.sunred.relay.getArticleShareCount` | Global share count for an article URL |
 | GET | `/xrpc/io.sunred.relay.searchDIDs` | Cross-instance handle search |
 | GET | `/xrpc/io.sunred.relay.resolveHandle` | DID + PDS URL for a handle |
 | GET (WS) | `/xrpc/io.sunred.relay.subscribeEvents` | WebSocket event stream for instances |
@@ -211,7 +213,8 @@ payloads (JSON):
 ## Protocol summary
 
 - **Inbound (relay ← instance):** HTTP XRPC `io.sunred.relay.*`
-  (`announceUser` POST; `getCounts`, `searchDIDs`, `resolveHandle` GET) plus the
+  (`announceUser` POST; `getCounts`, `getFeedSubscriberCount`,
+  `getArticleShareCount`, `searchDIDs`, `resolveHandle` GET) plus the
   WebSocket `io.sunred.relay.subscribeEvents` (cursor-based replay + live
   fanout).
 - **Outbound (relay → PDS):** WebSocket

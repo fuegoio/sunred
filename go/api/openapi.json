@@ -71,6 +71,32 @@
                 ],
                 "type": "object"
             },
+            "ArticleShareCountResponse": {
+                "additionalProperties": false,
+                "properties": {
+                    "$schema": {
+                        "description": "A URL to the JSON Schema for this object.",
+                        "examples": [
+                            "https://example.com/schemas/ArticleShareCountResponse.json"
+                        ],
+                        "format": "uri",
+                        "readOnly": true,
+                        "type": "string"
+                    },
+                    "article_url": {
+                        "type": "string"
+                    },
+                    "count": {
+                        "format": "int64",
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "article_url",
+                    "count"
+                ],
+                "type": "object"
+            },
             "CreateFeedInputBody": {
                 "additionalProperties": false,
                 "properties": {
@@ -616,6 +642,10 @@
                         "format": "int64",
                         "type": "integer"
                     },
+                    "global_count": {
+                        "format": "int64",
+                        "type": "integer"
+                    },
                     "subscribers": {
                         "items": {
                             "$ref": "#/components/schemas/UserProfile"
@@ -628,6 +658,7 @@
                 },
                 "required": [
                     "count",
+                    "global_count",
                     "subscribers"
                 ],
                 "type": "object"
@@ -1546,6 +1577,48 @@
                     }
                 },
                 "summary": "Search users by handle or name",
+                "tags": [
+                    "social"
+                ]
+            }
+        },
+        "/api/v1/social/share-count": {
+            "get": {
+                "operationId": "article-share-count",
+                "parameters": [
+                    {
+                        "explode": false,
+                        "in": "query",
+                        "name": "article_url",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ArticleShareCountResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "default": {
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        },
+                        "description": "Error"
+                    }
+                },
+                "summary": "Get the global share count for an article URL",
                 "tags": [
                     "social"
                 ]

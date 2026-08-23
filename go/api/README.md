@@ -45,7 +45,8 @@ Browser ──session cookie──> API (huma REST + plain OAuth handlers)
   (fallback backfill when no relay), `com.atproto.repo.putRecord`/
   `deleteRecord` for `io.sunred.*` writes via DPoP.
 - **Sunred Relay** (optional, `SUNRED_RELAY_URL`) — XRPC `announceUser`,
-  `searchDIDs`, `resolveHandle`; WebSocket `subscribeEvents` for cursor-resumable
+  `searchDIDs`, `resolveHandle`, `getFeedSubscriberCount`,
+  `getArticleShareCount`; WebSocket `subscribeEvents` for cursor-resumable
   cross-instance event ingestion.
 - **External HTTP** — feed fetching (conditional GET, configurable user agent,
   timeout, and max body size); Google S2 favicons (preview only).
