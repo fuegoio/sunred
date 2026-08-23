@@ -120,33 +120,6 @@ type DeviceCode struct {
 	LastPolledAt   *time.Time `json:"-"`
 }
 
-// FeedList is a curated, shareable collection of feeds owned by a user.
-type FeedList struct {
-	ID          int            `json:"id"`
-	UserID      int            `json:"user_id"`
-	Title       string         `json:"title"`
-	Description string         `json:"description,omitempty"`
-	IsPublic    bool           `json:"is_public"`
-	Feeds       []FeedListFeed `json:"feeds,omitempty"`
-	FeedCount   int            `json:"feed_count"`
-	IsFollowing bool           `json:"is_following,omitempty"`
-	OwnerHandle string         `json:"owner_handle,omitempty"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
-}
-
-// FeedListFeed is a single feed reference within a feed list. It stores a
-// snapshot of the feed metadata (url, title) so the list is portable and can
-// be displayed/imported by other users without referencing the owner's feeds.
-type FeedListFeed struct {
-	ID         int    `json:"id"`
-	FeedListID int    `json:"feed_list_id"`
-	FeedURL    string `json:"feed_url"`
-	SiteURL    string `json:"site_url"`
-	Title      string `json:"title"`
-	Position   int    `json:"position"`
-}
-
 // User represents an authenticated account. The local database is a cache of
 // the user's ATProto data; the PDS is the source of truth.
 type User struct {

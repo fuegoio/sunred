@@ -31,10 +31,6 @@ ALTER TABLE shared_articles
 ALTER TABLE feeds
   ADD COLUMN IF NOT EXISTS atproto_rkey TEXT;
 
--- Track the AT Proto feed list record key for each feed list row.
-ALTER TABLE feed_lists
-  ADD COLUMN IF NOT EXISTS atproto_rkey TEXT;
-
 -- Sequence counter for relay events received by this instance.
 -- Allows resuming relay WebSocket subscriptions from a known point.
 CREATE TABLE IF NOT EXISTS atproto_relay_cursor (

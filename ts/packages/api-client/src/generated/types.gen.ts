@@ -24,16 +24,6 @@ export type AtProtoStatusOutputBody = {
     handle?: string;
 };
 
-export type AddFeedListFeedInputBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    feed_url: string;
-    site_url?: string;
-    title?: string;
-};
-
 export type CreateFeedInputBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -41,16 +31,6 @@ export type CreateFeedInputBody = {
     readonly $schema?: string;
     feed_url: string;
     folder_id?: number;
-};
-
-export type CreateFeedListInputBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    description?: string;
-    is_public: boolean;
-    title: string;
 };
 
 export type CreateFolderInputBody = {
@@ -228,37 +208,6 @@ export type Feed = {
     updated_at: string;
 };
 
-export type FeedList = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    created_at: string;
-    description?: string;
-    feed_count: number;
-    feeds?: Array<FeedListFeed> | null;
-    id: number;
-    is_following?: boolean;
-    is_public: boolean;
-    owner_handle?: string;
-    title: string;
-    updated_at: string;
-    user_id: number;
-};
-
-export type FeedListFeed = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    feed_list_id: number;
-    feed_url: string;
-    id: number;
-    position: number;
-    site_url: string;
-    title: string;
-};
-
 export type FeedSubscribersResponse = {
     /**
      * A URL to the JSON Schema for this object.
@@ -288,18 +237,6 @@ export type HealthResponse = {
      */
     readonly $schema?: string;
     status: string;
-};
-
-export type ImportFeedListResponse = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    errors?: Array<string> | null;
-    failed: number;
-    feed_ids: Array<number> | null;
-    imported: number;
-    skipped: number;
 };
 
 export type OpmlImportResultBody = {
@@ -428,16 +365,6 @@ export type UpdateFeedInputBody = {
     title?: string;
 };
 
-export type UpdateFeedListInputBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    description?: string;
-    is_public: boolean;
-    title: string;
-};
-
 export type UpdateFolderInputBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -505,21 +432,9 @@ export type AtProtoStatusOutputBodyWritable = {
     handle?: string;
 };
 
-export type AddFeedListFeedInputBodyWritable = {
-    feed_url: string;
-    site_url?: string;
-    title?: string;
-};
-
 export type CreateFeedInputBodyWritable = {
     feed_url: string;
     folder_id?: number;
-};
-
-export type CreateFeedListInputBodyWritable = {
-    description?: string;
-    is_public: boolean;
-    title: string;
 };
 
 export type CreateFolderInputBodyWritable = {
@@ -630,29 +545,6 @@ export type FeedWritable = {
     updated_at: string;
 };
 
-export type FeedListWritable = {
-    created_at: string;
-    description?: string;
-    feed_count: number;
-    feeds?: Array<FeedListFeedWritable> | null;
-    id: number;
-    is_following?: boolean;
-    is_public: boolean;
-    owner_handle?: string;
-    title: string;
-    updated_at: string;
-    user_id: number;
-};
-
-export type FeedListFeedWritable = {
-    feed_list_id: number;
-    feed_url: string;
-    id: number;
-    position: number;
-    site_url: string;
-    title: string;
-};
-
 export type FeedSubscribersResponseWritable = {
     count: number;
     subscribers: Array<UserProfileWritable> | null;
@@ -670,14 +562,6 @@ export type FolderWritable = {
 
 export type HealthResponseWritable = {
     status: string;
-};
-
-export type ImportFeedListResponseWritable = {
-    errors?: Array<string> | null;
-    failed: number;
-    feed_ids: Array<number> | null;
-    imported: number;
-    skipped: number;
 };
 
 export type OpmlImportResultBodyWritable = {
@@ -754,12 +638,6 @@ export type UpdateEntriesRequestWritable = {
 export type UpdateFeedInputBodyWritable = {
     folder_id?: number;
     title?: string;
-};
-
-export type UpdateFeedListInputBodyWritable = {
-    description?: string;
-    is_public: boolean;
-    title: string;
 };
 
 export type UpdateFolderInputBodyWritable = {
@@ -1387,326 +1265,6 @@ export type ToggleEntryStarredResponses = {
 };
 
 export type ToggleEntryStarredResponse = ToggleEntryStarredResponses[keyof ToggleEntryStarredResponses];
-
-export type ListMyFeedListsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/feed-lists';
-};
-
-export type ListMyFeedListsErrors = {
-    /**
-     * Error
-     */
-    default: ErrorModel;
-};
-
-export type ListMyFeedListsError = ListMyFeedListsErrors[keyof ListMyFeedListsErrors];
-
-export type ListMyFeedListsResponses = {
-    /**
-     * OK
-     */
-    200: Array<FeedList> | null;
-};
-
-export type ListMyFeedListsResponse = ListMyFeedListsResponses[keyof ListMyFeedListsResponses];
-
-export type CreateFeedListData = {
-    body: CreateFeedListInputBodyWritable;
-    path?: never;
-    query?: never;
-    url: '/v1/feed-lists';
-};
-
-export type CreateFeedListErrors = {
-    /**
-     * Error
-     */
-    default: ErrorModel;
-};
-
-export type CreateFeedListError = CreateFeedListErrors[keyof CreateFeedListErrors];
-
-export type CreateFeedListResponses = {
-    /**
-     * OK
-     */
-    200: FeedList;
-};
-
-export type CreateFeedListResponse = CreateFeedListResponses[keyof CreateFeedListResponses];
-
-export type DiscoverFeedListsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-    };
-    url: '/v1/feed-lists/discover';
-};
-
-export type DiscoverFeedListsErrors = {
-    /**
-     * Error
-     */
-    default: ErrorModel;
-};
-
-export type DiscoverFeedListsError = DiscoverFeedListsErrors[keyof DiscoverFeedListsErrors];
-
-export type DiscoverFeedListsResponses = {
-    /**
-     * OK
-     */
-    200: Array<FeedList> | null;
-};
-
-export type DiscoverFeedListsResponse = DiscoverFeedListsResponses[keyof DiscoverFeedListsResponses];
-
-export type ListFollowedFeedListsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/feed-lists/followed';
-};
-
-export type ListFollowedFeedListsErrors = {
-    /**
-     * Error
-     */
-    default: ErrorModel;
-};
-
-export type ListFollowedFeedListsError = ListFollowedFeedListsErrors[keyof ListFollowedFeedListsErrors];
-
-export type ListFollowedFeedListsResponses = {
-    /**
-     * OK
-     */
-    200: Array<FeedList> | null;
-};
-
-export type ListFollowedFeedListsResponse = ListFollowedFeedListsResponses[keyof ListFollowedFeedListsResponses];
-
-export type DeleteFeedListData = {
-    body?: never;
-    path: {
-        listId: number;
-    };
-    query?: never;
-    url: '/v1/feed-lists/{listId}';
-};
-
-export type DeleteFeedListErrors = {
-    /**
-     * Error
-     */
-    default: ErrorModel;
-};
-
-export type DeleteFeedListError = DeleteFeedListErrors[keyof DeleteFeedListErrors];
-
-export type DeleteFeedListResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type DeleteFeedListResponse = DeleteFeedListResponses[keyof DeleteFeedListResponses];
-
-export type GetFeedListData = {
-    body?: never;
-    path: {
-        listId: number;
-    };
-    query?: never;
-    url: '/v1/feed-lists/{listId}';
-};
-
-export type GetFeedListErrors = {
-    /**
-     * Error
-     */
-    default: ErrorModel;
-};
-
-export type GetFeedListError = GetFeedListErrors[keyof GetFeedListErrors];
-
-export type GetFeedListResponses = {
-    /**
-     * OK
-     */
-    200: FeedList;
-};
-
-export type GetFeedListResponse = GetFeedListResponses[keyof GetFeedListResponses];
-
-export type UpdateFeedListData = {
-    body: UpdateFeedListInputBodyWritable;
-    path: {
-        listId: number;
-    };
-    query?: never;
-    url: '/v1/feed-lists/{listId}';
-};
-
-export type UpdateFeedListErrors = {
-    /**
-     * Error
-     */
-    default: ErrorModel;
-};
-
-export type UpdateFeedListError = UpdateFeedListErrors[keyof UpdateFeedListErrors];
-
-export type UpdateFeedListResponses = {
-    /**
-     * OK
-     */
-    200: FeedList;
-};
-
-export type UpdateFeedListResponse = UpdateFeedListResponses[keyof UpdateFeedListResponses];
-
-export type AddFeedListFeedData = {
-    body: AddFeedListFeedInputBodyWritable;
-    path: {
-        listId: number;
-    };
-    query?: never;
-    url: '/v1/feed-lists/{listId}/feeds';
-};
-
-export type AddFeedListFeedErrors = {
-    /**
-     * Error
-     */
-    default: ErrorModel;
-};
-
-export type AddFeedListFeedError = AddFeedListFeedErrors[keyof AddFeedListFeedErrors];
-
-export type AddFeedListFeedResponses = {
-    /**
-     * OK
-     */
-    200: FeedListFeed;
-};
-
-export type AddFeedListFeedResponse = AddFeedListFeedResponses[keyof AddFeedListFeedResponses];
-
-export type RemoveFeedListFeedData = {
-    body?: never;
-    path: {
-        listId: number;
-        itemId: number;
-    };
-    query?: never;
-    url: '/v1/feed-lists/{listId}/feeds/{itemId}';
-};
-
-export type RemoveFeedListFeedErrors = {
-    /**
-     * Error
-     */
-    default: ErrorModel;
-};
-
-export type RemoveFeedListFeedError = RemoveFeedListFeedErrors[keyof RemoveFeedListFeedErrors];
-
-export type RemoveFeedListFeedResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type RemoveFeedListFeedResponse = RemoveFeedListFeedResponses[keyof RemoveFeedListFeedResponses];
-
-export type UnfollowFeedListData = {
-    body?: never;
-    path: {
-        listId: number;
-    };
-    query?: never;
-    url: '/v1/feed-lists/{listId}/follow';
-};
-
-export type UnfollowFeedListErrors = {
-    /**
-     * Error
-     */
-    default: ErrorModel;
-};
-
-export type UnfollowFeedListError = UnfollowFeedListErrors[keyof UnfollowFeedListErrors];
-
-export type UnfollowFeedListResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type UnfollowFeedListResponse = UnfollowFeedListResponses[keyof UnfollowFeedListResponses];
-
-export type FollowFeedListData = {
-    body?: never;
-    path: {
-        listId: number;
-    };
-    query?: never;
-    url: '/v1/feed-lists/{listId}/follow';
-};
-
-export type FollowFeedListErrors = {
-    /**
-     * Error
-     */
-    default: ErrorModel;
-};
-
-export type FollowFeedListError = FollowFeedListErrors[keyof FollowFeedListErrors];
-
-export type FollowFeedListResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type FollowFeedListResponse = FollowFeedListResponses[keyof FollowFeedListResponses];
-
-export type ImportFeedListData = {
-    body?: never;
-    path: {
-        listId: number;
-    };
-    query?: never;
-    url: '/v1/feed-lists/{listId}/import';
-};
-
-export type ImportFeedListErrors = {
-    /**
-     * Error
-     */
-    default: ErrorModel;
-};
-
-export type ImportFeedListError = ImportFeedListErrors[keyof ImportFeedListErrors];
-
-export type ImportFeedListResponses = {
-    /**
-     * OK
-     */
-    200: ImportFeedListResponse;
-};
-
-export type ImportFeedListResponse2 = ImportFeedListResponses[keyof ImportFeedListResponses];
 
 export type ListFeedsData = {
     body?: never;

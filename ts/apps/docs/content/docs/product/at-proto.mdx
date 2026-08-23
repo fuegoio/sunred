@@ -27,7 +27,6 @@ Sunred:
 - Who you **follow**
 - Articles you **share**
 - Feeds you **subscribe to**
-- Your **feed lists**
 - Your Sunred **profile** (display name and bio, cached from your standard `app.bsky.actor.profile` record)
 
 Sunred keeps a local **cache** of these records so the app stays fast, but
@@ -39,7 +38,7 @@ relay.
 
 The first time you log into an Sunred instance, it pulls your existing
 `io.sunred.*` records from your PDS into its local cache so your follows,
-shares, feed subscriptions, and feed lists are all there immediately. After
+shares, and feed subscriptions are all there immediately. After
 that it stays in sync via the relay. Your profile (display name and bio) is
 cached from the standard `app.bsky.actor.profile` record on your PDS.
 

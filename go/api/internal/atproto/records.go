@@ -7,7 +7,6 @@ const (
 	CollectionFollow       = "io.sunred.graph.follow"
 	CollectionShare        = "io.sunred.share.article"
 	CollectionSubscription = "io.sunred.feed.subscription"
-	CollectionFeedList     = "io.sunred.feed.list"
 )
 
 // FollowRecord is the io.sunred.graph.follow record.
@@ -38,23 +37,6 @@ type SubscriptionRecord struct {
 	SiteURL   string `json:"siteUrl,omitempty"`
 	Title     string `json:"title,omitempty"`
 	CreatedAt string `json:"createdAt"`
-}
-
-// FeedListRecord is the io.sunred.feed.list record.
-type FeedListRecord struct {
-	Type        string          `json:"$type"`
-	Title       string          `json:"title"`
-	Description string          `json:"description,omitempty"`
-	IsPublic    bool            `json:"isPublic"`
-	Feeds       []FeedListEntry `json:"feeds,omitempty"`
-	CreatedAt   string          `json:"createdAt"`
-}
-
-// FeedListEntry is a single feed within a FeedListRecord.
-type FeedListEntry struct {
-	FeedURL string `json:"feedUrl"`
-	SiteURL string `json:"siteUrl,omitempty"`
-	Title   string `json:"title,omitempty"`
 }
 
 // FormatTime formats a time.Time as an AT Proto datetime string (RFC3339).

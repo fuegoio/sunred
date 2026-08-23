@@ -123,31 +123,6 @@ func (w *Writer) DeleteFeedSubscription(ctx context.Context, rkey string) error 
 	return w.deleteRecord(ctx, CollectionSubscription, rkey)
 }
 
-// PutFeedList writes or replaces an io.sunred.feed.list record.
-// If rkey is empty, a new TID is generated.
-func (w *Writer) PutFeedList(ctx context.Context, rkey, title, description string, isPublic bool, feeds []FeedListEntry, createdAt time.Time) (string, error) {
-	if rkey == "" {
-		rkey = NewTID()
-	}
-	_, err := w.putRecord(ctx, CollectionFeedList, rkey, FeedListRecord{
-		Type:        CollectionFeedList,
-		Title:       title,
-		Description: description,
-		IsPublic:    isPublic,
-		Feeds:       feeds,
-		CreatedAt:   FormatTime(createdAt),
-	})
-	if err != nil {
-		return "", fmt.Errorf("put feed list: %w", err)
-	}
-	return rkey, nil
-}
-
-// DeleteFeedList removes the io.sunred.feed.list record.
-func (w *Writer) DeleteFeedList(ctx context.Context, rkey string) error {
-	return w.deleteRecord(ctx, CollectionFeedList, rkey)
-}
-
 // putRecord creates or replaces a record in the user's repo via the OAuth
 // session's APIClient (DPoP-bound). Returns the record URI.
 func (w *Writer) putRecord(ctx context.Context, collection, rkey string, record any) (string, error) {

@@ -9,7 +9,6 @@
     "web-ui",
     "feeds",
     "entries",
-    "feed-lists",
     "social",
     "---Interfaces---",
     "cli",

@@ -24,7 +24,6 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     <div class="nav-links">
       <a href="#features">Features</a>
       <a href="#interfaces">Interfaces</a>
-      <a href="#feed-lists">Feed Lists</a>
       <a href="#faq">FAQ</a>
       <a href="https://sunred.dev/docs">Docs</a>
     </div>
@@ -201,16 +200,6 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
         <div class="feature-card">
           <div class="feature-icon" aria-hidden="true">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 6h18M3 12h18M3 18h12" />
-            </svg>
-          </div>
-          <h3>Feed lists</h3>
-          <p>Curate collections of feeds and share them with anyone. Follow lists made by others — one click, all their feeds are yours.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2v11Z" />
             </svg>
           </div>
@@ -284,54 +273,6 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
   </section>
 
   <!-- ════════════════════════════════════════════════════════════════
-       FEED LISTS — sharing highlight
-  ═════════════════════════════════════════════════════════════════ -->
-  <section id="feed-lists" class="feed-lists-highlight" aria-labelledby="feed-lists-heading">
-    <div class="section-inner feed-lists-inner">
-      <div class="feed-lists-text">
-        <p class="kicker">Sharing</p>
-        <h2 id="feed-lists-heading" class="section-headline">
-          Share your reading. Follow others.
-        </h2>
-        <p class="section-lede">
-          Build a curated list of feeds around a topic — Rust blogs, design
-          journals, climate research — and share it with a link. Anyone can
-          follow your list and get every feed in one click. No accounts
-          required to browse.
-        </p>
-        <ul class="feed-lists-bullets">
-          <li>Curate feeds into named, shareable lists</li>
-          <li>Discover lists others have made public</li>
-          <li>Follow a list to subscribe to all its feeds at once</li>
-          <li>Import OPML files to populate lists instantly</li>
-        </ul>
-      </div>
-
-      <div class="feed-list-card" aria-hidden="true">
-        <div class="flc-header">
-          <div class="flc-icon" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 6h18M3 12h18M3 18h12" />
-            </svg>
-          </div>
-          <div>
-            <div class="flc-title">Rust & Systems</div>
-            <div class="flc-meta">12 feeds · 47 unread</div>
-          </div>
-        </div>
-        <div class="flc-feeds">
-          <div class="flc-feed"><span class="flc-dot"></span> This Week in Rust</div>
-          <div class="flc-feed"><span class="flc-dot"></span> Rust Blog</div>
-          <div class="flc-feed"><span class="flc-dot"></span> Faster Than Lime</div>
-          <div class="flc-feed"><span class="flc-dot"></span> Lobsters RSS</div>
-          <div class="flc-feed flc-feed-faded">+ 8 more</div>
-        </div>
-        <button class="flc-follow" tabindex="-1">Follow list</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════════════════════════════
        FAQ
   ═════════════════════════════════════════════════════════════════ -->
   <section id="faq" class="faq" aria-labelledby="faq-heading">
@@ -360,11 +301,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
         </details>
         <details class="faq-item">
           <summary>Can I import my feeds from another reader?</summary>
-          <p>Yes. Sunred supports OPML import. Export your feeds from any RSS reader (Feedly, Inoreader, NetNewsWire, etc.) as an OPML file and import them directly. You can also import OPML into feed lists.</p>
-        </details>
-        <details class="faq-item">
-          <summary>What is a feed list?</summary>
-          <p>A feed list is a named collection of feeds you curate around a topic. You can keep lists private or make them public. Public lists can be discovered and followed by other Sunred users — following a list subscribes you to all its feeds in one click.</p>
+          <p>Yes. Sunred supports OPML import. Export your feeds from any RSS reader (Feedly, Inoreader, NetNewsWire, etc.) as an OPML file and import them directly.</p>
         </details>
         <details class="faq-item">
           <summary>Is there tracking or advertising?</summary>
@@ -372,7 +309,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
         </details>
         <details class="faq-item">
           <summary>What's the API like?</summary>
-          <p>A clean REST API with JSON responses. Authenticate with a bearer token, then list feeds, add subscriptions, search entries, manage feed lists, and more. Full documentation is in the docs.</p>
+          <p>A clean REST API with JSON responses. Authenticate with a bearer token, then list feeds, add subscriptions, search entries, and more. Full documentation is in the docs.</p>
         </details>
       </div>
     </div>
@@ -1052,137 +989,6 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     margin: 0 auto;
   }
 
-  /* ── Feed lists highlight ─────────────────────────────────────── */
-
-  .feed-lists-highlight {
-    background-color: var(--paper);
-    color: var(--ink);
-    padding: clamp(4.5rem, 10vh, 7rem) 0;
-  }
-
-  .feed-lists-inner {
-    display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: clamp(2.5rem, 6vw, 5rem);
-    align-items: center;
-  }
-
-  .feed-lists-bullets {
-    list-style: none;
-    padding: 0;
-    margin: 1.75rem 0 0;
-  }
-
-  .feed-lists-bullets li {
-    position: relative;
-    padding-left: 1.5rem;
-    margin-bottom: 0.625rem;
-    font-size: 0.9375rem;
-    line-height: 1.5;
-    color: var(--ink-soft);
-  }
-
-  .feed-lists-bullets li::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0.55em;
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    background-color: var(--primary);
-  }
-
-  .feed-list-card {
-    padding: 1.75rem;
-    border: 1px solid var(--rule);
-    border-radius: 0.875rem;
-    background-color: white;
-    box-shadow:
-      0 1px 2px oklch(0.3 0.01 79 / 0.04),
-      0 8px 24px oklch(0.3 0.01 79 / 0.06);
-  }
-
-  .flc-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding-bottom: 1.25rem;
-    border-bottom: 1px solid var(--rule);
-    margin-bottom: 1.25rem;
-  }
-
-  .flc-icon {
-    width: 2.5rem;
-    height: 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.625rem;
-    background-color: color-mix(in oklab, var(--primary) 12%, var(--paper));
-    color: var(--primary);
-    flex-shrink: 0;
-  }
-
-  .flc-title {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1.0625rem;
-    color: var(--ink);
-  }
-
-  .flc-meta {
-    font-size: 0.8125rem;
-    color: var(--ink-soft);
-    margin-top: 0.125rem;
-  }
-
-  .flc-feeds {
-    display: flex;
-    flex-direction: column;
-    gap: 0.625rem;
-  }
-
-  .flc-feed {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-    font-size: 0.875rem;
-    color: var(--ink);
-  }
-
-  .flc-dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    background-color: var(--primary);
-    flex-shrink: 0;
-    opacity: 0.7;
-  }
-
-  .flc-feed-faded {
-    color: var(--ink-soft);
-    font-size: 0.8125rem;
-  }
-
-  .flc-feed-faded .flc-dot {
-    opacity: 0.3;
-  }
-
-  .flc-follow {
-    margin-top: 1.5rem;
-    width: 100%;
-    padding: 0.625rem;
-    border-radius: 0.5rem;
-    border: none;
-    background-color: var(--primary);
-    color: var(--primary-foreground);
-    font-family: var(--font-body);
-    font-weight: 600;
-    font-size: 0.875rem;
-    cursor: pointer;
-  }
-
   /* ── FAQ ──────────────────────────────────────────────────────── */
 
   .faq {
@@ -1300,15 +1106,6 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
   @media (max-width: 768px) {
     .nav-links {
       display: none;
-    }
-
-    .feed-lists-inner {
-      grid-template-columns: 1fr;
-    }
-
-    .feed-list-card {
-      max-width: 24rem;
-      margin: 0 auto;
     }
   }
 

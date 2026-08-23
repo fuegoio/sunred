@@ -216,26 +216,6 @@ func (s *Store) GetFeedATProtoRkey(ctx context.Context, userID, feedID int) (str
 	return rkey.String, err
 }
 
-// SetFeedListATProtoRkey records the AT Proto rkey for a feed list row.
-func (s *Store) SetFeedListATProtoRkey(ctx context.Context, listID int, rkey string) error {
-	_, err := s.DB.ExecContext(ctx, `
-		UPDATE feed_lists SET atproto_rkey = $2 WHERE id = $1`, listID, rkey,
-	)
-	return err
-}
-
-// GetFeedListATProtoRkey retrieves the AT Proto rkey for a feed list.
-func (s *Store) GetFeedListATProtoRkey(ctx context.Context, listID int) (string, error) {
-	var rkey sql.NullString
-	err := s.DB.QueryRowContext(ctx, `
-		SELECT atproto_rkey FROM feed_lists WHERE id = $1`, listID,
-	).Scan(&rkey)
-	if err == sql.ErrNoRows {
-		return "", nil
-	}
-	return rkey.String, err
-}
-
 // --- Relay cursor ---
 
 // GetRelayCursor returns the current relay WebSocket resume cursor.
