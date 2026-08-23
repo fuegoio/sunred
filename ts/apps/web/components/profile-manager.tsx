@@ -199,7 +199,7 @@ const handleSchema = z.object({
 
 type HandleValues = z.infer<typeof handleSchema>;
 
-function HandleForm({ currentHandle, currentBio }: { currentHandle?: string; currentBio?: string }) {
+function HandleForm({ currentHandle, currentBio, hasDID }: { currentHandle?: string; currentBio?: string; hasDID: boolean }) {
   const queryClient = useQueryClient();
 
   const {
@@ -224,7 +224,7 @@ function HandleForm({ currentHandle, currentBio }: { currentHandle?: string; cur
       return;
     }
     await queryClient.invalidateQueries({ queryKey: ["me"] });
-    toast.success("Handle updated");
+    toast.success("Profile updated");
   }
 
   return (
@@ -240,15 +240,22 @@ function HandleForm({ currentHandle, currentBio }: { currentHandle?: string; cur
             placeholder="yourhandle"
             autoComplete="off"
             className="pl-7"
+            readOnly={hasDID}
             aria-invalid={!!errors.handle}
+            aria-describedby={hasDID ? "profile-handle-help" : undefined}
             {...register("handle")}
           />
         </div>
         {errors.handle ? (
           <p className="text-xs text-destructive">{errors.handle.message}</p>
+        ) : hasDID ? (
+          <p id="profile-handle-help" className="text-xs text-muted-foreground">
+            Your handle is part of your AT Protocol identity and is managed via
+            your PDS. Update it from a Bluesky client.
+          </p>
         ) : (
           <p className="text-xs text-muted-foreground">
-            Your public handle. Will correspond to your AT Protocol handle in the future.
+            Your public handle on this Sunred instance.
           </p>
         )}
       </div>
@@ -280,7 +287,7 @@ function HandleForm({ currentHandle, currentBio }: { currentHandle?: string; cur
       <div className="flex justify-end">
         <Button type="submit" disabled={isSubmitting || !isDirty}>
           {isSubmitting && <Loader2 className="size-4 animate-spin" />}
-          Save handle
+          Save
         </Button>
       </div>
     </form>
@@ -367,7 +374,7 @@ export function ProfileManager() {
 
         <section aria-labelledby="handle-section-heading">
           <h2 id="handle-section-heading" className="mb-4 text-base font-semibold">
-            Social handle
+            Handle and bio
           </h2>
           {isLoading || !user ? (
             <div className="flex flex-col gap-4">
@@ -375,7 +382,7 @@ export function ProfileManager() {
               <Skeleton className="h-20 w-full" />
             </div>
           ) : (
-            <HandleForm currentHandle={user.handle ?? ""} />
+            <HandleForm currentHandle={user.handle ?? ""} currentBio={user.bio ?? ""} hasDID={!!user.did} />
           )}
         </section>
 
