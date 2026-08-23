@@ -915,6 +915,10 @@
                             "null"
                         ]
                     },
+                    "global_follower_count": {
+                        "format": "int64",
+                        "type": "integer"
+                    },
                     "profile": {
                         "$ref": "#/components/schemas/UserProfile"
                     },
@@ -930,6 +934,7 @@
                 },
                 "required": [
                     "profile",
+                    "global_follower_count",
                     "shared_articles",
                     "feeds"
                 ],
