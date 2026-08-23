@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -15,6 +14,7 @@ import {
 } from "lucide-react";
 import { FeedRenameDialog } from "@/components/feed-rename-dialog";
 import { FolderPickerPopover } from "@/components/folder-picker-popover";
+import { SubscribersDialog } from "@/components/subscribers-dialog";
 import { Button, buttonVariants } from "@workspace/ui/components/button";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { FeedIcon } from "@/components/feed-icon";
@@ -33,61 +33,7 @@ import {
 } from "@/lib/sunred";
 import { getApiErrorMessage } from "@/lib/errors";
 import { cn } from "@workspace/ui/lib/utils";
-import type { Feed, Folder, FeedSubscribersResponse, UserProfile } from "@/lib/types";
-
-/**
- * Small badge that shows subscriber count and, on click, expands a list of
- * public subscriber profiles.
- */
-function SubscriberBadge({
-  count,
-  globalCount,
-  subscribers,
-}: {
-  count: number;
-  globalCount: number;
-  subscribers: UserProfile[];
-}) {
-  const [open, setOpen] = useState(false);
-
-  // The relay aggregate is the federated total across all instances; fall
-  // back to the local count when no relay is configured (globalCount == 0).
-  const total = globalCount > 0 ? globalCount : count;
-  if (total === 0) return null;
-
-  return (
-    <div className="mt-1">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-      >
-        {total} {total === 1 ? "subscriber" : "subscribers"}
-        {globalCount > 0 && globalCount !== count && (
-          <span className="ml-1 text-muted-foreground/70">
-            ({count} here)
-          </span>
-        )}
-      </button>
-      {open && subscribers.length > 0 && (
-        <div className="mt-1 flex flex-wrap gap-1">
-          {subscribers.map((s) => (
-            <Link
-              key={s.user_id}
-              href={`/users/${s.handle}`}
-              className={cn(
-                "rounded-full bg-muted px-2 py-0.5 text-xs font-medium",
-                "hover:bg-muted/80 transition-colors",
-              )}
-            >
-              @{s.handle}
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+import type { Feed, Folder, FeedSubscribersResponse } from "@/lib/types";
 
 /**
  * Feed detail view: header with site link, refresh, mark-all-read, and delete
@@ -238,7 +184,7 @@ export function FeedDetail({ feed, initialFolders }: { feed: Feed; initialFolder
               <>
                 {feed.description && <p>{feed.description}</p>}
                 {subscribers !== undefined && (
-                  <SubscriberBadge
+                  <SubscribersDialog
                     count={subscribers.count}
                     globalCount={subscribers.global_count}
                     subscribers={subscribers.subscribers ?? []}
