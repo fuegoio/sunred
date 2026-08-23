@@ -351,10 +351,9 @@ func (a *API) relaySearchDIDs(ctx context.Context, q string, limit int) []store.
 	var profiles []store.UserProfile
 	for _, r := range out.Results {
 		profiles = append(profiles, store.UserProfile{
-			Handle:   r.Handle,
-			DID:      r.DID,
-			PDSUrl:   r.PDSUrl,
-			IsRemote: true,
+			Handle: r.Handle,
+			DID:    r.DID,
+			PDSUrl: r.PDSUrl,
 		})
 	}
 	return profiles

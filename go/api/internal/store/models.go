@@ -128,8 +128,6 @@ type User struct {
 	DID       string    `json:"did,omitempty"`
 	DisplayName string  `json:"display_name,omitempty"`
 	Bio       string    `json:"bio,omitempty"`
-	IsAdmin   bool      `json:"is_admin"`
-	IsRemote  bool      `json:"is_remote,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 	// PDSSyncStatus tracks the post-login backfill from the user's PDS:
 	// "syncing" while in progress, "idle" once done, "failed" on error.
@@ -147,7 +145,6 @@ type UserProfile struct {
 	Bio         string    `json:"bio,omitempty"`
 	DID         string    `json:"did,omitempty"`
 	PDSUrl      string    `json:"pds_url,omitempty"`
-	IsRemote    bool      `json:"is_remote,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`
 	// Denormalised fields set by query joins.
 	FollowerCount  int  `json:"follower_count"`
