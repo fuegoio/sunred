@@ -183,18 +183,10 @@ export function FeedDetail({ feed, initialFolders }: { feed: Feed; initialFolder
             metadata={
               <>
                 {feed.description && <p>{feed.description}</p>}
-                {subscribers !== undefined && (
-                  <SubscribersDialog
-                    count={subscribers.count}
-                    globalCount={subscribers.global_count}
-                    subscribers={subscribers.subscribers ?? []}
-                  />
-                )}
                 {feed.parsing_error && (
                   <p className="mt-1 text-destructive">Last parse error: {feed.parsing_error}</p>
                 )}
               </>
-
             }
           />
           <div className="flex items-center gap-2 border-b border-border px-4 py-2 pl-[52px] lg:pl-[48px]">
@@ -212,6 +204,15 @@ export function FeedDetail({ feed, initialFolders }: { feed: Feed; initialFolder
               disabled={movingFolder}
               onSelect={(folderId) => handleMoveFolder(folderId)}
             />
+            {subscribers !== undefined && (
+              <div className="ml-auto">
+                <SubscribersDialog
+                  count={subscribers.count}
+                  globalCount={subscribers.global_count}
+                  subscribers={subscribers.subscribers ?? []}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
