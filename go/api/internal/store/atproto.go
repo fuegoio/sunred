@@ -28,15 +28,16 @@ func (s *Store) ConnectATProto(ctx context.Context, userID int, did, pdsURL, acc
 	return nil
 }
 
-// DisconnectATProto clears the AT Proto identity for a user.
+// DisconnectATProto clears the PDS session credentials for a user. The DID
+// (the user's permanent identity) is retained.
 func (s *Store) DisconnectATProto(ctx context.Context, userID int) error {
 	_, err := s.DB.ExecContext(ctx, `
 		UPDATE users
-		SET did                      = NULL,
-		    pds_url                  = NULL,
+		SET pds_url                  = NULL,
 		    atproto_access_token     = NULL,
 		    atproto_refresh_token    = NULL,
-		    atproto_token_expires_at = NULL
+		    atproto_token_expires_at = NULL,
+		    oauth_session_id         = NULL
 		WHERE id = $1`, userID,
 	)
 	return err
@@ -45,22 +46,21 @@ func (s *Store) DisconnectATProto(ctx context.Context, userID int) error {
 // GetATProtoCredentials returns the PDS credentials for a user, or nil if not connected.
 func (s *Store) GetATProtoCredentials(ctx context.Context, userID int) (*ATProtoCredentials, error) {
 	var c ATProtoCredentials
-	var did, pdsURL, access, refresh sql.NullString
+	var pdsURL, access, refresh sql.NullString
 	var expiresAt sql.NullTime
 	err := s.DB.QueryRowContext(ctx, `
-		SELECT id, COALESCE(did,''), COALESCE(pds_url,''),
+		SELECT id, did, pds_url,
 		       COALESCE(atproto_access_token,''),
 		       COALESCE(atproto_refresh_token,''),
 		       atproto_token_expires_at
 		FROM users WHERE id = $1`, userID,
-	).Scan(&c.UserID, &did, &pdsURL, &access, &refresh, &expiresAt)
+	).Scan(&c.UserID, &c.DID, &pdsURL, &access, &refresh, &expiresAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
 	if err != nil {
 		return nil, fmt.Errorf("get atproto credentials: %w", err)
 	}
-	c.DID = did.String
 	c.PDSUrl = pdsURL.String
 	c.AccessToken = access.String
 	c.RefreshToken = refresh.String
@@ -68,8 +68,8 @@ func (s *Store) GetATProtoCredentials(ctx context.Context, userID int) (*ATProto
 		t := expiresAt.Time
 		c.ExpiresAt = &t
 	}
-	if c.DID == "" {
-		return nil, nil // not connected
+	if !pdsURL.Valid {
+		return nil, nil // not connected to a PDS
 	}
 	return &c, nil
 }
@@ -124,7 +124,7 @@ func (s *Store) ListUsersWithATProto(ctx context.Context) ([]ATProtoCredentials,
 		       COALESCE(atproto_refresh_token,''),
 		       atproto_token_expires_at
 		FROM users
-		WHERE did IS NOT NULL AND pds_url IS NOT NULL`,
+		WHERE pds_url IS NOT NULL`,
 	)
 	if err != nil {
 		return nil, err
