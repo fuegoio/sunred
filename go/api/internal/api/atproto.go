@@ -292,45 +292,26 @@ func (a *API) WellKnownATProtoDIDHandler() http.Handler {
 	})
 }
 
-// announceUserToRelay notifies the relay of a user DID so it tracks them and
-// backfills their repo (shares + feed subscriptions) into the local cache. This
-// is the same call the OAuth handler makes on login; calling it for a followed
-// user makes their io.sunred.share.article records flow into this instance via
-// the relay fan-out, so a follower sees their shares as normal entries.
-func (a *API) announceUserToRelay(ctx context.Context, did, pdsURL, handle string) {
-	if a.cfg.RelayURL == "" || did == "" || pdsURL == "" {
-		return
-	}
-	rc := atproto.NewClient(a.cfg.RelayURL, "")
-	type announceIn struct {
-		DID         string `json:"did"`
-		PDSUrl      string `json:"pdsUrl"`
-		InstanceURL string `json:"instanceUrl"`
-		Handle      string `json:"handle"`
-	}
-	if err := rc.Procedure(ctx, "io.sunred.relay.announceUser", announceIn{
-		DID:         did,
-		PDSUrl:      pdsURL,
-		InstanceURL: a.cfg.BaseURL,
-		Handle:      handle,
-	}, nil); err != nil {
-		slog.Warn("relay: announce followee", "did", did, "err", err)
-	}
-}
-
-// ingestFollowee announces the followed user to the relay so their shares (and
-// the source feeds those shares reference) are backfilled into the local cache
-// and appear in the follower's entry stream. Fire-and-forget; a no-op when the
-// followee has no AT Proto identity or no relay is configured. Idempotent: the
-// relay treats an already-tracked DID as a no-op.
-func (a *API) ingestFollowee(followeeUserID int) {
+// backfillFollowee replicates a followed user's io.sunred.* records from their
+// PDS into the local cache so the follower sees their shares in the timeline and
+// their subscribed feeds on their profile. Works with or without a relay — it
+// reads directly from the followee's PDS via unauthenticated listRecords (a
+// public read). Fire-and-forget; a no-op when the followee has no AT Proto
+// identity. Idempotent: the store upserts are keyed on (user, article_url) /
+// (user, feed_url).
+func (a *API) backfillFollowee(followeeUserID int) {
 	ctx := context.Background()
 	did, pdsURL, err := a.store.GetUserDIDAndPDS(ctx, followeeUserID)
 	if err != nil || did == "" || pdsURL == "" {
 		return
 	}
-	handle, _, _ := a.store.GetUserDID(ctx, followeeUserID)
-	a.announceUserToRelay(ctx, did, pdsURL, handle)
+	c := atproto.NewClient(pdsURL, "")
+	if err := backfillShares(ctx, c, a.store, followeeUserID, did); err != nil {
+		slog.Warn("backfill: followee shares", "did", did, "err", err)
+	}
+	if err := backfillFeedSubscriptions(ctx, c, a.store, followeeUserID, did); err != nil {
+		slog.Warn("backfill: followee feed subs", "did", did, "err", err)
+	}
 }
 
 // relaySearchResult is a single DID returned by the relay searchDIDs endpoint.

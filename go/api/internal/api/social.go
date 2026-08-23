@@ -168,7 +168,7 @@ func (a *API) registerSocialRoutes() {
 					return nil, huma.Error500InternalServerError(ferr.Error())
 				}
 				go a.ATProtoSyncFollow(userID, followeeUserID, input.Handle, true)
-				go a.ingestFollowee(followeeUserID)
+				go a.backfillFollowee(followeeUserID)
 				return nil, nil
 			case errors.Is(err, store.ErrCannotFollowSelf):
 				return nil, huma.Error422UnprocessableEntity(err.Error(), nil)
@@ -184,12 +184,11 @@ func (a *API) registerSocialRoutes() {
 			followeeUserID = followeeProfile.UserID
 		}
 		go a.ATProtoSyncFollow(userID, followeeUserID, input.Handle, true)
-		// Ingest the followee's shares + source feeds so they appear in the
-		// follower's entry stream: announce the followee's DID to the relay,
-		// which backfills their io.sunred.share.article records into this
-		// instance. No-op without a relay or AT Proto identity.
+		// Backfill the followee's shares + feed subscriptions from their PDS so
+		// they appear in the follower's timeline and on the followee's profile.
+		// No-op if the followee has no AT Proto identity.
 		if followeeUserID != 0 {
-			go a.ingestFollowee(followeeUserID)
+			go a.backfillFollowee(followeeUserID)
 		}
 		return nil, nil
 	})

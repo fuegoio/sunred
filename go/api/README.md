@@ -157,6 +157,11 @@ HTTP request
    the PDS and upserts locally; if relay, `announceToRelay` registers the DID so
    the relay backfills. A 3-minute safety-net timer flips a stuck `syncing`
    status to `idle`.
+4. **Followee backfill** (per follow action) — `backfillFollowee` reads the
+   followed user's `io.sunred.share.article` and `io.sunred.feed.subscription`
+   records directly from their PDS via unauthenticated `listRecords` and ingests
+   them locally, so the follower sees their shares in the timeline and their
+   subscribed feeds on their profile. Works with or without a relay.
 
 ## Reader pipeline
 
@@ -212,6 +217,10 @@ materialized as a global entry against a synthetic source feed (keyed by
   `ATProtoSyncFeedSubscription` are fire-and-forget goroutines that write (or
   delete) records on the PDS and store the resulting rkey locally so subsequent
   deletes target the right record.
+- **Followee backfill** — `backfillFollowee` reads the followed user's shares
+  and feed subscriptions directly from their PDS (unauthenticated `listRecords`)
+  so the follower's timeline and the followee's profile populate immediately.
+  Works independently of the relay.
 
 ## Auth model
 

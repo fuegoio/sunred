@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/bluesky-social/indigo/atproto/atclient"
 	"github.com/bluesky-social/indigo/atproto/syntax"
@@ -94,6 +95,74 @@ func syncFeedSubscriptions(ctx context.Context, c *atclient.APIClient, st *store
 			rkey := rkeyFromURI(rec.URI)
 			if err := st.UpsertFeedSubscriptionWithRkey(ctx, userID, fs.FeedURL, fs.SiteURL, fs.Title, rkey); err != nil {
 				slog.Warn("sync: upsert feed sub", "feed_url", fs.FeedURL, "err", err)
+			}
+		}
+		if out.Cursor == "" {
+			break
+		}
+		cursor = out.Cursor
+	}
+	return nil
+}
+
+// backfillShares lists io.sunred.share.article records from a remote repo and
+// ingests them into the local cache so a follower sees the followee's shares
+// in their timeline. Uses an unauthenticated PDS client — listRecords is a
+// public read. Idempotent via UpsertShareWithRkey.
+func backfillShares(ctx context.Context, c *atproto.Client, st *store.Store, userID int, did string) error {
+	cursor := ""
+	for {
+		out, err := c.ListRecords(ctx, did, atproto.CollectionShare, 100, cursor)
+		if err != nil {
+			return fmt.Errorf("list shares: %w", err)
+		}
+		for _, rec := range out.Records {
+			var s atproto.ShareRecord
+			if err := json.Unmarshal(rec.Value, &s); err != nil || s.ArticleURL == "" {
+				continue
+			}
+			rkey := rkeyFromURI(rec.URI)
+			var publishedAt *time.Time
+			if s.PublishedAt != "" {
+				if t, err := time.Parse(time.RFC3339, s.PublishedAt); err == nil {
+					utc := t.UTC()
+					publishedAt = &utc
+				}
+			}
+			if err := st.UpsertShareWithRkey(ctx, userID,
+				s.ArticleURL, s.Title, s.Description,
+				s.FeedURL, s.FeedTitle, s.FeedSiteURL,
+				s.Author, publishedAt, rkey,
+			); err != nil {
+				slog.Warn("backfill: upsert share", "article_url", s.ArticleURL, "err", err)
+			}
+		}
+		if out.Cursor == "" {
+			break
+		}
+		cursor = out.Cursor
+	}
+	return nil
+}
+
+// backfillFeedSubscriptions lists io.sunred.feed.subscription records from a
+// remote repo and ingests them into the local cache so the followee's profile
+// page shows their subscribed feeds. Idempotent via UpsertFeedSubscriptionWithRkey.
+func backfillFeedSubscriptions(ctx context.Context, c *atproto.Client, st *store.Store, userID int, did string) error {
+	cursor := ""
+	for {
+		out, err := c.ListRecords(ctx, did, atproto.CollectionSubscription, 100, cursor)
+		if err != nil {
+			return fmt.Errorf("list feed subs: %w", err)
+		}
+		for _, rec := range out.Records {
+			var fs atproto.SubscriptionRecord
+			if err := json.Unmarshal(rec.Value, &fs); err != nil || fs.FeedURL == "" {
+				continue
+			}
+			rkey := rkeyFromURI(rec.URI)
+			if err := st.UpsertFeedSubscriptionWithRkey(ctx, userID, fs.FeedURL, fs.SiteURL, fs.Title, rkey); err != nil {
+				slog.Warn("backfill: upsert feed sub", "feed_url", fs.FeedURL, "err", err)
 			}
 		}
 		if out.Cursor == "" {
