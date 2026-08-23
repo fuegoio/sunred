@@ -95,6 +95,9 @@ func (a *API) registerSocialRoutes() {
 			}
 			return nil, huma.Error500InternalServerError(fmt.Errorf("upsert handle: %w", err).Error())
 		}
+		// Mirror the new bio (+ current display name) onto the Bluesky profile
+		// record. Handle itself is AT Proto identity, updated separately.
+		go a.ATProtoSyncProfile(userID, p.DisplayName, p.Bio, p.CreatedAt)
 		return &UserProfileOutput{Body: *p}, nil
 	})
 

@@ -2,11 +2,18 @@ package atproto
 
 import "time"
 
-// Lexicon collection IDs for io.sunred.* record types.
+// Lexicon collection IDs for io.sunred.* record types and the Bluesky
+// profile record (app.bsky.actor.profile) this instance mirrors the user's
+// display name + bio into so the profile is searchable on the network.
 const (
 	CollectionFollow       = "io.sunred.graph.follow"
 	CollectionShare        = "io.sunred.share.article"
 	CollectionSubscription = "io.sunred.feed.subscription"
+	CollectionProfile      = "app.bsky.actor.profile"
+
+	// ProfileRkey is the fixed record key for the single app.bsky.actor.profile
+	// record every repo has at most one of.
+	ProfileRkey = "self"
 )
 
 // FollowRecord is the io.sunred.graph.follow record.
@@ -37,6 +44,17 @@ type SubscriptionRecord struct {
 	SiteURL   string `json:"siteUrl,omitempty"`
 	Title     string `json:"title,omitempty"`
 	CreatedAt string `json:"createdAt"`
+}
+
+// ProfileRecord is the app.bsky.actor.profile record (rkey "self"). Only the
+// text fields Sunred manages are populated; avatar/banner are left for the
+// user to set from a Bluesky client. createdAt is preserved across updates so
+// the record's creation timestamp stays stable.
+type ProfileRecord struct {
+	Type        string `json:"$type"`
+	DisplayName string `json:"displayName,omitempty"`
+	Description string `json:"description,omitempty"`
+	CreatedAt   string `json:"createdAt"`
 }
 
 // FormatTime formats a time.Time as an AT Proto datetime string (RFC3339).

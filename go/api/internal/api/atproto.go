@@ -193,6 +193,30 @@ func (a *API) ATProtoSyncShare(userID int, sa *store.SharedArticle, isShare bool
 	}
 }
 
+// ATProtoSyncProfile writes or replaces the app.bsky.actor.profile record on
+// the user's PDS, mirroring their display name and bio onto their Bluesky
+// profile so it is searchable on the network. Fire-and-forget; a no-op when
+// the user has no AT Proto connection. createdAt is preserved across updates
+// to keep the record's creation timestamp stable.
+func (a *API) ATProtoSyncProfile(userID int, displayName, bio string, createdAt time.Time) {
+	ctx := context.Background()
+	w, err := a.writerForUserOrFallback(ctx, userID)
+	if err != nil {
+		slog.Debug("atproto: skip profile sync, writer error", "user_id", userID, "err", err)
+		return
+	}
+	if w == nil {
+		slog.Debug("atproto: skip profile sync, no credentials", "user_id", userID)
+		return
+	}
+	slog.Info("atproto: writing profile to PDS", "user_id", userID)
+	if err := w.PutProfile(ctx, displayName, bio, createdAt); err != nil {
+		slog.Warn("atproto: put profile failed", "user_id", userID, "err", err)
+		return
+	}
+	slog.Info("atproto: profile written", "user_id", userID)
+}
+
 // ATProtoSyncFeedSubscription writes or deletes a feed subscription record on
 // the PDS. On subscribe it creates an io.sunred.feed.subscription record and
 // stores the rkey locally; on unsubscribe it deletes the record using the

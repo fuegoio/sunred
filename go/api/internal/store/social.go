@@ -45,9 +45,9 @@ func (s *Store) UpsertHandle(ctx context.Context, userID int, handle, bio string
 	err := s.DB.QueryRowContext(ctx, `
 		UPDATE users SET handle = $2, bio = $3
 		WHERE id = $1
-		RETURNING id, COALESCE(handle, ''), bio, created_at`,
+		RETURNING id, COALESCE(handle, ''), COALESCE(display_name, ''), bio, created_at`,
 		userID, handle, bio,
-	).Scan(&p.UserID, &p.Handle, &p.Bio, &p.CreatedAt)
+	).Scan(&p.UserID, &p.Handle, &p.DisplayName, &p.Bio, &p.CreatedAt)
 	if err != nil {
 		if strings.Contains(err.Error(), "idx_users_handle") ||
 			strings.Contains(err.Error(), "unique") {
