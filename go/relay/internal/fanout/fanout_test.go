@@ -16,13 +16,13 @@ import (
 // stubStore is a minimal in-memory implementation of the store methods
 // used by Fanout, so fanout unit tests don't need a real database.
 type stubStore struct {
-	follows       map[string]string // rkey → followee_did
-	followCounts  map[string]int    // followee_did → count
-	shares        map[string]bool   // rkey → exists
-	feedSubs      map[string]string // rkey → feed_url
-	events        []store.RelayEvent
-	didCursors    map[string]int64
-	errorDIDs     map[string]string
+	follows      map[string]string // rkey → followee_did
+	followCounts map[string]int    // followee_did → count
+	shares       map[string]bool   // rkey → exists
+	feedSubs     map[string]string // rkey → feed_url
+	events       []store.RelayEvent
+	didCursors   map[string]int64
+	errorDIDs    map[string]string
 }
 
 func newStubStore() *stubStore {
@@ -121,7 +121,8 @@ func (s *stubStore) ListActiveTrackedDIDs(_ context.Context) ([]store.TrackedDID
 
 // fanoutWithStub creates a Fanout that uses the stub store and a mock PDS.
 // The mock PDS serves getRecord responses from the provided map:
-//   key "collection/rkey" → JSON value object
+//
+//	key "collection/rkey" → JSON value object
 func fanoutWithStub(t *testing.T, st *stubStore, recordMap map[string]map[string]any) *Fanout {
 	t.Helper()
 
