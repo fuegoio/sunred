@@ -34,29 +34,36 @@ func (f *Fanout) BackfillAndSubscribe(ctx context.Context, did, pdsURL string) {
 
 func (f *Fanout) backfillDID(ctx context.Context, did, pdsURL string) {
 	for _, col := range backfillCollections {
-		if err := f.backfillCollection(ctx, did, pdsURL, col); err != nil {
+		n, err := f.backfillCollection(ctx, did, pdsURL, col)
+		if err != nil {
 			slog.Warn("backfill: collection failed", "did", did, "collection", col, "err", err)
+			continue
 		}
+		slog.Info("backfill: collection complete", "did", did, "collection", col, "records", n)
 	}
 }
 
-func (f *Fanout) backfillCollection(ctx context.Context, did, pdsURL, collection string) error {
+// backfillCollection crawls a single collection via listRecords pagination and
+// returns the number of records processed.
+func (f *Fanout) backfillCollection(ctx context.Context, did, pdsURL, collection string) (int, error) {
 	cursor := ""
+	count := 0
 	for {
 		out, err := f.listRecords(ctx, pdsURL, did, collection, cursor)
 		if err != nil {
-			return fmt.Errorf("list records %s: %w", collection, err)
+			return count, fmt.Errorf("list records %s: %w", collection, err)
 		}
 		for _, rec := range out.Records {
 			rkey := rkeyFromURI(rec.URI)
 			f.processBackfillRecord(ctx, did, pdsURL, collection, rkey, rec.Value)
+			count++
 		}
 		if out.Cursor == "" {
 			break
 		}
 		cursor = out.Cursor
 	}
-	return nil
+	return count, nil
 }
 
 // listRecordsOutput matches com.atproto.repo.listRecords response.
@@ -94,8 +101,12 @@ func (f *Fanout) listRecords(ctx context.Context, pdsURL, did, collection, curso
 		return nil, err
 	}
 	defer func() { _ = resp.Body.Close() }()
-	body, _ := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read listRecords response: %w", err)
+	}
 	if resp.StatusCode >= 400 {
+		slog.Warn("backfill: pds listRecords error", "did", did, "collection", collection, "status", resp.StatusCode)
 		return nil, fmt.Errorf("pds returned %d for listRecords %s", resp.StatusCode, collection)
 	}
 	var out listRecordsOutput
@@ -118,6 +129,8 @@ func (f *Fanout) processBackfillRecord(ctx context.Context, did, pdsURL, collect
 		f.processShareRecord(ctx, did, pdsURL, rkey, rec)
 	case "io.sunred.feed.subscription":
 		f.processFeedSubRecord(ctx, did, pdsURL, rkey, rec)
+	default:
+		slog.Debug("backfill: unknown collection", "did", did, "collection", collection, "rkey", rkey)
 	}
 }
 

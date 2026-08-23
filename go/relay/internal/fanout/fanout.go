@@ -65,10 +65,12 @@ func (f *Fanout) Start(ctx context.Context) {
 		slog.Error("fanout: list active dids", "err", err)
 		return
 	}
+	slog.Info("fanout: starting", "tracked_dids", len(dids))
 	for _, d := range dids {
 		f.EnsureSubscribed(ctx, d.DID, d.PDSUrl, d.CursorSeq)
 	}
 	<-ctx.Done()
+	slog.Info("fanout: stopping", "tracked_dids", len(dids))
 }
 
 // EnsureSubscribed starts a subscription goroutine for did if none is running.
@@ -100,10 +102,11 @@ func (f *Fanout) Unsubscribe(instanceURL string) {
 }
 
 func (f *Fanout) runWorker(ctx context.Context, did, pdsURL string, cursorSeq int64) {
-	slog.Info("fanout: starting worker", "did", did)
+	slog.Info("fanout: starting worker", "did", did, "pds", pdsURL, "cursor", cursorSeq)
 	for {
 		select {
 		case <-ctx.Done():
+			slog.Info("fanout: worker stopped", "did", did)
 			return
 		default:
 		}
@@ -113,6 +116,7 @@ func (f *Fanout) runWorker(ctx context.Context, did, pdsURL string, cursorSeq in
 		}
 		select {
 		case <-ctx.Done():
+			slog.Info("fanout: worker stopped", "did", did)
 			return
 		case <-time.After(f.reconnectDelay):
 		}
@@ -147,6 +151,7 @@ func (f *Fanout) subscribe(ctx context.Context, did, pdsURL string, cursorSeq *i
 		wsScheme, u.Host, url.QueryEscape(did))
 	if *cursorSeq > 0 {
 		wsURL += fmt.Sprintf("&cursor=%d", *cursorSeq)
+		slog.Info("fanout: resuming subscription from cursor", "did", did, "cursor", *cursorSeq)
 	}
 	ws, err := websocket.Dial(wsURL, "", pdsURL)
 	if err != nil {
@@ -166,6 +171,7 @@ func (f *Fanout) subscribe(ctx context.Context, did, pdsURL string, cursorSeq *i
 		}
 		var frame reposFrame
 		if err := json.Unmarshal(raw, &frame); err != nil {
+			slog.Debug("fanout: unmarshal frame", "did", did, "err", err)
 			continue
 		}
 		if !strings.HasSuffix(frame.Type, "#commit") {
@@ -175,7 +181,9 @@ func (f *Fanout) subscribe(ctx context.Context, did, pdsURL string, cursorSeq *i
 			f.processOp(context.Background(), frame.Repo, pdsURL, op)
 		}
 		if frame.Seq > 0 {
-			_ = f.store.UpdateTrackedDIDCursor(context.Background(), did, frame.Seq)
+			if err := f.store.UpdateTrackedDIDCursor(context.Background(), did, frame.Seq); err != nil {
+				slog.Warn("fanout: update tracked did cursor", "did", did, "seq", frame.Seq, "err", err)
+			}
 			*cursorSeq = frame.Seq
 		}
 	}
@@ -184,6 +192,7 @@ func (f *Fanout) subscribe(ctx context.Context, did, pdsURL string, cursorSeq *i
 func (f *Fanout) processOp(ctx context.Context, did, pdsURL string, op repoOp) {
 	parts := strings.SplitN(op.Path, "/", 2)
 	if len(parts) != 2 {
+		slog.Debug("fanout: malformed op path", "did", did, "path", op.Path)
 		return
 	}
 	col, rkey := parts[0], parts[1]
@@ -199,6 +208,8 @@ func (f *Fanout) processOp(ctx context.Context, did, pdsURL string, op repoOp) {
 		f.handleShare(ctx, did, effectivePDS, rkey, op.Action)
 	case "io.sunred.feed.subscription":
 		f.handleFeedSub(ctx, did, effectivePDS, rkey, op.Action)
+	default:
+		slog.Debug("fanout: unknown collection", "did", did, "collection", col, "rkey", rkey)
 	}
 }
 
@@ -206,7 +217,7 @@ func (f *Fanout) handleFollow(ctx context.Context, did, pdsURL, rkey, action str
 	if action == "delete" {
 		followeeDID, deleted, err := f.store.DeleteFollow(ctx, did, rkey)
 		if err != nil {
-			slog.Warn("fanout: delete follow", "err", err)
+			slog.Warn("fanout: delete follow", "did", did, "rkey", rkey, "err", err)
 			return
 		}
 		if deleted {
@@ -216,7 +227,7 @@ func (f *Fanout) handleFollow(ctx context.Context, did, pdsURL, rkey, action str
 	}
 	rec, err := f.fetchRecord(ctx, pdsURL, did, "io.sunred.graph.follow", rkey)
 	if err != nil {
-		slog.Warn("fanout: fetch follow", "err", err)
+		slog.Warn("fanout: fetch follow", "did", did, "rkey", rkey, "err", err)
 		return
 	}
 	f.processFollowRecord(ctx, did, pdsURL, rkey, rec)
@@ -228,12 +239,13 @@ func (f *Fanout) handleFollow(ctx context.Context, did, pdsURL, rkey, action str
 func (f *Fanout) processFollowRecord(ctx context.Context, did, pdsURL, rkey string, rec map[string]any) {
 	subject, _ := rec["subject"].(string)
 	if subject == "" {
+		slog.Debug("fanout: follow record missing subject", "did", did, "rkey", rkey)
 		return
 	}
 	createdAt := parseTime(rec["createdAt"])
 	isNew, err := f.store.RecordFollow(ctx, did, subject, rkey, pdsURL, createdAt)
 	if err != nil {
-		slog.Warn("fanout: record follow", "err", err)
+		slog.Warn("fanout: record follow", "did", did, "subject", subject, "rkey", rkey, "err", err)
 		return
 	}
 	if isNew {
@@ -247,7 +259,7 @@ func (f *Fanout) handleShare(ctx context.Context, did, pdsURL, rkey, action stri
 	if action == "delete" {
 		deleted, err := f.store.DeleteShare(ctx, did, rkey)
 		if err != nil {
-			slog.Warn("fanout: delete share", "err", err)
+			slog.Warn("fanout: delete share", "did", did, "rkey", rkey, "err", err)
 			return
 		}
 		if deleted {
@@ -257,7 +269,7 @@ func (f *Fanout) handleShare(ctx context.Context, did, pdsURL, rkey, action stri
 	}
 	rec, err := f.fetchRecord(ctx, pdsURL, did, "io.sunred.share.article", rkey)
 	if err != nil {
-		slog.Warn("fanout: fetch share", "err", err)
+		slog.Warn("fanout: fetch share", "did", did, "rkey", rkey, "err", err)
 		return
 	}
 	f.processShareRecord(ctx, did, pdsURL, rkey, rec)
@@ -280,11 +292,13 @@ func (f *Fanout) processShareRecord(ctx context.Context, did, pdsURL, rkey strin
 		if err == nil {
 			utc := t.UTC()
 			publishedAt = &utc
+		} else {
+			slog.Debug("fanout: parse publishedAt", "did", did, "rkey", rkey, "publishedAt", v, "err", err)
 		}
 	}
 	isNew, err := f.store.RecordShare(ctx, did, rkey, articleURL, feedURL, title, pdsURL, &sharedAt)
 	if err != nil {
-		slog.Warn("fanout: record share", "err", err)
+		slog.Warn("fanout: record share", "did", did, "rkey", rkey, "err", err)
 		return
 	}
 	if isNew {
@@ -305,7 +319,7 @@ func (f *Fanout) handleFeedSub(ctx context.Context, did, pdsURL, rkey, action st
 	if action == "delete" {
 		deleted, err := f.store.DeleteFeedSubscription(ctx, did, rkey)
 		if err != nil {
-			slog.Warn("fanout: delete feed sub", "err", err)
+			slog.Warn("fanout: delete feed sub", "did", did, "rkey", rkey, "err", err)
 			return
 		}
 		if deleted {
@@ -315,7 +329,7 @@ func (f *Fanout) handleFeedSub(ctx context.Context, did, pdsURL, rkey, action st
 	}
 	rec, err := f.fetchRecord(ctx, pdsURL, did, "io.sunred.feed.subscription", rkey)
 	if err != nil {
-		slog.Warn("fanout: fetch feed sub", "err", err)
+		slog.Warn("fanout: fetch feed sub", "did", did, "rkey", rkey, "err", err)
 		return
 	}
 	f.processFeedSubRecord(ctx, did, pdsURL, rkey, rec)
@@ -327,6 +341,7 @@ func (f *Fanout) handleFeedSub(ctx context.Context, did, pdsURL, rkey, action st
 func (f *Fanout) processFeedSubRecord(ctx context.Context, did, pdsURL, rkey string, rec map[string]any) {
 	feedURL, _ := rec["feedUrl"].(string)
 	if feedURL == "" {
+		slog.Debug("fanout: feed sub record missing feedUrl", "did", did, "rkey", rkey)
 		return
 	}
 	siteURL, _ := rec["siteUrl"].(string)
@@ -334,7 +349,7 @@ func (f *Fanout) processFeedSubRecord(ctx context.Context, did, pdsURL, rkey str
 	createdAt := parseTime(rec["createdAt"])
 	isNew, err := f.store.RecordFeedSubscription(ctx, did, rkey, feedURL, pdsURL, &createdAt)
 	if err != nil {
-		slog.Warn("fanout: record feed sub", "err", err)
+		slog.Warn("fanout: record feed sub", "did", did, "rkey", rkey, "err", err)
 		return
 	}
 	if isNew {
@@ -348,17 +363,22 @@ func (f *Fanout) processFeedSubRecord(ctx context.Context, did, pdsURL, rkey str
 func (f *Fanout) emit(ctx context.Context, eventType, did string, payload any) {
 	seq, err := f.store.AppendEvent(ctx, eventType, did, payload)
 	if err != nil {
-		slog.Warn("fanout: append event", "err", err)
+		slog.Warn("fanout: append event", "eventType", eventType, "did", did, "err", err)
 		return
 	}
-	b, _ := json.Marshal(payload)
+	b, err := json.Marshal(payload)
+	if err != nil {
+		slog.Warn("fanout: marshal event payload", "eventType", eventType, "did", did, "err", err)
+	}
 	evt := &store.RelayEvent{Seq: seq, EventType: eventType, DID: did, Payload: b}
 	f.subsMu.RLock()
 	defer f.subsMu.RUnlock()
-	for _, ch := range f.subscribers {
+	for instance, ch := range f.subscribers {
 		select {
 		case ch <- evt:
 		default:
+			slog.Warn("fanout: subscriber channel full, dropping event",
+				"instance", instance, "seq", seq, "eventType", eventType, "did", did)
 		}
 	}
 }
@@ -380,8 +400,12 @@ func (f *Fanout) fetchRecord(ctx context.Context, pdsURL, did, collection, rkey 
 		return nil, err
 	}
 	defer func() { _ = resp.Body.Close() }()
-	body, _ := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read getRecord response: %w", err)
+	}
 	if resp.StatusCode >= 400 {
+		slog.Warn("fanout: pds getRecord error", "did", did, "collection", collection, "rkey", rkey, "status", resp.StatusCode)
 		return nil, fmt.Errorf("pds returned %d for %s/%s", resp.StatusCode, collection, rkey)
 	}
 	var out getRecordResp
@@ -398,6 +422,7 @@ func parseTime(v any) time.Time {
 	}
 	t, err := time.Parse(time.RFC3339, s)
 	if err != nil {
+		slog.Debug("fanout: parse timestamp failed, using now", "value", s, "err", err)
 		return time.Now().UTC()
 	}
 	return t.UTC()

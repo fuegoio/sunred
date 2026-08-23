@@ -42,7 +42,44 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("/xrpc/io.sunred.relay.searchDIDs", s.handleSearchDIDs)
 	mux.HandleFunc("/xrpc/io.sunred.relay.resolveHandle", s.handleResolveHandle)
 	mux.Handle("/xrpc/io.sunred.relay.subscribeEvents", websocket.Handler(s.handleSubscribeEvents))
-	return mux
+	return s.logRequests(mux)
+}
+
+// statusRecorder captures the HTTP status code written by a handler.
+type statusRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (r *statusRecorder) WriteHeader(code int) {
+	r.status = code
+	r.ResponseWriter.WriteHeader(code)
+}
+
+// logRequests is an access-log middleware recording method, path, status,
+// duration, and remote address for every request.
+func (s *Server) logRequests(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
+		h.ServeHTTP(rec, r)
+		duration := time.Since(start)
+		args := []any{
+			"method", r.Method, "path", r.URL.Path, "status", rec.status,
+			"duration", duration, "remote", r.RemoteAddr,
+		}
+		if q := r.URL.RawQuery; q != "" {
+			args = append(args, "query", q)
+		}
+		switch {
+		case rec.status >= 500:
+			slog.Error("relay: request", args...)
+		case rec.status >= 400:
+			slog.Warn("relay: request", args...)
+		default:
+			slog.Info("relay: request", args...)
+		}
+	})
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, _ *http.Request) {
@@ -88,23 +125,33 @@ func (s *Server) handleAnnounceUser(w http.ResponseWriter, r *http.Request) {
 
 	instanceID, err := s.store.UpsertInstance(ctx, in.InstanceURL)
 	if err != nil {
-		slog.Error("relay: upsert instance", "err", err)
+		slog.Error("relay: upsert instance", "instance", in.InstanceURL, "err", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 
 	_, isNew, err := s.store.UpsertTrackedDID(ctx, in.DID, in.PDSUrl, in.Handle, instanceID)
 	if err != nil {
-		slog.Error("relay: upsert tracked did", "err", err)
+		slog.Error("relay: upsert tracked did", "did", in.DID, "pds", in.PDSUrl, "err", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 
 	if isNew {
-		slog.Info("relay: tracking new DID", "did", in.DID, "pds", in.PDSUrl)
+		slog.Info("relay: tracking new DID", "did", in.DID, "pds", in.PDSUrl, "instance", in.InstanceURL)
 		// Backfill existing records from the PDS, then start the live
 		// firehose subscription (tap-style backfill-then-cutover).
-		go s.fanout.BackfillAndSubscribe(context.Background(), in.DID, in.PDSUrl)
+		go func() {
+			defer func() {
+				if r := recover(); r != nil {
+					slog.Error("relay: backfill goroutine panic",
+						"did", in.DID, "pds", in.PDSUrl, "panic", r)
+				}
+			}()
+			s.fanout.BackfillAndSubscribe(context.Background(), in.DID, in.PDSUrl)
+		}()
+	} else {
+		slog.Debug("relay: re-announce of already-tracked DID", "did", in.DID, "pds", in.PDSUrl, "instance", in.InstanceURL)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -166,7 +213,11 @@ func (s *Server) handleSearchDIDs(w http.ResponseWriter, r *http.Request) {
 	limitStr := r.URL.Query().Get("limit")
 	limit := 20
 	if limitStr != "" {
-		limit, _ = strconv.Atoi(limitStr)
+		if n, err := strconv.Atoi(limitStr); err == nil {
+			limit = n
+		} else {
+			slog.Warn("relay: invalid limit, using default", "limit", limitStr, "default", limit)
+		}
 	}
 	results, err := s.store.SearchDIDs(r.Context(), q, limit)
 	if err != nil {
@@ -227,7 +278,12 @@ func (s *Server) handleSubscribeEvents(ws *websocket.Conn) {
 
 	var cursor int64
 	if cursorStr != "" {
-		cursor, _ = strconv.ParseInt(cursorStr, 10, 64)
+		c, err := strconv.ParseInt(cursorStr, 10, 64)
+		if err != nil {
+			slog.Warn("relay: invalid cursor, replaying from start", "instance", instanceURL, "cursor", cursorStr)
+		} else {
+			cursor = c
+		}
 	}
 
 	slog.Info("relay: instance subscribed", "instance", instanceURL, "cursor", cursor)
@@ -240,53 +296,65 @@ func (s *Server) handleSubscribeEvents(ws *websocket.Conn) {
 
 	// Replay missed events from cursor.
 	if cursor > 0 {
-		if err := s.replaySince(ws, cursor); err != nil {
-			slog.Warn("relay: replay error", "err", err)
+		replayed, err := s.replaySince(ws, cursor)
+		if err != nil {
+			slog.Warn("relay: replay error", "instance", instanceURL, "replayed", replayed, "err", err)
 			return
 		}
+		slog.Info("relay: replay complete", "instance", instanceURL, "from_cursor", cursor, "events", replayed)
 	}
 
 	// Stream live events until the connection closes. Any events that were
 	// emitted during replay are still in the channel buffer and will be
 	// delivered here; skip ones already replayed by seq.
+	var sent int64
 	for {
 		select {
 		case evt, ok := <-ch:
 			if !ok {
+				slog.Info("relay: event channel closed", "instance", instanceURL)
 				return
 			}
 			if evt.Seq <= cursor {
 				continue // already replayed
 			}
 			if err := websocket.JSON.Send(ws, evt); err != nil {
+				slog.Info("relay: live send failed, disconnecting", "instance", instanceURL, "seq", evt.Seq, "sent", sent, "err", err)
 				return
 			}
 			cursor = evt.Seq
+			sent++
 		case <-time.After(30 * time.Second):
 			// Send a keepalive ping frame.
 			if err := websocket.JSON.Send(ws, map[string]string{"$type": "#ping"}); err != nil {
+				slog.Info("relay: keepalive ping failed, disconnecting", "instance", instanceURL, "err", err)
 				return
 			}
 		}
 	}
 }
 
-func (s *Server) replaySince(ws *websocket.Conn, cursor int64) error {
+// replaySince replays relay_events with seq > cursor in batches and returns
+// the number of events sent to the client.
+func (s *Server) replaySince(ws *websocket.Conn, cursor int64) (int, error) {
 	const batchSize = 200
+	var total int
 	for {
 		events, err := s.store.ListEventsSince(context.Background(), cursor, batchSize)
 		if err != nil {
-			return err
+			return total, err
 		}
 		for _, evt := range events {
 			if err := websocket.JSON.Send(ws, evt); err != nil {
-				return err
+				slog.Info("relay: replay send failed", "seq", evt.Seq, "sent", total, "err", err)
+				return total, err
 			}
 			cursor = evt.Seq
+			total++
 		}
 		if len(events) < batchSize {
 			break
 		}
 	}
-	return nil
+	return total, nil
 }

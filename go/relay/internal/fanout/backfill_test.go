@@ -298,8 +298,12 @@ func TestBackfillDID_Pagination(t *testing.T) {
 		testPDSURL:  pds.URL,
 	}
 
-	if err := f.backfillCollection(context.Background(), "did:plc:test", pds.URL, "io.sunred.feed.subscription"); err != nil {
+	n, err := f.backfillCollection(context.Background(), "did:plc:test", pds.URL, "io.sunred.feed.subscription")
+	if err != nil {
 		t.Fatalf("backfillCollection: %v", err)
+	}
+	if n != 2 {
+		t.Errorf("expected 2 records processed, got %d", n)
 	}
 
 	if len(st.feedSubs) != 2 {
