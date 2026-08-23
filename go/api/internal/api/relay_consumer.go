@@ -132,7 +132,7 @@ func (c *RelayConsumer) processEvent(ctx context.Context, evt *relayEvent) error
 	case "backfillComplete":
 		return c.handleBackfillComplete(ctx, evt)
 	default:
-		slog.Debug("relay consumer: unknown event type", "type", evt.EventType)
+		slog.Warn("relay consumer: unknown event type", "type", evt.EventType)
 		return nil
 	}
 }

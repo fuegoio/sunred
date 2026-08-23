@@ -113,7 +113,7 @@ func (a *API) ATProtoSyncFollow(userID, followeeUserID int, followeeHandle strin
 	ctx := context.Background()
 	w, err := a.writerForUserOrFallback(ctx, userID)
 	if err != nil {
-		slog.Debug("atproto: skip follow sync, writer error", "user_id", userID, "is_follow", isFollow, "err", err)
+		slog.Warn("atproto: skip follow sync, writer error", "user_id", userID, "is_follow", isFollow, "err", err)
 		return
 	}
 	if w == nil {
@@ -161,7 +161,7 @@ func (a *API) ATProtoSyncShare(userID int, sa *store.SharedArticle, isShare bool
 	ctx := context.Background()
 	w, err := a.writerForUserOrFallback(ctx, userID)
 	if err != nil {
-		slog.Debug("atproto: skip share sync, writer error", "user_id", userID, "is_share", isShare, "err", err)
+		slog.Warn("atproto: skip share sync, writer error", "user_id", userID, "is_share", isShare, "err", err)
 		return
 	}
 	if w == nil {
@@ -210,7 +210,7 @@ func (a *API) ATProtoSyncProfile(userID int, displayName, bio string, createdAt 
 	ctx := context.Background()
 	w, err := a.writerForUserOrFallback(ctx, userID)
 	if err != nil {
-		slog.Debug("atproto: skip profile sync, writer error", "user_id", userID, "err", err)
+		slog.Warn("atproto: skip profile sync, writer error", "user_id", userID, "err", err)
 		return
 	}
 	if w == nil {
@@ -233,7 +233,7 @@ func (a *API) ATProtoSyncFeedSubscription(userID, feedID int, feedURL, siteURL, 
 	ctx := context.Background()
 	w, err := a.writerForUserOrFallback(ctx, userID)
 	if err != nil {
-		slog.Debug("atproto: skip feed subscription sync, writer error", "user_id", userID, "is_subscribe", isSubscribe, "err", err)
+		slog.Warn("atproto: skip feed subscription sync, writer error", "user_id", userID, "is_subscribe", isSubscribe, "err", err)
 		return
 	}
 	if w == nil {

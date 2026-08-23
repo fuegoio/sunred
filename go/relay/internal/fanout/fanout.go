@@ -171,7 +171,7 @@ func (f *Fanout) subscribe(ctx context.Context, did, pdsURL string, cursorSeq *i
 		}
 		var frame reposFrame
 		if err := json.Unmarshal(raw, &frame); err != nil {
-			slog.Debug("fanout: unmarshal frame", "did", did, "err", err)
+			slog.Warn("fanout: unmarshal frame", "did", did, "err", err)
 			continue
 		}
 		if !strings.HasSuffix(frame.Type, "#commit") {
@@ -192,7 +192,7 @@ func (f *Fanout) subscribe(ctx context.Context, did, pdsURL string, cursorSeq *i
 func (f *Fanout) processOp(ctx context.Context, did, pdsURL string, op repoOp) {
 	parts := strings.SplitN(op.Path, "/", 2)
 	if len(parts) != 2 {
-		slog.Debug("fanout: malformed op path", "did", did, "path", op.Path)
+		slog.Warn("fanout: malformed op path", "did", did, "path", op.Path)
 		return
 	}
 	col, rkey := parts[0], parts[1]
@@ -239,7 +239,7 @@ func (f *Fanout) handleFollow(ctx context.Context, did, pdsURL, rkey, action str
 func (f *Fanout) processFollowRecord(ctx context.Context, did, pdsURL, rkey string, rec map[string]any) {
 	subject, _ := rec["subject"].(string)
 	if subject == "" {
-		slog.Debug("fanout: follow record missing subject", "did", did, "rkey", rkey)
+		slog.Warn("fanout: follow record missing subject", "did", did, "rkey", rkey)
 		return
 	}
 	createdAt := parseTime(rec["createdAt"])
@@ -293,7 +293,7 @@ func (f *Fanout) processShareRecord(ctx context.Context, did, pdsURL, rkey strin
 			utc := t.UTC()
 			publishedAt = &utc
 		} else {
-			slog.Debug("fanout: parse publishedAt", "did", did, "rkey", rkey, "publishedAt", v, "err", err)
+			slog.Warn("fanout: parse publishedAt", "did", did, "rkey", rkey, "publishedAt", v, "err", err)
 		}
 	}
 	isNew, err := f.store.RecordShare(ctx, did, rkey, articleURL, feedURL, title, pdsURL, &sharedAt)
@@ -341,7 +341,7 @@ func (f *Fanout) handleFeedSub(ctx context.Context, did, pdsURL, rkey, action st
 func (f *Fanout) processFeedSubRecord(ctx context.Context, did, pdsURL, rkey string, rec map[string]any) {
 	feedURL, _ := rec["feedUrl"].(string)
 	if feedURL == "" {
-		slog.Debug("fanout: feed sub record missing feedUrl", "did", did, "rkey", rkey)
+		slog.Warn("fanout: feed sub record missing feedUrl", "did", did, "rkey", rkey)
 		return
 	}
 	siteURL, _ := rec["siteUrl"].(string)
@@ -422,7 +422,7 @@ func parseTime(v any) time.Time {
 	}
 	t, err := time.Parse(time.RFC3339, s)
 	if err != nil {
-		slog.Debug("fanout: parse timestamp failed, using now", "value", s, "err", err)
+		slog.Warn("fanout: parse timestamp failed, using now", "value", s, "err", err)
 		return time.Now().UTC()
 	}
 	return t.UTC()

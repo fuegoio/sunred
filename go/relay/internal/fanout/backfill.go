@@ -130,7 +130,7 @@ func (f *Fanout) processBackfillRecord(ctx context.Context, did, pdsURL, collect
 	case "io.sunred.feed.subscription":
 		f.processFeedSubRecord(ctx, did, pdsURL, rkey, rec)
 	default:
-		slog.Debug("backfill: unknown collection", "did", did, "collection", collection, "rkey", rkey)
+		slog.Warn("backfill: unknown collection", "did", did, "collection", collection, "rkey", rkey)
 	}
 }
 
