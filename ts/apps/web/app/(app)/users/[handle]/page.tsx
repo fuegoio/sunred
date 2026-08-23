@@ -110,6 +110,7 @@ export default function UserProfilePage({
             is_following: next,
             follower_count: old.profile.follower_count + (next ? 1 : -1),
           },
+          global_follower_count: Math.max(0, old.global_follower_count + (next ? 1 : -1)),
         };
       },
     );
@@ -160,8 +161,11 @@ export default function UserProfilePage({
     );
   }
 
-  const { profile: user, shared_articles, feeds } = profile;
+  const { profile: user, shared_articles, feeds, global_follower_count } = profile;
   const displayName = user.display_name?.trim() || `@${user.handle}`;
+  // Federated total from the relay aggregates; fall back to the local count
+  // when no relay is configured (global_follower_count == 0).
+  const followerTotal = global_follower_count > 0 ? global_follower_count : user.follower_count;
 
   return (
     <div className="flex flex-col">
@@ -189,8 +193,13 @@ export default function UserProfilePage({
               )}
               <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
                 <span>
-                  <span className="font-medium text-foreground">{user.follower_count}</span>{" "}
-                  {user.follower_count === 1 ? "follower" : "followers"}
+                  <span className="font-medium text-foreground">{followerTotal}</span>{" "}
+                  {followerTotal === 1 ? "follower" : "followers"}
+                  {global_follower_count > 0 && global_follower_count !== user.follower_count && (
+                    <span className="ml-1 text-muted-foreground/70">
+                      ({user.follower_count} here)
+                    </span>
+                  )}
                 </span>
                 <span>
                   <span className="font-medium text-foreground">{user.following_count}</span>{" "}
