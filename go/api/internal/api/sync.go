@@ -3,44 +3,52 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
-
-	"github.com/bluesky-social/indigo/atproto/atclient"
-	"github.com/bluesky-social/indigo/atproto/syntax"
 
 	"github.com/fuegoio/sunred/go/api/internal/atproto"
 	"github.com/fuegoio/sunred/go/api/internal/store"
 )
 
-// listRecordsOut matches com.atproto.repo.listRecords response.
-type listRecordsOut struct {
-	Records []struct {
-		URI   string          `json:"uri"`
-		CID   string          `json:"cid"`
-		Value json.RawMessage `json:"value"`
-	} `json:"records"`
-	Cursor string `json:"cursor"`
+// backfillUserFromPDS paginates the given io.sunred.* collections from a PDS
+// and ingests the records into the local cache. It is the shared backfill path
+// used at login (to provision the user's own data) and on follow (to replicate
+// a followee's shares + feed subscriptions). did is the repo to read; userID is
+// the local user the records belong to. Failures per collection are logged and
+// collected — one failing collection does not abort the others.
+func backfillUserFromPDS(ctx context.Context, c *atproto.Client, st *store.Store, userID int, did string, collections []string) error {
+	var errs []error
+	for _, col := range collections {
+		switch col {
+		case atproto.CollectionFollow:
+			if err := backfillFollows(ctx, c, st, userID, did); err != nil {
+				slog.Warn("backfill: follows", "did", did, "err", err)
+				errs = append(errs, err)
+			}
+		case atproto.CollectionShare:
+			if err := backfillShares(ctx, c, st, userID, did); err != nil {
+				slog.Warn("backfill: shares", "did", did, "err", err)
+				errs = append(errs, err)
+			}
+		case atproto.CollectionSubscription:
+			if err := backfillFeedSubscriptions(ctx, c, st, userID, did); err != nil {
+				slog.Warn("backfill: feed subs", "did", did, "err", err)
+				errs = append(errs, err)
+			}
+		}
+	}
+	return errors.Join(errs...)
 }
 
-// syncFollows backfills io.sunred.graph.follow records from the PDS into the
-// local follow cache. Each follow record's `subject` is a DID; we record a
-// local follow edge if the followee is also a known Sunred user on this
-// instance, and store the rkey for later delete-on-unfollow.
-func syncFollows(ctx context.Context, c *atclient.APIClient, st *store.Store, userID int) error {
+// --- Per-collection backfill (all use the unauthenticated atproto.Client) ---
+
+func backfillFollows(ctx context.Context, c *atproto.Client, st *store.Store, userID int, did string) error {
 	cursor := ""
 	for {
-		params := map[string]any{
-			"repo":       accountDID(c),
-			"collection": atproto.CollectionFollow,
-			"limit":      100,
-		}
-		if cursor != "" {
-			params["cursor"] = cursor
-		}
-		var out listRecordsOut
-		if err := c.Get(ctx, "com.atproto.repo.listRecords", params, &out); err != nil {
+		out, err := c.ListRecords(ctx, did, atproto.CollectionFollow, 100, cursor)
+		if err != nil {
 			return fmt.Errorf("list follows: %w", err)
 		}
 		for _, rec := range out.Records {
@@ -52,7 +60,6 @@ func syncFollows(ctx context.Context, c *atclient.APIClient, st *store.Store, us
 				continue
 			}
 			rkey := rkeyFromURI(rec.URI)
-			// Record the follow edge locally if the subject is a local user.
 			if followeeID, _ := st.GetUserIDByDID(ctx, f.Subject); followeeID != 0 {
 				_ = st.UpsertFollowWithRkey(ctx, userID, followeeID, rkey)
 			}
@@ -65,50 +72,6 @@ func syncFollows(ctx context.Context, c *atclient.APIClient, st *store.Store, us
 	return nil
 }
 
-// syncFeedSubscriptions backfills io.sunred.feed.subscription records into the
-// local feeds table, storing the rkey so later unsubscribe deletes the record.
-func syncFeedSubscriptions(ctx context.Context, c *atclient.APIClient, st *store.Store, userID int) error {
-	cursor := ""
-	for {
-		params := map[string]any{
-			"repo":       accountDID(c),
-			"collection": atproto.CollectionSubscription,
-			"limit":      100,
-		}
-		if cursor != "" {
-			params["cursor"] = cursor
-		}
-		var out listRecordsOut
-		if err := c.Get(ctx, "com.atproto.repo.listRecords", params, &out); err != nil {
-			return fmt.Errorf("list feed subs: %w", err)
-		}
-		for _, rec := range out.Records {
-			var fs struct {
-				FeedURL   string `json:"feedUrl"`
-				SiteURL   string `json:"siteUrl"`
-				Title     string `json:"title"`
-				CreatedAt string `json:"createdAt"`
-			}
-			if err := json.Unmarshal(rec.Value, &fs); err != nil || fs.FeedURL == "" {
-				continue
-			}
-			rkey := rkeyFromURI(rec.URI)
-			if err := st.UpsertFeedSubscriptionWithRkey(ctx, userID, fs.FeedURL, fs.SiteURL, fs.Title, rkey); err != nil {
-				slog.Warn("sync: upsert feed sub", "feed_url", fs.FeedURL, "err", err)
-			}
-		}
-		if out.Cursor == "" {
-			break
-		}
-		cursor = out.Cursor
-	}
-	return nil
-}
-
-// backfillShares lists io.sunred.share.article records from a remote repo and
-// ingests them into the local cache so a follower sees the followee's shares
-// in their timeline. Uses an unauthenticated PDS client — listRecords is a
-// public read. Idempotent via UpsertShareWithRkey.
 func backfillShares(ctx context.Context, c *atproto.Client, st *store.Store, userID int, did string) error {
 	cursor := ""
 	for {
@@ -145,9 +108,6 @@ func backfillShares(ctx context.Context, c *atproto.Client, st *store.Store, use
 	return nil
 }
 
-// backfillFeedSubscriptions lists io.sunred.feed.subscription records from a
-// remote repo and ingests them into the local cache so the followee's profile
-// page shows their subscribed feeds. Idempotent via UpsertFeedSubscriptionWithRkey.
 func backfillFeedSubscriptions(ctx context.Context, c *atproto.Client, st *store.Store, userID int, did string) error {
 	cursor := ""
 	for {
@@ -173,14 +133,6 @@ func backfillFeedSubscriptions(ctx context.Context, c *atproto.Client, st *store
 	return nil
 }
 
-// accountDID returns the DID string the API client is authenticated as.
-func accountDID(c *atclient.APIClient) string {
-	if c == nil || c.AccountDID == nil {
-		return ""
-	}
-	return string(*c.AccountDID)
-}
-
 // rkeyFromURI extracts the record key from an at:// URI (at://did/collection/rkey).
 func rkeyFromURI(uri string) string {
 	for i := len(uri) - 1; i >= 0; i-- {
@@ -190,6 +142,3 @@ func rkeyFromURI(uri string) string {
 	}
 	return uri
 }
-
-// keep syntax import referenced (DID parsing helper for future use)
-var _ = syntax.DID("")
