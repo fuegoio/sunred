@@ -14,7 +14,7 @@ This directory is the docs site for Sunred. Content lives in
 
 **`content/docs/product/`** — usage documentation for end users of Sunred.
 Covers what things are and how to use them: subscribing to feeds, reading
-entries, using the web UI, the CLI, feed lists, authentication. Audience: anyone
+entries, using the web UI, the CLI, authentication. Audience: anyone
 using a running Sunred instance (mainly the cloud ones).
 
 - No environment variables, no Docker, no server config.

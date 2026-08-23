@@ -232,54 +232,6 @@ func (a *API) ATProtoSyncFeedSubscription(userID, feedID int, feedURL, siteURL, 
 	}
 }
 
-// ATProtoSyncFeedList writes or deletes a feed list record on the PDS.
-func (a *API) ATProtoSyncFeedList(userID, listID int, fl *store.FeedList, isCreate bool) {
-	ctx := context.Background()
-	w, err := a.writerForUserOrFallback(ctx, userID)
-	if err != nil {
-		slog.Debug("atproto: skip feed list sync, writer error", "user_id", userID, "is_create", isCreate, "err", err)
-		return
-	}
-	if w == nil {
-		slog.Debug("atproto: skip feed list sync, no credentials", "user_id", userID, "is_create", isCreate)
-		return
-	}
-
-	if !isCreate {
-		rkey, err := a.store.GetFeedListATProtoRkey(ctx, listID)
-		if err != nil || rkey == "" {
-			return
-		}
-		slog.Info("atproto: deleting feed list from PDS", "user_id", userID, "rkey", rkey)
-		if err := w.DeleteFeedList(ctx, rkey); err != nil {
-			slog.Warn("atproto: delete feed list failed", "user_id", userID, "rkey", rkey, "err", err)
-		} else {
-			slog.Info("atproto: feed list deleted", "user_id", userID, "rkey", rkey)
-		}
-		return
-	}
-
-	// Build the feed entry list from the full FeedList.
-	entries := make([]atproto.FeedListEntry, 0, len(fl.Feeds))
-	for _, f := range fl.Feeds {
-		entries = append(entries, atproto.FeedListEntry{
-			FeedURL: f.FeedURL,
-			SiteURL: f.SiteURL,
-			Title:   f.Title,
-		})
-	}
-
-	existingRkey, _ := a.store.GetFeedListATProtoRkey(ctx, listID)
-	slog.Info("atproto: writing feed list to PDS", "user_id", userID, "list_id", listID, "rkey", existingRkey)
-	rkey, err := w.PutFeedList(ctx, existingRkey, fl.Title, fl.Description, fl.IsPublic, entries, fl.CreatedAt)
-	if err != nil {
-		slog.Warn("atproto: put feed list failed", "user_id", userID, "err", err)
-		return
-	}
-	slog.Info("atproto: feed list written", "user_id", userID, "rkey", rkey)
-	_ = a.store.SetFeedListATProtoRkey(ctx, listID, rkey)
-}
-
 // WellKnownATProtoDIDHandler returns an http.Handler for /.well-known/atproto-did.
 // It resolves the host's subdomain (or ?handle= query param) to a DID.
 func (a *API) WellKnownATProtoDIDHandler() http.Handler {

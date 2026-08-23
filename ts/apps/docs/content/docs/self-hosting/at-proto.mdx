@@ -92,7 +92,7 @@ for understanding what federates versus what stays local.
 | Data | Source of truth | Instance (API) | Relay |
 | --- | --- | --- | --- |
 | User identity (DID, handle) | PDS | cached for login | tracked |
-| `io.sunred.*` records (follows, shares, subscriptions, feed lists) | PDS | mirrored cache | aggregated copy |
+| `io.sunred.*` records (follows, shares, subscriptions) | PDS | mirrored cache | aggregated copy |
 | Profile (display name, bio) | PDS (`app.bsky.actor.profile`) | cached for display | never |
 | Article & feed content (entry bodies, enclosures) | source feeds | fetched and stored | never |
 | Per-user private state (read, starred, folders, settings) | the instance | yes | never |
@@ -158,8 +158,7 @@ given instance Sunred backfills the local database from the PDS:
 
 1. List the user's `io.sunred.*` records (`com.atproto.repo.listRecords` for
    each collection).
-2. Populate the local cache: follows, shared articles, feed subscriptions,
-   feed lists.
+2. Populate the local cache: follows, shared articles, and feed subscriptions.
 3. Announce the user to the relay so it starts subscribing to that PDS repo
    stream.
 4. Subscribe to the relay's event stream for that DID to receive live updates.
@@ -184,7 +183,6 @@ the canonical copy, the cache is derived.
 | `io.sunred.graph.follow` | A follow relationship between two DIDs |
 | `io.sunred.share.article` | A shared article with metadata (URL, title, feed) |
 | `io.sunred.feed.subscription` | A feed the user subscribes to |
-| `io.sunred.feed.list` | A named, optionally public list of feeds |
 
 These are public records on the user's PDS. Other Sunred instances and the
 relay read them to build the federated social graph.

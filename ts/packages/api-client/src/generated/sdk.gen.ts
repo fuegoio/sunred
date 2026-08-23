@@ -2,7 +2,7 @@
 
 import { client } from './client.gen';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index';
-import type { AddFeedListFeedData, AddFeedListFeedErrors, AddFeedListFeedResponses, AtprotoStatusData, AtprotoStatusErrors, AtprotoStatusResponses, CreateFeedData, CreateFeedErrors, CreateFeedListData, CreateFeedListErrors, CreateFeedListResponses, CreateFeedResponses, CreateFolderData, CreateFolderErrors, CreateFolderResponses, CreateTokenData, CreateTokenErrors, CreateTokenResponses, DeleteFeedData, DeleteFeedErrors, DeleteFeedListData, DeleteFeedListErrors, DeleteFeedListResponses, DeleteFeedResponses, DeleteFolderData, DeleteFolderErrors, DeleteFolderResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteTokenData, DeleteTokenErrors, DeleteTokenResponses, DeviceCodeData, DeviceCodeErrors, DeviceCodeResponses, DeviceConfirmData, DeviceConfirmErrors, DeviceConfirmResponses, DeviceStatusData, DeviceStatusErrors, DeviceStatusResponses, DeviceTokenData, DeviceTokenErrors, DeviceTokenResponses, DiscoverFeedListsData, DiscoverFeedListsErrors, DiscoverFeedListsResponses, ExportOpmlData, ExportOpmlErrors, ExportOpmlResponses, FeedSubscribersData, FeedSubscribersErrors, FeedSubscribersResponses, FollowFeedListData, FollowFeedListErrors, FollowFeedListResponses, FollowUserData, FollowUserErrors, FollowUserResponses, GetEntryData, GetEntryErrors, GetEntryResponses, GetFeedData, GetFeedErrors, GetFeedListData, GetFeedListErrors, GetFeedListResponses, GetFeedResponses, GetMeData, GetMeErrors, GetMeResponses, GetUserProfileData, GetUserProfileErrors, GetUserProfileResponses, HealthData, HealthErrors, HealthResponses, ImportFeedListData, ImportFeedListErrors, ImportFeedListResponses, ImportOpmlData, ImportOpmlErrors, ImportOpmlResponses, ListEntriesData, ListEntriesErrors, ListEntriesResponses, ListFeedsData, ListFeedsErrors, ListFeedsResponses, ListFoldersData, ListFoldersErrors, ListFoldersResponses, ListFollowedFeedListsData, ListFollowedFeedListsErrors, ListFollowedFeedListsResponses, ListFollowersData, ListFollowersErrors, ListFollowersResponses, ListFollowingData, ListFollowingErrors, ListFollowingResponses, ListMyFeedListsData, ListMyFeedListsErrors, ListMyFeedListsResponses, ListTokensData, ListTokensErrors, ListTokensResponses, ListUserFollowingData, ListUserFollowingErrors, ListUserFollowingResponses, MarkFeedReadData, MarkFeedReadErrors, MarkFeedReadResponses, MySharedArticlesData, MySharedArticlesErrors, MySharedArticlesResponses, PreviewFeedData, PreviewFeedErrors, PreviewFeedResponses, RefreshFeedData, RefreshFeedErrors, RefreshFeedResponses, RemoveFeedListFeedData, RemoveFeedListFeedErrors, RemoveFeedListFeedResponses, SearchUsersData, SearchUsersErrors, SearchUsersResponses, ShareArticleData, ShareArticleErrors, ShareArticleResponses, SocialTimelineData, SocialTimelineErrors, SocialTimelineResponses, ToggleEntryStarredData, ToggleEntryStarredErrors, ToggleEntryStarredResponses, UnfollowFeedListData, UnfollowFeedListErrors, UnfollowFeedListResponses, UnfollowUserData, UnfollowUserErrors, UnfollowUserResponses, UnshareArticleData, UnshareArticleErrors, UnshareArticleResponses, UpdateEntriesData, UpdateEntriesErrors, UpdateEntriesResponses, UpdateFeedData, UpdateFeedErrors, UpdateFeedListData, UpdateFeedListErrors, UpdateFeedListResponses, UpdateFeedResponses, UpdateFolderData, UpdateFolderErrors, UpdateFolderResponses, UpdateHandleData, UpdateHandleErrors, UpdateHandleResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses } from './types.gen';
+import type { AtprotoStatusData, AtprotoStatusErrors, AtprotoStatusResponses, CreateFeedData, CreateFeedErrors, CreateFeedResponses, CreateFolderData, CreateFolderErrors, CreateFolderResponses, CreateTokenData, CreateTokenErrors, CreateTokenResponses, DeleteFeedData, DeleteFeedErrors, DeleteFeedResponses, DeleteFolderData, DeleteFolderErrors, DeleteFolderResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteTokenData, DeleteTokenErrors, DeleteTokenResponses, DeviceCodeData, DeviceCodeErrors, DeviceCodeResponses, DeviceConfirmData, DeviceConfirmErrors, DeviceConfirmResponses, DeviceStatusData, DeviceStatusErrors, DeviceStatusResponses, DeviceTokenData, DeviceTokenErrors, DeviceTokenResponses, ExportOpmlData, ExportOpmlErrors, ExportOpmlResponses, FeedSubscribersData, FeedSubscribersErrors, FeedSubscribersResponses, FollowUserData, FollowUserErrors, FollowUserResponses, GetEntryData, GetEntryErrors, GetEntryResponses, GetFeedData, GetFeedErrors, GetFeedResponses, GetMeData, GetMeErrors, GetMeResponses, GetUserProfileData, GetUserProfileErrors, GetUserProfileResponses, HealthData, HealthErrors, HealthResponses, ImportOpmlData, ImportOpmlErrors, ImportOpmlResponses, ListEntriesData, ListEntriesErrors, ListEntriesResponses, ListFeedsData, ListFeedsErrors, ListFeedsResponses, ListFoldersData, ListFoldersErrors, ListFoldersResponses, ListFollowersData, ListFollowersErrors, ListFollowersResponses, ListFollowingData, ListFollowingErrors, ListFollowingResponses, ListTokensData, ListTokensErrors, ListTokensResponses, ListUserFollowingData, ListUserFollowingErrors, ListUserFollowingResponses, MarkFeedReadData, MarkFeedReadErrors, MarkFeedReadResponses, MySharedArticlesData, MySharedArticlesErrors, MySharedArticlesResponses, PreviewFeedData, PreviewFeedErrors, PreviewFeedResponses, RefreshFeedData, RefreshFeedErrors, RefreshFeedResponses, SearchUsersData, SearchUsersErrors, SearchUsersResponses, ShareArticleData, ShareArticleErrors, ShareArticleResponses, SocialTimelineData, SocialTimelineErrors, SocialTimelineResponses, ToggleEntryStarredData, ToggleEntryStarredErrors, ToggleEntryStarredResponses, UnfollowUserData, UnfollowUserErrors, UnfollowUserResponses, UnshareArticleData, UnshareArticleErrors, UnshareArticleResponses, UpdateEntriesData, UpdateEntriesErrors, UpdateEntriesResponses, UpdateFeedData, UpdateFeedErrors, UpdateFeedResponses, UpdateFolderData, UpdateFolderErrors, UpdateFolderResponses, UpdateHandleData, UpdateHandleErrors, UpdateHandleResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -169,87 +169,6 @@ export const toggleEntryStarred = <ThrowOnError extends boolean = false>(options
         ...options.headers
     }
 });
-
-/**
- * List my feed lists
- */
-export const listMyFeedLists = <ThrowOnError extends boolean = false>(options?: Options<ListMyFeedListsData, ThrowOnError>): RequestResult<ListMyFeedListsResponses, ListMyFeedListsErrors, ThrowOnError> => (options?.client ?? client).get<ListMyFeedListsResponses, ListMyFeedListsErrors, ThrowOnError>({ url: '/v1/feed-lists', ...options });
-
-/**
- * Create a feed list
- */
-export const createFeedList = <ThrowOnError extends boolean = false>(options: Options<CreateFeedListData, ThrowOnError>): RequestResult<CreateFeedListResponses, CreateFeedListErrors, ThrowOnError> => (options.client ?? client).post<CreateFeedListResponses, CreateFeedListErrors, ThrowOnError>({
-    url: '/v1/feed-lists',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Discover public feed lists
- */
-export const discoverFeedLists = <ThrowOnError extends boolean = false>(options?: Options<DiscoverFeedListsData, ThrowOnError>): RequestResult<DiscoverFeedListsResponses, DiscoverFeedListsErrors, ThrowOnError> => (options?.client ?? client).get<DiscoverFeedListsResponses, DiscoverFeedListsErrors, ThrowOnError>({ url: '/v1/feed-lists/discover', ...options });
-
-/**
- * List feed lists I follow
- */
-export const listFollowedFeedLists = <ThrowOnError extends boolean = false>(options?: Options<ListFollowedFeedListsData, ThrowOnError>): RequestResult<ListFollowedFeedListsResponses, ListFollowedFeedListsErrors, ThrowOnError> => (options?.client ?? client).get<ListFollowedFeedListsResponses, ListFollowedFeedListsErrors, ThrowOnError>({ url: '/v1/feed-lists/followed', ...options });
-
-/**
- * Delete a feed list
- */
-export const deleteFeedList = <ThrowOnError extends boolean = false>(options: Options<DeleteFeedListData, ThrowOnError>): RequestResult<DeleteFeedListResponses, DeleteFeedListErrors, ThrowOnError> => (options.client ?? client).delete<DeleteFeedListResponses, DeleteFeedListErrors, ThrowOnError>({ url: '/v1/feed-lists/{listId}', ...options });
-
-/**
- * Get a feed list
- */
-export const getFeedList = <ThrowOnError extends boolean = false>(options: Options<GetFeedListData, ThrowOnError>): RequestResult<GetFeedListResponses, GetFeedListErrors, ThrowOnError> => (options.client ?? client).get<GetFeedListResponses, GetFeedListErrors, ThrowOnError>({ url: '/v1/feed-lists/{listId}', ...options });
-
-/**
- * Update a feed list
- */
-export const updateFeedList = <ThrowOnError extends boolean = false>(options: Options<UpdateFeedListData, ThrowOnError>): RequestResult<UpdateFeedListResponses, UpdateFeedListErrors, ThrowOnError> => (options.client ?? client).patch<UpdateFeedListResponses, UpdateFeedListErrors, ThrowOnError>({
-    url: '/v1/feed-lists/{listId}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Add a feed to a feed list
- */
-export const addFeedListFeed = <ThrowOnError extends boolean = false>(options: Options<AddFeedListFeedData, ThrowOnError>): RequestResult<AddFeedListFeedResponses, AddFeedListFeedErrors, ThrowOnError> => (options.client ?? client).post<AddFeedListFeedResponses, AddFeedListFeedErrors, ThrowOnError>({
-    url: '/v1/feed-lists/{listId}/feeds',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Remove a feed from a feed list
- */
-export const removeFeedListFeed = <ThrowOnError extends boolean = false>(options: Options<RemoveFeedListFeedData, ThrowOnError>): RequestResult<RemoveFeedListFeedResponses, RemoveFeedListFeedErrors, ThrowOnError> => (options.client ?? client).delete<RemoveFeedListFeedResponses, RemoveFeedListFeedErrors, ThrowOnError>({ url: '/v1/feed-lists/{listId}/feeds/{itemId}', ...options });
-
-/**
- * Unfollow a feed list
- */
-export const unfollowFeedList = <ThrowOnError extends boolean = false>(options: Options<UnfollowFeedListData, ThrowOnError>): RequestResult<UnfollowFeedListResponses, UnfollowFeedListErrors, ThrowOnError> => (options.client ?? client).delete<UnfollowFeedListResponses, UnfollowFeedListErrors, ThrowOnError>({ url: '/v1/feed-lists/{listId}/follow', ...options });
-
-/**
- * Follow a feed list
- */
-export const followFeedList = <ThrowOnError extends boolean = false>(options: Options<FollowFeedListData, ThrowOnError>): RequestResult<FollowFeedListResponses, FollowFeedListErrors, ThrowOnError> => (options.client ?? client).post<FollowFeedListResponses, FollowFeedListErrors, ThrowOnError>({ url: '/v1/feed-lists/{listId}/follow', ...options });
-
-/**
- * Subscribe to all feeds in a feed list
- */
-export const importFeedList = <ThrowOnError extends boolean = false>(options: Options<ImportFeedListData, ThrowOnError>): RequestResult<ImportFeedListResponses, ImportFeedListErrors, ThrowOnError> => (options.client ?? client).post<ImportFeedListResponses, ImportFeedListErrors, ThrowOnError>({ url: '/v1/feed-lists/{listId}/import', ...options });
 
 /**
  * List feeds

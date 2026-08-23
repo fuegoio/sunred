@@ -243,41 +243,6 @@ func TestShareATProtoRkey(t *testing.T) {
 	}
 }
 
-func TestFeedListATProtoRkey(t *testing.T) {
-	s := testDB(t)
-	ctx := context.Background()
-	u := seedUser(t, s, fmt.Sprintf("rkey-feedlist-%d@example.com", time.Now().UnixNano()))
-
-	var listID int
-	err := s.DB.QueryRow(
-		`INSERT INTO feed_lists (user_id, title, is_public) VALUES ($1,'Test List',false) RETURNING id`, u,
-	).Scan(&listID)
-	if err != nil {
-		t.Fatalf("seed feed list: %v", err)
-	}
-	t.Cleanup(func() { _, _ = s.DB.Exec(`DELETE FROM feed_lists WHERE id=$1`, listID) })
-
-	// Initially empty.
-	rkey, err := s.GetFeedListATProtoRkey(ctx, listID)
-	if err != nil {
-		t.Fatalf("GetFeedListATProtoRkey (empty): %v", err)
-	}
-	if rkey != "" {
-		t.Errorf("expected empty rkey, got %q", rkey)
-	}
-
-	if err := s.SetFeedListATProtoRkey(ctx, listID, "list-rkey-123"); err != nil {
-		t.Fatalf("SetFeedListATProtoRkey: %v", err)
-	}
-	rkey, err = s.GetFeedListATProtoRkey(ctx, listID)
-	if err != nil {
-		t.Fatalf("GetFeedListATProtoRkey (set): %v", err)
-	}
-	if rkey != "list-rkey-123" {
-		t.Errorf("rkey=%q, want 'list-rkey-123'", rkey)
-	}
-}
-
 // --- Relay cursor ---
 
 func TestRelayCursor(t *testing.T) {

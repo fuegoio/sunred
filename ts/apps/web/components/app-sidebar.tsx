@@ -8,7 +8,6 @@ import {
   Circle,
   Star,
   Plus,
-  ListChecks,
   Settings,
   LogOut,
   Sun,
@@ -50,7 +49,6 @@ function SidebarNav() {
     { href: "/", label: "Unread", icon: Circle },
     { href: "/all", label: "All", icon: LayoutList },
     { href: "/starred", label: "Starred", icon: Star },
-    { href: "/lists", label: "Feed lists", icon: ListChecks },
   ];
 
   return (
