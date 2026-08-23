@@ -53,9 +53,20 @@ func NewOAuthApp(db *sql.DB, clientID, callbackURL string) (*oauth.ClientApp, er
 		return nil, fmt.Errorf("oauth client_id and callback URL are required")
 	}
 
-	// "atproto" is the base scope; "transition:email" lets us read the
-	// account email via com.atproto.server.getSession on callback.
-	scopes := []string{"atproto", "transition:email"}
+	// "atproto" is the base scope (com.atproto.* XRPCs); "transition:email"
+	// lets us read the account email via com.atproto.server.getSession on
+	// callback. The PDS enforces a per-collection write scope on every repo
+	// record, so we request one scope per io.sunred.* collection we write
+	// (follows, shares, feed subscriptions) plus app.bsky.actor.profile for
+	// the mirrored display name + bio.
+	scopes := []string{
+		"atproto",
+		"transition:email",
+		"repo:app.bsky.actor.profile",
+		"repo:io.sunred.graph.follow",
+		"repo:io.sunred.share.article",
+		"repo:io.sunred.feed.subscription",
+	}
 
 	var config oauth.ClientConfig
 	if isLoopbackURL(callbackURL) {
