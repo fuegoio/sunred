@@ -88,6 +88,54 @@ func TestATProtoSyncFollow_Unfollow(t *testing.T) {
 	}
 }
 
+// --- Profile AT Proto sync tests ---
+
+func TestATProtoSyncProfile(t *testing.T) {
+	s := testDB(t)
+	userID := mustSeedUser(t, s, "did:plc:profile")
+	defer func() {
+		_, _ = s.DB.ExecContext(context.Background(), `DELETE FROM users WHERE id = $1`, userID)
+	}()
+
+	pdsURL, calls := mockPDSPutRecord(t)
+	seedCredentials(t, s, userID, "did:plc:profile", pdsURL)
+
+	// Seed a display name + bio so we can assert they round-trip into the record.
+	_, _ = s.DB.ExecContext(context.Background(),
+		`UPDATE users SET display_name = $2, bio = $3 WHERE id = $1`,
+		userID, "Ada Lovelace", "reading feeds")
+	createdAt := time.Now().UTC().Truncate(time.Second)
+
+	api := &API{store: s}
+	api.ATProtoSyncProfile(userID, "Ada Lovelace", "reading feeds", createdAt)
+
+	found := false
+	for _, call := range *calls {
+		if call.Op == "putRecord" && call.Collection == atproto.CollectionProfile {
+			found = true
+			if call.Rkey != atproto.ProfileRkey {
+				t.Errorf("profile rkey=%q, want %q", call.Rkey, atproto.ProfileRkey)
+			}
+			var rec atproto.ProfileRecord
+			if err := json.Unmarshal(call.Record, &rec); err != nil {
+				t.Fatalf("unmarshal record: %v", err)
+			}
+			if rec.Type != atproto.CollectionProfile {
+				t.Errorf("record $type=%q, want %q", rec.Type, atproto.CollectionProfile)
+			}
+			if rec.DisplayName != "Ada Lovelace" {
+				t.Errorf("displayName=%q, want 'Ada Lovelace'", rec.DisplayName)
+			}
+			if rec.Description != "reading feeds" {
+				t.Errorf("description=%q, want 'reading feeds'", rec.Description)
+			}
+		}
+	}
+	if !found {
+		t.Error("expected a putRecord call for app.bsky.actor.profile")
+	}
+}
+
 // --- Share AT Proto sync tests ---
 
 func TestATProtoSyncShare_Share(t *testing.T) {

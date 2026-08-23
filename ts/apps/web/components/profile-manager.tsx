@@ -17,6 +17,7 @@ import { getClient, getMe, updateMe, deleteMe, updateHandle, unwrap } from "@/li
 import { signout } from "@/lib/auth";
 import { getApiErrorMessage } from "@/lib/errors";
 import { cn } from "@workspace/ui/lib/utils";
+import { ExternalLink } from "lucide-react";
 import type { User as UserType } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
@@ -112,8 +113,12 @@ function ProfileForm({ user }: { user: UserType }) {
             aria-invalid={!!errors.display_name}
             {...register("display_name")}
           />
-          {errors.display_name && (
+          {errors.display_name ? (
             <p className="text-xs text-destructive">{errors.display_name.message}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Shown on your profile and published to Bluesky.
+            </p>
           )}
         </div>
       </div>
@@ -263,8 +268,12 @@ function HandleForm({ currentHandle, currentBio }: { currentHandle?: string; cur
           aria-invalid={!!errors.bio}
           {...register("bio")}
         />
-        {errors.bio && (
+        {errors.bio ? (
           <p className="text-xs text-destructive">{errors.bio.message}</p>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            Published as your Bluesky profile description.
+          </p>
         )}
       </div>
 
@@ -328,8 +337,21 @@ export function ProfileManager() {
           Profile
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Manage your display name and account.
+          {user?.did
+            ? "Your display name and bio are published to your Bluesky profile."
+            : "Manage your display name and account."}
         </p>
+        {user?.did && (
+          <a
+            href={`https://bsky.app/profile/${user.did}`}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-1.5 inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:underline"
+          >
+            View on Bluesky
+            <ExternalLink className="size-3" />
+          </a>
+        )}
       </header>
 
       <div className="mt-6 flex flex-col gap-8">

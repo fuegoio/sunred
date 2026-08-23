@@ -123,6 +123,23 @@ func (w *Writer) DeleteFeedSubscription(ctx context.Context, rkey string) error 
 	return w.deleteRecord(ctx, CollectionSubscription, rkey)
 }
 
+// PutProfile writes or replaces the app.bsky.actor.profile record (rkey
+// "self"), mirroring the user's display name and bio onto their Bluesky
+// profile so it is searchable on the network. createdAt is preserved across
+// updates; pass the user's original account creation time.
+func (w *Writer) PutProfile(ctx context.Context, displayName, description string, createdAt time.Time) error {
+	rec := ProfileRecord{
+		Type:        CollectionProfile,
+		DisplayName: displayName,
+		Description: description,
+		CreatedAt:   FormatTime(createdAt),
+	}
+	if _, err := w.putRecord(ctx, CollectionProfile, ProfileRkey, rec); err != nil {
+		return fmt.Errorf("put profile: %w", err)
+	}
+	return nil
+}
+
 // putRecord creates or replaces a record in the user's repo via the OAuth
 // session's APIClient (DPoP-bound). Returns the record URI.
 func (w *Writer) putRecord(ctx context.Context, collection, rkey string, record any) (string, error) {

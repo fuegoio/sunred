@@ -163,6 +163,8 @@ func (a *API) registerMeRoutes() {
 		if user == nil {
 			return nil, huma.Error404NotFound("user not found")
 		}
+		// Mirror display name (+ current bio) onto the Bluesky profile record.
+		go a.ATProtoSyncProfile(userID, user.DisplayName, user.Bio, user.CreatedAt)
 		return &MeOutput{Body: *user}, nil
 	})
 
