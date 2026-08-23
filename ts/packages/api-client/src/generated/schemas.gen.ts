@@ -72,6 +72,33 @@ export const ATProtoStatusOutputBodySchema = {
     type: 'object'
 } as const;
 
+export const ArticleShareCountResponseSchema = {
+    additionalProperties: false,
+    properties: {
+        $schema: {
+            description: 'A URL to the JSON Schema for this object.',
+            examples: [
+                'https://example.com/schemas/ArticleShareCountResponse.json'
+            ],
+            format: 'uri',
+            readOnly: true,
+            type: 'string'
+        },
+        article_url: {
+            type: 'string'
+        },
+        count: {
+            format: 'int64',
+            type: 'integer'
+        }
+    },
+    required: [
+        'article_url',
+        'count'
+    ],
+    type: 'object'
+} as const;
+
 export const CreateFeedInputBodySchema = {
     additionalProperties: false,
     properties: {
@@ -631,6 +658,10 @@ export const FeedSubscribersResponseSchema = {
             format: 'int64',
             type: 'integer'
         },
+        global_count: {
+            format: 'int64',
+            type: 'integer'
+        },
         subscribers: {
             items: {
                 $ref: '#/components/schemas/UserProfile'
@@ -643,6 +674,7 @@ export const FeedSubscribersResponseSchema = {
     },
     required: [
         'count',
+        'global_count',
         'subscribers'
     ],
     type: 'object'
@@ -1384,6 +1416,24 @@ export const ATProtoStatusOutputBodyWritableSchema = {
     type: 'object'
 } as const;
 
+export const ArticleShareCountResponseWritableSchema = {
+    additionalProperties: false,
+    properties: {
+        article_url: {
+            type: 'string'
+        },
+        count: {
+            format: 'int64',
+            type: 'integer'
+        }
+    },
+    required: [
+        'article_url',
+        'count'
+    ],
+    type: 'object'
+} as const;
+
 export const CreateFeedInputBodyWritableSchema = {
     additionalProperties: false,
     properties: {
@@ -1776,6 +1826,10 @@ export const FeedSubscribersResponseWritableSchema = {
             format: 'int64',
             type: 'integer'
         },
+        global_count: {
+            format: 'int64',
+            type: 'integer'
+        },
         subscribers: {
             items: {
                 $ref: '#/components/schemas/UserProfileWritable'
@@ -1788,6 +1842,7 @@ export const FeedSubscribersResponseWritableSchema = {
     },
     required: [
         'count',
+        'global_count',
         'subscribers'
     ],
     type: 'object'

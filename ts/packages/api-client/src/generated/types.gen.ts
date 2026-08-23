@@ -24,6 +24,15 @@ export type AtProtoStatusOutputBody = {
     handle?: string;
 };
 
+export type ArticleShareCountResponse = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    article_url: string;
+    count: number;
+};
+
 export type CreateFeedInputBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -214,6 +223,7 @@ export type FeedSubscribersResponse = {
      */
     readonly $schema?: string;
     count: number;
+    global_count: number;
     subscribers: Array<UserProfile> | null;
 };
 
@@ -432,6 +442,11 @@ export type AtProtoStatusOutputBodyWritable = {
     handle?: string;
 };
 
+export type ArticleShareCountResponseWritable = {
+    article_url: string;
+    count: number;
+};
+
 export type CreateFeedInputBodyWritable = {
     feed_url: string;
     folder_id?: number;
@@ -547,6 +562,7 @@ export type FeedWritable = {
 
 export type FeedSubscribersResponseWritable = {
     count: number;
+    global_count: number;
     subscribers: Array<UserProfileWritable> | null;
 };
 
@@ -810,6 +826,33 @@ export type SearchUsersResponses = {
 };
 
 export type SearchUsersResponse = SearchUsersResponses[keyof SearchUsersResponses];
+
+export type ArticleShareCountData = {
+    body?: never;
+    path?: never;
+    query: {
+        article_url: string;
+    };
+    url: '/api/v1/social/share-count';
+};
+
+export type ArticleShareCountErrors = {
+    /**
+     * Error
+     */
+    default: ErrorModel;
+};
+
+export type ArticleShareCountError = ArticleShareCountErrors[keyof ArticleShareCountErrors];
+
+export type ArticleShareCountResponses = {
+    /**
+     * OK
+     */
+    200: ArticleShareCountResponse;
+};
+
+export type ArticleShareCountResponse2 = ArticleShareCountResponses[keyof ArticleShareCountResponses];
 
 export type MySharedArticlesData = {
     body?: never;

@@ -173,6 +173,15 @@ func (s *Store) CountShares(ctx context.Context, did string) (int64, error) {
 	return n, err
 }
 
+// CountArticleShares returns the number of unique DIDs that shared an article
+// URL across all tracked repos.
+func (s *Store) CountArticleShares(ctx context.Context, articleURL string) (int64, error) {
+	var n int64
+	err := s.DB.QueryRowContext(ctx, `
+		SELECT COUNT(DISTINCT did) FROM observed_shares WHERE article_url=$1`, articleURL).Scan(&n)
+	return n, err
+}
+
 // RecordFeedSubscription inserts an observed feed subscription.
 func (s *Store) RecordFeedSubscription(ctx context.Context, did, rkey, feedURL, pdsURL string, createdAt *time.Time) (bool, error) {
 	res, err := s.DB.ExecContext(ctx, `

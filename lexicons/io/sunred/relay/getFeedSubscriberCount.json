@@ -1,0 +1,36 @@
+{
+  "lexicon": 1,
+  "id": "io.sunred.relay.getFeedSubscriberCount",
+  "defs": {
+    "main": {
+      "type": "query",
+      "description": "Returns the globally accurate number of unique DIDs subscribed to a feed URL, computed from all tracked repos.",
+      "parameters": {
+        "type": "params",
+        "required": ["feedUrl"],
+        "properties": {
+          "feedUrl": {
+            "type": "string",
+            "description": "The feed URL to query subscriber count for."
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["feedUrl", "count"],
+          "properties": {
+            "feedUrl": {
+              "type": "string"
+            },
+            "count": {
+              "type": "integer",
+              "description": "Number of unique DIDs with a feed subscription record for this feed URL across all tracked repos."
+            }
+          }
+        }
+      }
+    }
+  }
+}
