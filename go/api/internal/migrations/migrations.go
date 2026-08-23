@@ -6,6 +6,7 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"sort"
 	"strings"
 )
@@ -45,6 +46,7 @@ func Run(db *sql.DB) error {
 			continue
 		}
 
+		slog.Info("migrations: applying", "file", f.Name())
 		content, err := migrationFS.ReadFile(f.Name())
 		if err != nil {
 			return fmt.Errorf("read %s: %w", f.Name(), err)
@@ -56,18 +58,23 @@ func Run(db *sql.DB) error {
 		}
 
 		if _, err := tx.Exec(string(content)); err != nil {
-			_ = tx.Rollback()
+			if rbErr := tx.Rollback(); rbErr != nil {
+				slog.Error("migrations: rollback failed", "file", f.Name(), "err", rbErr)
+			}
 			return fmt.Errorf("exec %s: %w", f.Name(), err)
 		}
 
 		if _, err := tx.Exec("INSERT INTO schema_migrations (filename) VALUES ($1)", f.Name()); err != nil {
-			_ = tx.Rollback()
+			if rbErr := tx.Rollback(); rbErr != nil {
+				slog.Error("migrations: rollback failed", "file", f.Name(), "err", rbErr)
+			}
 			return fmt.Errorf("record %s: %w", f.Name(), err)
 		}
 
 		if err := tx.Commit(); err != nil {
 			return fmt.Errorf("commit %s: %w", f.Name(), err)
 		}
+		slog.Info("migrations: applied", "file", f.Name())
 	}
 
 	return nil

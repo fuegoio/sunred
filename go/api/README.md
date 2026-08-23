@@ -329,6 +329,7 @@ template.
 | `SUNRED_BASE_URL` | `http://127.0.0.1:8080` | Public base URL of the API (used for OAuth client_id, callback) |
 | `SUNRED_WEB_URL` | `http://localhost:3000` | Public base URL of the web app (OAuth redirects, CORS) |
 | `SUNRED_LOG_FORMAT` | `pretty` | `pretty`/`text` (slog text) or `json` |
+| `SUNRED_LOG_LEVEL` | `info` | Log level: `debug`, `info`, `warn`, `error` |
 | `SUNRED_POLLING_FREQUENCY` | `60s` | Scheduler tick interval |
 | `SUNRED_BATCH_SIZE` | `100` | Max feeds refreshed per scheduler tick |
 | `SUNRED_WORKER_POOL_SIZE` | `5` | Feed-processing worker pool size |

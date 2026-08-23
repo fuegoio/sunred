@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/lib/pq"
@@ -638,7 +639,9 @@ func (s *Store) GetAPITokenByHash(ctx context.Context, tokenHash string) (*APITo
 	if err != nil {
 		return nil, err
 	}
-	_, _ = s.DB.ExecContext(ctx, `UPDATE api_tokens SET last_used_at = NOW() WHERE id = $1`, t.ID)
+	if _, err := s.DB.ExecContext(ctx, `UPDATE api_tokens SET last_used_at = NOW() WHERE id = $1`, t.ID); err != nil {
+		slog.Warn("store: update token last_used_at", "token_id", t.ID, "err", err)
+	}
 	return &t, nil
 }
 

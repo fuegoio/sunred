@@ -16,6 +16,7 @@ type Config struct {
 	BaseURL        string
 	WebURL         string
 	LogFormat      string
+	LogLevel       string
 	PollingFreq    time.Duration
 	BatchSize      int
 	WorkerPool     int
@@ -54,6 +55,7 @@ func Load() (*Config, error) {
 		BaseURL:        env("SUNRED_BASE_URL", "http://127.0.0.1:8080"),
 		WebURL:         env("SUNRED_WEB_URL", "http://localhost:3000"),
 		LogFormat:      env("SUNRED_LOG_FORMAT", "pretty"),
+		LogLevel:       env("SUNRED_LOG_LEVEL", "info"),
 		PollingFreq:    envDuration("SUNRED_POLLING_FREQUENCY", 60*time.Second),
 		BatchSize:      envInt("SUNRED_BATCH_SIZE", 100),
 		WorkerPool:     envInt("SUNRED_WORKER_POOL_SIZE", 5),

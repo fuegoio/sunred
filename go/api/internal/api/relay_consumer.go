@@ -42,17 +42,20 @@ func NewRelayConsumer(st *store.Store, relayURL, instanceURL string) *RelayConsu
 // Start connects to the relay and processes events until ctx is cancelled.
 // Reconnects automatically on disconnection with a backoff delay.
 func (c *RelayConsumer) Start(ctx context.Context) {
+	slog.Info("relay consumer: starting", "relay", c.relayURL, "instance", c.instanceURL)
 	for {
 		select {
 		case <-ctx.Done():
+			slog.Info("relay consumer: stopped")
 			return
 		default:
 		}
 		if err := c.connect(ctx); err != nil && ctx.Err() == nil {
-			slog.Warn("relay consumer: disconnected", "err", err)
+			slog.Warn("relay consumer: disconnected, reconnecting", "err", err, "backoff", "5s")
 		}
 		select {
 		case <-ctx.Done():
+			slog.Info("relay consumer: stopped")
 			return
 		case <-time.After(5 * time.Second):
 		}

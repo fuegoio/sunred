@@ -199,6 +199,7 @@ func (h *OAuthHandlers) handleCallback(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, h.cfg.WebURL+"/login?error=internal", http.StatusFound)
 		return
 	}
+	slog.Info("oauth: user logged in", "did", did, "user_id", userID, "handle", handle, "new", created)
 
 	// Persist the PDS host and OAuth session ID so the API can resume the
 	// DPoP-bound session to write io.sunred.* records to the user's PDS on
@@ -254,7 +255,9 @@ func (h *OAuthHandlers) handleCallback(w http.ResponseWriter, r *http.Request) {
 			<-t.C
 			if u, _ := h.store.GetUserByID(bgCtx, userID); u != nil && u.PDSSyncStatus == "syncing" {
 				slog.Warn("oauth: backfill timed out, marking sync idle", "did", did)
-				_ = h.store.SetUserSyncStatus(bgCtx, userID, "idle")
+				if err := h.store.SetUserSyncStatus(bgCtx, userID, "idle"); err != nil {
+					slog.Warn("oauth: set sync status idle (timeout)", "did", did, "err", err)
+				}
 			}
 		}()
 	}()

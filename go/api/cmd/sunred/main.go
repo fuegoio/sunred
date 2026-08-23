@@ -6,9 +6,11 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -35,7 +37,8 @@ import (
 func main() {
 	code, err := run()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("api: fatal", "err", err)
+		os.Exit(1)
 	}
 	if code != 0 {
 		os.Exit(code)
@@ -43,7 +46,7 @@ func main() {
 }
 
 func run() (int, error) {
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
 	migrateOnly := flag.Bool("migrate", false, "Run migrations and exit")
@@ -51,7 +54,7 @@ func run() (int, error) {
 	flag.Parse()
 
 	if err := godotenv.Load(); err != nil && !os.IsNotExist(err) {
-		log.Printf("env: %v", err)
+		slog.Warn("api: load .env", "err", err)
 	}
 
 	// The OpenAPI spec is derived from huma operations + struct tags alone.
@@ -80,9 +83,10 @@ func run() (int, error) {
 		return 0, fmt.Errorf("config: %w", err)
 	}
 
-	if _, err := logging.Init(cfg.LogFormat, os.Stderr); err != nil {
+	if _, err := logging.Init(cfg.LogFormat, cfg.LogLevel, os.Stderr); err != nil {
 		return 0, fmt.Errorf("logging: %w", err)
 	}
+	slog.Info("api: starting", "format", cfg.LogFormat, "level", cfg.LogLevel, "addr", cfg.HTTPAddr, "relay", cfg.RelayURL)
 
 	db, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
@@ -94,16 +98,18 @@ func run() (int, error) {
 	db.SetMaxIdleConns(5)
 	db.SetConnMaxLifetime(5 * time.Minute)
 
+	slog.Info("api: connecting to database")
 	if err := db.Ping(); err != nil {
+		slog.Error("api: database ping failed", "err", err)
 		return 0, fmt.Errorf("ping db: %w", err)
 	}
+	slog.Info("api: database connected")
 
 	if err := migrations.Run(db); err != nil {
 		return 0, fmt.Errorf("migrate: %w", err)
 	}
-
 	if *migrateOnly {
-		log.Println("migrations complete")
+		slog.Info("api: migrations complete")
 		return 0, nil
 	}
 
@@ -158,6 +164,8 @@ func run() (int, error) {
 		pool := worker.New(proc, cfg.WorkerPool)
 		sched := scheduler.New(st, pool, cfg.PollingFreq, cfg.BatchSize)
 		go sched.Start(ctx)
+	} else {
+		slog.Info("api: scheduler disabled")
 	}
 
 	// Start the relay consumer so the API receives push events (backfill +
@@ -167,15 +175,28 @@ func run() (int, error) {
 		go consumer.Start(ctx)
 	}
 
-	log.Printf("HTTP server listening on %s", cfg.HTTPAddr)
+	slog.Info("api: listening", "addr", cfg.HTTPAddr)
 	srv := &http.Server{
 		Addr:              cfg.HTTPAddr,
 		Handler:           httplog.Middleware(cors.Middleware(cfg.TrustedOrigins)(mux)),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
-	if err := srv.ListenAndServe(); err != nil {
+	go func() {
+		<-ctx.Done()
+		slog.Info("api: shutting down http server")
+		shutCtx, shutCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer shutCancel()
+		if err := srv.Shutdown(shutCtx); err != nil {
+			slog.Error("api: http shutdown", "err", err)
+		} else {
+			slog.Info("api: http server shut down cleanly")
+		}
+	}()
+
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return 0, fmt.Errorf("server: %w", err)
 	}
+	slog.Info("api: stopped")
 	return 0, nil
 }

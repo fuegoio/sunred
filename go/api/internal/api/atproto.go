@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/bluesky-social/indigo/atproto/atclient"
+	"github.com/danielgtaylor/huma/v2"
 
 	"github.com/fuegoio/sunred/go/api/internal/atproto"
 	"github.com/fuegoio/sunred/go/api/internal/auth"
@@ -136,7 +136,9 @@ func (a *API) ATProtoSyncFollow(userID, followeeUserID int, followeeHandle strin
 			return
 		}
 		slog.Info("atproto: follow written", "user_id", userID, "rkey", rkey)
-		_ = a.store.SetFollowATProtoRkey(ctx, userID, followeeUserID, rkey)
+		if err := a.store.SetFollowATProtoRkey(ctx, userID, followeeUserID, rkey); err != nil {
+			slog.Warn("atproto: persist follow rkey", "user_id", userID, "followee_id", followeeUserID, "rkey", rkey, "err", err)
+		}
 	} else {
 		rkey, err := a.store.GetFollowATProtoRkey(ctx, userID, followeeUserID)
 		if err != nil || rkey == "" {
@@ -148,7 +150,9 @@ func (a *API) ATProtoSyncFollow(userID, followeeUserID int, followeeHandle strin
 		} else {
 			slog.Info("atproto: follow deleted", "user_id", userID, "rkey", rkey)
 		}
-		_ = a.store.SetFollowATProtoRkey(ctx, userID, followeeUserID, "")
+		if err := a.store.SetFollowATProtoRkey(ctx, userID, followeeUserID, ""); err != nil {
+			slog.Warn("atproto: clear follow rkey", "user_id", userID, "followee_id", followeeUserID, "err", err)
+		}
 	}
 }
 
@@ -177,7 +181,9 @@ func (a *API) ATProtoSyncShare(userID int, sa *store.SharedArticle, isShare bool
 			return
 		}
 		slog.Info("atproto: share written", "user_id", userID, "rkey", rkey)
-		_ = a.store.SetShareATProtoRkey(ctx, sa.ID, rkey)
+		if err := a.store.SetShareATProtoRkey(ctx, sa.ID, rkey); err != nil {
+			slog.Warn("atproto: persist share rkey", "user_id", userID, "share_id", sa.ID, "rkey", rkey, "err", err)
+		}
 	} else {
 		rkey, err := a.store.GetShareATProtoRkey(ctx, sa.ID)
 		if err != nil || rkey == "" {
@@ -188,7 +194,9 @@ func (a *API) ATProtoSyncShare(userID int, sa *store.SharedArticle, isShare bool
 			slog.Warn("atproto: delete share failed", "user_id", userID, "rkey", rkey, "err", err)
 		} else {
 			slog.Info("atproto: share deleted", "user_id", userID, "rkey", rkey)
-			_ = a.store.SetShareATProtoRkey(ctx, sa.ID, "")
+		}
+		if err := a.store.SetShareATProtoRkey(ctx, sa.ID, ""); err != nil {
+			slog.Warn("atproto: clear share rkey", "user_id", userID, "share_id", sa.ID, "err", err)
 		}
 	}
 }
@@ -241,7 +249,9 @@ func (a *API) ATProtoSyncFeedSubscription(userID, feedID int, feedURL, siteURL, 
 			return
 		}
 		slog.Info("atproto: feed subscription written", "user_id", userID, "feed_url", feedURL, "rkey", rkey)
-		_ = a.store.SetFeedATProtoRkey(ctx, userID, feedID, rkey)
+		if err := a.store.SetFeedATProtoRkey(ctx, userID, feedID, rkey); err != nil {
+			slog.Warn("atproto: persist feed sub rkey", "user_id", userID, "feed_id", feedID, "rkey", rkey, "err", err)
+		}
 	} else {
 		rkey, err := a.store.GetFeedATProtoRkey(ctx, userID, feedID)
 		if err != nil || rkey == "" {

@@ -3,7 +3,6 @@ package httplog
 
 import (
 	"bytes"
-	"context"
 	"io"
 	"log/slog"
 	"net/http"
@@ -34,7 +33,14 @@ func Middleware(next http.Handler) http.Handler {
 		if bodySnippet != "" {
 			attrs = append(attrs, slog.String("body", bodySnippet))
 		}
-		slog.LogAttrs(context.Background(), slog.LevelInfo, "http", attrs...)
+		switch {
+		case rec.status >= 500:
+			slog.LogAttrs(r.Context(), slog.LevelError, "http", attrs...)
+		case rec.status >= 400:
+			slog.LogAttrs(r.Context(), slog.LevelWarn, "http", attrs...)
+		default:
+			slog.LogAttrs(r.Context(), slog.LevelInfo, "http", attrs...)
+		}
 	})
 }
 

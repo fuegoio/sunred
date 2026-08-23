@@ -17,11 +17,25 @@ const (
 )
 
 // Init configures the default slog logger with the chosen format and destination.
-func Init(format string, out io.Writer) (*slog.Logger, error) {
+// level controls the minimum verbosity ("debug", "info", "warn", "error");
+// empty defaults to info.
+func Init(format, level string, out io.Writer) (*slog.Logger, error) {
 	if out == nil {
 		out = os.Stderr
 	}
-	opts := &slog.HandlerOptions{Level: slog.LevelInfo}
+	lvl := slog.LevelInfo
+	switch strings.ToLower(strings.TrimSpace(level)) {
+	case "", "info":
+	case "debug":
+		lvl = slog.LevelDebug
+	case "warn", "warning":
+		lvl = slog.LevelWarn
+	case "error":
+		lvl = slog.LevelError
+	default:
+		return nil, fmt.Errorf("unknown log level %q (want debug, info, warn, or error)", level)
+	}
+	opts := &slog.HandlerOptions{Level: lvl}
 
 	var handler slog.Handler
 	switch strings.ToLower(strings.TrimSpace(format)) {

@@ -46,6 +46,7 @@ func backfillUserFromPDS(ctx context.Context, c *atproto.Client, st *store.Store
 
 func backfillFollows(ctx context.Context, c *atproto.Client, st *store.Store, userID int, did string) error {
 	cursor := ""
+	var count int
 	for {
 		out, err := c.ListRecords(ctx, did, atproto.CollectionFollow, 100, cursor)
 		if err != nil {
@@ -61,7 +62,10 @@ func backfillFollows(ctx context.Context, c *atproto.Client, st *store.Store, us
 			}
 			rkey := rkeyFromURI(rec.URI)
 			if followeeID, _ := st.GetUserIDByDID(ctx, f.Subject); followeeID != 0 {
-				_ = st.UpsertFollowWithRkey(ctx, userID, followeeID, rkey)
+				if err := st.UpsertFollowWithRkey(ctx, userID, followeeID, rkey); err != nil {
+					slog.Warn("sync: upsert follow", "user_id", userID, "followee_did", f.Subject, "rkey", rkey, "err", err)
+				}
+				count++
 			}
 		}
 		if out.Cursor == "" {
@@ -69,11 +73,13 @@ func backfillFollows(ctx context.Context, c *atproto.Client, st *store.Store, us
 		}
 		cursor = out.Cursor
 	}
+	slog.Info("sync: follows backfilled", "user_id", userID, "count", count)
 	return nil
 }
 
 func backfillShares(ctx context.Context, c *atproto.Client, st *store.Store, userID int, did string) error {
 	cursor := ""
+	var count int
 	for {
 		out, err := c.ListRecords(ctx, did, atproto.CollectionShare, 100, cursor)
 		if err != nil {
@@ -99,12 +105,14 @@ func backfillShares(ctx context.Context, c *atproto.Client, st *store.Store, use
 			); err != nil {
 				slog.Warn("backfill: upsert share", "article_url", s.ArticleURL, "err", err)
 			}
+			count++
 		}
 		if out.Cursor == "" {
 			break
 		}
 		cursor = out.Cursor
 	}
+	slog.Info("sync: feed subscriptions backfilled", "user_id", userID, "count", count)
 	return nil
 }
 

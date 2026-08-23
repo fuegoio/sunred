@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"time"
 )
 
@@ -74,7 +75,9 @@ func (s *Store) GetOrCreateUserByDID(ctx context.Context, did, handle string) (i
 	if err == nil {
 		// Existing user: refresh the handle in case it changed on the PDS.
 		if handle != "" {
-			_, _ = s.DB.ExecContext(ctx, `UPDATE users SET handle = $2 WHERE id = $1 AND $2 <> COALESCE(handle, '')`, userID, handle)
+			if _, err := s.DB.ExecContext(ctx, `UPDATE users SET handle = $2 WHERE id = $1 AND $2 <> COALESCE(handle, '')`, userID, handle); err != nil {
+				slog.Warn("store: refresh user handle", "user_id", userID, "handle", handle, "err", err)
+			}
 		}
 		return userID, false, nil
 	}
