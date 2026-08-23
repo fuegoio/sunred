@@ -1,26 +1,28 @@
 // Package main is the Sunred relay server entrypoint.
 //
 // The relay:
-//   1. Accepts announcements from Sunred instances when users connect AT Proto identities.
-//   2. Maintains persistent WebSocket subscriptions to each announced DID's PDS repo stream.
-//   3. Aggregates io.sunred.* record events into global counts (followers, shares, feed subs).
-//   4. Streams events back to subscribed instances via the subscribeEvents WebSocket endpoint.
+//  1. Accepts announcements from Sunred instances when users connect AT Proto identities.
+//  2. Maintains persistent WebSocket subscriptions to each announced DID's PDS repo stream.
+//  3. Aggregates io.sunred.* record events into global counts (followers, shares, feed subs).
+//  4. Streams events back to subscribed instances via the subscribeEvents WebSocket endpoint.
 //
 // Run: relay [--migrate]
 //
 // Environment variables (see internal/config/config.go):
-//   RELAY_HTTP_ADDR        default :9090
-//   RELAY_DATABASE_URL     required
-//   RELAY_FANOUT_WORKERS   default 50
-//   RELAY_RECONNECT_DELAY  default 5s
-//   RELAY_EVENT_RETENTION  default 168h (7 days)
+//
+//	RELAY_HTTP_ADDR        default :9090
+//	RELAY_DATABASE_URL     required
+//	RELAY_LOG_FORMAT       default pretty (pretty|json)
+//	RELAY_LOG_LEVEL        default info (debug|info|warn|error)
+//	RELAY_FANOUT_WORKERS   default 50
+//	RELAY_RECONNECT_DELAY default 5s
+//	RELAY_EVENT_RETENTION  default 168h (7 days)
 package main
 
 import (
 	"context"
 	"database/sql"
 	"flag"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -38,9 +40,35 @@ import (
 	"github.com/fuegoio/sunred/go/relay/internal/store"
 )
 
+// setupLogger configures the package-level slog default logger from cfg.
+func setupLogger(cfg *config.Config) error {
+	level := slog.LevelInfo
+	switch cfg.LogLevel {
+	case "debug":
+		level = slog.LevelDebug
+	case "warn":
+		level = slog.LevelWarn
+	case "error":
+		level = slog.LevelError
+	case "info", "":
+	default:
+		slog.Warn("relay: unknown log level, defaulting to info", "level", cfg.LogLevel)
+	}
+	opts := &slog.HandlerOptions{Level: level}
+	var handler slog.Handler
+	if cfg.LogFormat == "json" {
+		handler = slog.NewJSONHandler(os.Stderr, opts)
+	} else {
+		handler = slog.NewTextHandler(os.Stderr, opts)
+	}
+	slog.SetDefault(slog.New(handler))
+	return nil
+}
+
 func main() {
 	if err := run(); err != nil {
-		log.Fatal(err)
+		slog.Error("relay: fatal", "err", err)
+		os.Exit(1)
 	}
 }
 
@@ -49,13 +77,17 @@ func run() error {
 	flag.Parse()
 
 	if err := godotenv.Load(); err != nil && !os.IsNotExist(err) {
-		log.Printf("env: %v", err)
+		slog.Warn("relay: load .env", "err", err)
 	}
 
 	cfg, err := config.Load()
 	if err != nil {
 		return err
 	}
+	if err := setupLogger(cfg); err != nil {
+		return err
+	}
+	slog.Info("relay: starting", "format", cfg.LogFormat, "level", cfg.LogLevel, "addr", cfg.HTTPAddr)
 
 	db, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
@@ -67,14 +99,18 @@ func run() error {
 	db.SetMaxIdleConns(5)
 	db.SetConnMaxLifetime(5 * time.Minute)
 
+	slog.Info("relay: connecting to database")
 	if err := db.Ping(); err != nil {
+		slog.Error("relay: database ping failed", "err", err)
 		return err
 	}
+	slog.Info("relay: database connected")
 	if err := migrations.Run(db); err != nil {
+		slog.Error("relay: migrations failed", "err", err)
 		return err
 	}
 	if *migrateOnly {
-		log.Println("migrations complete")
+		slog.Info("relay: migrations complete")
 		return nil
 	}
 
@@ -83,15 +119,20 @@ func run() error {
 	defer cancel()
 
 	fan := fanout.New(st, cfg.ReconnectDelay)
-	go fan.Start(ctx)
+	go func() {
+		fan.Start(ctx)
+		slog.Info("relay: fanout stopped")
+	}()
 
 	// Background: purge old relay events periodically.
 	go func() {
 		ticker := time.NewTicker(1 * time.Hour)
 		defer ticker.Stop()
+		slog.Info("relay: purge loop started", "retention", cfg.EventRetention)
 		for {
 			select {
 			case <-ctx.Done():
+				slog.Info("relay: purge loop stopped")
 				return
 			case <-ticker.C:
 				n, err := st.PurgeOldEvents(ctx, cfg.EventRetention)
@@ -113,9 +154,14 @@ func run() error {
 
 	go func() {
 		<-ctx.Done()
+		slog.Info("relay: shutting down http server")
 		shutCtx, shutCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer shutCancel()
-		_ = httpSrv.Shutdown(shutCtx)
+		if err := httpSrv.Shutdown(shutCtx); err != nil {
+			slog.Error("relay: http shutdown", "err", err)
+		} else {
+			slog.Info("relay: http server shut down cleanly")
+		}
 	}()
 
 	slog.Info("relay: listening", "addr", cfg.HTTPAddr)

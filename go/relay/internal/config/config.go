@@ -13,6 +13,7 @@ type Config struct {
 	HTTPAddr    string
 	DatabaseURL string
 	LogFormat   string
+	LogLevel    string
 	// FanoutWorkers is the number of concurrent PDS subscription goroutines.
 	FanoutWorkers int
 	// ReconnectDelay is how long to wait before reconnecting a failed PDS subscription.
@@ -27,6 +28,7 @@ func Load() (*Config, error) {
 		HTTPAddr:       env("RELAY_HTTP_ADDR", ":9090"),
 		DatabaseURL:    env("RELAY_DATABASE_URL", "postgres://sunred:sunred@localhost:5433/sunred_relay?sslmode=disable"),
 		LogFormat:      env("RELAY_LOG_FORMAT", "pretty"),
+		LogLevel:       env("RELAY_LOG_LEVEL", "info"),
 		FanoutWorkers:  envInt("RELAY_FANOUT_WORKERS", 50),
 		ReconnectDelay: envDuration("RELAY_RECONNECT_DELAY", 5*time.Second),
 		EventRetention: envDuration("RELAY_EVENT_RETENTION", 7*24*time.Hour),

@@ -169,6 +169,7 @@ template.
 | `RELAY_HTTP_ADDR` | `:9090` | HTTP listen address |
 | `RELAY_DATABASE_URL` | `postgres://sunred:sunred@localhost:5433/sunred_relay?sslmode=disable` | Postgres DSN (required non-empty) |
 | `RELAY_LOG_FORMAT` | `pretty` | Log format (`pretty` or `json`) |
+| `RELAY_LOG_LEVEL` | `info` | Log level (`debug`, `info`, `warn`, `error`) |
 | `RELAY_FANOUT_WORKERS` | `50` | Loaded but not currently applied — fanout spawns one goroutine per tracked DID |
 | `RELAY_RECONNECT_DELAY` | `5s` | Backoff before reconnecting a failed PDS subscription |
 | `RELAY_EVENT_RETENTION` | `168h` (7 days) | How long to keep `relay_events` rows for cursor replay |
