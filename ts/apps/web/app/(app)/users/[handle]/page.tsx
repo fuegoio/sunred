@@ -155,7 +155,7 @@ function ProfileMasthead({
         <UserAvatar
           displayName={hasDisplayName ? displayName : undefined}
           handle={handle}
-          className="size-5 shrink-0 rounded-md"
+          className="size-5 shrink-0 rounded-md text-[10px] font-medium"
         />
       }
       actions={
