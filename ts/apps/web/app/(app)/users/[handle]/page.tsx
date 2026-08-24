@@ -447,7 +447,7 @@ export default function UserProfilePage({
                     return (
                       <li key={feed.id}>
                         <Link
-                          href={`/feeds?url=${encodeURIComponent(feed.feed_url)}`}
+                          href={`/feeds/discover?url=${encodeURIComponent(feed.feed_url)}`}
                           className={cn(
                             "group flex items-start gap-3 px-4 py-3 pl-[52px] lg:pl-[48px]",
                             "hover:bg-muted/50 transition-colors",
