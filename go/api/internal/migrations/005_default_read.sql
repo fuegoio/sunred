@@ -1,4 +1,6 @@
 -- The default read state is now "read": the absence of an entry_read_status
--- row means the article is read. The table only stores deviations — 'unread'
--- and 'removed'. Delete the now-redundant 'read' rows so the table stays lean.
-DELETE FROM entry_read_status WHERE status = 'read';
+-- row means the article is read. The table stores explicit deviations from
+-- the default ('unread', 'removed') and also explicit 'read' rows when the
+-- user has marked an article as read (a stronger signal than absence).
+-- No data migration is needed — existing 'read' rows are still valid and
+-- meaningful, and existing 'unread' rows are still correct.

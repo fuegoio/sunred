@@ -148,25 +148,29 @@ func TestShareArticle_MarksUnreadForFollowers(t *testing.T) {
 		t.Errorf("status=%q, want 'unread'", status)
 	}
 
-	// Mark read (delete the row).
+	// Mark read (upserts a 'read' row, overwriting 'unread').
 	if err := s.UpdateEntryStatusByURL(ctx, followerID, articleURL, "read"); err != nil {
 		t.Fatalf("mark read: %v", err)
 	}
-	_, exists = entryReadStatus(t, s, followerID, articleURL)
-	if exists {
-		t.Fatal("expected no row after marking read")
+	status, exists = entryReadStatus(t, s, followerID, articleURL)
+	if !exists {
+		t.Fatal("expected read row after marking read")
+	}
+	if status != "read" {
+		t.Errorf("status=%q, want 'read'", status)
 	}
 
-	// Reshare — should NOT re-mark unread for follower.
+	// Reshare — should NOT re-mark unread for follower (ON CONFLICT DO NOTHING).
 	if _, err := s.ShareArticle(ctx, sharerID,
 		articleURL, "Updated Title", "", "https://feed.example.com/rss", "Feed", "", "", nil,
 	); err != nil {
 		t.Fatalf("ShareArticle (reshare): %v", err)
 	}
 
-	_, exists = entryReadStatus(t, s, followerID, articleURL)
-	if exists {
-		t.Error("expected no unread row after reshare (existing share should not re-notify)")
+	// The 'read' row should still be 'read' (not overwritten to 'unread').
+	status, _ = entryReadStatus(t, s, followerID, articleURL)
+	if status != "read" {
+		t.Errorf("status=%q, want 'read' after reshare (existing share should not re-notify)", status)
 	}
 }
 
