@@ -66,6 +66,19 @@ type Model struct {
 	entries       []sunred.Entry
 	entriesCursor int
 	entriesOffset int // index of first visible entry (scroll offset)
+
+	// feed header: lazy subscriber counts for the selected feed
+	subsCache   map[int64]sunred.FeedSubscribersResponse
+	subsLoading int64 // feed ID currently being fetched, or 0
+	subsFeedID  int64 // feed ID the cache entry below belongs to (0 = none)
+	subsLast    *sunred.FeedSubscribersResponse
+
+	// preview / discovery view
+	preview       *sunred.PreviewFeedBody
+	previewCursor int
+	previewOffset int
+	enteringURL   bool
+	urlInput      string
 }
 
 // ---- styles ----------------------------------------------------------------
@@ -132,6 +145,7 @@ func NewModel(client *sunred.ClientWithResponses) Model {
 		client:        client,
 		focus:         focusEntries,
 		sidebarCursor: 0, // start on Unread (first tab, matching the web default view)
+		subsCache:     make(map[int64]sunred.FeedSubscribersResponse),
 	}
 }
 
@@ -167,6 +181,41 @@ type toggleStarMsg struct {
 	entryID int64
 	starred bool
 	err     error
+}
+
+type feedSubsMsg struct {
+	feedID int64
+	subs   *sunred.FeedSubscribersResponse
+	err    error
+}
+
+type feedRefreshedMsg struct {
+	feedID int64
+	err    error
+}
+
+type feedMarkedReadMsg struct {
+	feedID int64
+	err    error
+}
+
+type previewFeedMsg struct {
+	preview *sunred.PreviewFeedBody
+	err     error
+}
+
+// byUrlStatusMsg reports the result of a by-URL status update on a preview item.
+type byUrlStatusMsg struct {
+	articleURL string
+	status     sunred.UpdateEntryStatusByUrlRequestStatus
+	err        error
+}
+
+// byUrlStarMsg reports the result of a by-URL star toggle on a preview item.
+type byUrlStarMsg struct {
+	articleURL string
+	starred    bool
+	err        error
 }
 
 // ---- commands --------------------------------------------------------------
@@ -239,6 +288,93 @@ func toggleStar(client *sunred.ClientWithResponses, entryID int64, starred bool)
 	}
 }
 
+func fetchFeedSubs(client *sunred.ClientWithResponses, feedID int64) tea.Cmd {
+	return func() tea.Msg {
+		resp, err := client.FeedSubscribersWithResponse(context.Background(), feedID)
+		if err != nil {
+			return feedSubsMsg{feedID: feedID, err: err}
+		}
+		if resp.JSON200 == nil {
+			return feedSubsMsg{feedID: feedID, err: fmt.Errorf("API error (status %d)", resp.StatusCode())}
+		}
+		return feedSubsMsg{feedID: feedID, subs: resp.JSON200}
+	}
+}
+
+func refreshFeed(client *sunred.ClientWithResponses, feedID int64) tea.Cmd {
+	return func() tea.Msg {
+		resp, err := client.RefreshFeedWithResponse(context.Background(), feedID)
+		if err != nil {
+			return feedRefreshedMsg{feedID: feedID, err: err}
+		}
+		if resp.StatusCode() != 204 {
+			return feedRefreshedMsg{feedID: feedID, err: fmt.Errorf("API error (status %d)", resp.StatusCode())}
+		}
+		return feedRefreshedMsg{feedID: feedID}
+	}
+}
+
+func markFeedRead(client *sunred.ClientWithResponses, feedID int64) tea.Cmd {
+	return func() tea.Msg {
+		resp, err := client.MarkFeedReadWithResponse(context.Background(), feedID)
+		if err != nil {
+			return feedMarkedReadMsg{feedID: feedID, err: err}
+		}
+		if resp.StatusCode() != 204 {
+			return feedMarkedReadMsg{feedID: feedID, err: fmt.Errorf("API error (status %d)", resp.StatusCode())}
+		}
+		return feedMarkedReadMsg{feedID: feedID}
+	}
+}
+
+func previewFeed(client *sunred.ClientWithResponses, feedURL string) tea.Cmd {
+	return func() tea.Msg {
+		resp, err := client.PreviewFeedWithResponse(context.Background(), sunred.PreviewFeedJSONRequestBody{
+			FeedUrl: feedURL,
+		})
+		if err != nil {
+			return previewFeedMsg{err: err}
+		}
+		if resp.JSON200 == nil {
+			return previewFeedMsg{err: fmt.Errorf("API error (status %d)", resp.StatusCode())}
+		}
+		return previewFeedMsg{preview: resp.JSON200}
+	}
+}
+
+// setEntryStatusByUrl marks a preview article read/unread by URL.
+func setEntryStatusByUrl(client *sunred.ClientWithResponses, articleURL string, status sunred.UpdateEntryStatusByUrlRequestStatus) tea.Cmd {
+	return func() tea.Msg {
+		_, err := client.UpdateEntryStatusByUrlWithResponse(context.Background(), sunred.UpdateEntryStatusByUrlRequest{
+			ArticleUrl: articleURL,
+			Status:     status,
+		})
+		return byUrlStatusMsg{articleURL: articleURL, status: status, err: err}
+	}
+}
+
+// toggleStarByUrl toggles a preview article's star by URL. The preview item
+// supplies the metadata the server needs to record the article.
+func toggleStarByUrl(client *sunred.ClientWithResponses, item sunred.PreviewFeedItem, feed *sunred.PreviewFeedBody, starred bool) tea.Cmd {
+	return func() tea.Msg {
+		body := sunred.ToggleEntryStarredByUrlRequest{
+			ArticleUrl:  item.Url,
+			Title:       item.Title,
+			Starred:     starred,
+			Author:      item.Author,
+			Description: item.Description,
+		}
+		if feed != nil {
+			body.FeedUrl = ptr(feed.FeedUrl)
+			body.FeedTitle = ptr(feed.Title)
+			body.FeedSiteUrl = ptr(feed.SiteUrl)
+		}
+		body.PublishedAt = ptr(item.PublishedAt)
+		_, err := client.ToggleEntryStarredByUrlWithResponse(context.Background(), body)
+		return byUrlStarMsg{articleURL: item.Url, starred: starred, err: err}
+	}
+}
+
 func openURL(url string) tea.Cmd {
 	return func() tea.Msg {
 		var cmd *exec.Cmd
@@ -307,6 +443,27 @@ func entriesParamsForItem(item sidebarItem) *sunred.ListEntriesParams {
 		return &sunred.ListEntriesParams{FolderId: &item.folderID}
 	}
 	return &sunred.ListEntriesParams{}
+}
+
+// loadSelection returns the commands to load the main panel for the given
+// sidebar item: entries, plus subscriber counts when the item is a feed.
+func (m *Model) loadSelection(item sidebarItem) tea.Cmd {
+	cmds := []tea.Cmd{loadEntriesByParams(m.client, entriesParamsForItem(item))}
+	if item.kind == sidebarFeed {
+		m.subsFeedID = item.feedID
+		if cached, ok := m.subsCache[item.feedID]; ok {
+			c := cached
+			m.subsLast = &c
+		} else {
+			m.subsLast = nil
+			m.subsLoading = item.feedID
+			cmds = append(cmds, fetchFeedSubs(m.client, item.feedID))
+		}
+	} else {
+		m.subsFeedID = 0
+		m.subsLast = nil
+	}
+	return tea.Batch(cmds...)
 }
 
 // ---- utility ---------------------------------------------------------------
