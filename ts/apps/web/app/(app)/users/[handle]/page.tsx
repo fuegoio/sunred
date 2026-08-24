@@ -27,12 +27,13 @@ import {
   getUserProfile,
   followUser,
   unfollowUser,
+  getMe,
   unwrap,
 } from "@/lib/sunred";
 import { getApiErrorMessage } from "@/lib/errors";
 import { siteDomain, htmlSnippet } from "@/lib/format";
 import { cn } from "@workspace/ui/lib/utils";
-import type { Entry, PublicProfileResponse, SharedArticle } from "@/lib/types";
+import type { Entry, PublicProfileResponse, SharedArticle, User } from "@/lib/types";
 
 /**
  * Map a SharedArticle to the Entry shape EntryCard expects. The shared_at
@@ -131,6 +132,7 @@ function ProfileMasthead({
   followingCount,
   showFederatedSplit,
   isFollowing,
+  canFollow,
   onFollowToggle,
 }: {
   displayName: string;
@@ -142,6 +144,7 @@ function ProfileMasthead({
   followingCount: number;
   showFederatedSplit: boolean;
   isFollowing: boolean;
+  canFollow: boolean;
   onFollowToggle: (next: boolean) => void;
 }) {
   const shell = useShell();
@@ -178,11 +181,13 @@ function ProfileMasthead({
                 <p className="truncate text-sm text-muted-foreground">@{handle}</p>
               )}
             </div>
-            <FollowButton
-              handle={handle}
-              isFollowing={isFollowing}
-              onToggle={onFollowToggle}
-            />
+            {canFollow && (
+              <FollowButton
+                handle={handle}
+                isFollowing={isFollowing}
+                onToggle={onFollowToggle}
+              />
+            )}
           </div>
 
           <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
@@ -279,6 +284,11 @@ export default function UserProfilePage({
     queryFn: async () => unwrap(getUserProfile({ client: await getClient(), path: { handle } })),
   });
 
+  const { data: me } = useQuery<User>({
+    queryKey: ["me"],
+    queryFn: async () => unwrap(getMe({ client: await getClient() })),
+  });
+
   function handleFollowToggle(next: boolean) {
     queryClient.setQueryData<PublicProfileResponse>(
       ["user-profile", handle],
@@ -347,6 +357,7 @@ export default function UserProfilePage({
   const { profile: user, shared_articles, feeds, global_follower_count } = profile;
   const hasDisplayName = !!(user.display_name?.trim());
   const displayName = hasDisplayName ? user.display_name!.trim() : `@${user.handle}`;
+  const isOwnProfile = !!me?.handle && me.handle === user.handle;
   // Federated total from the relay aggregates; fall back to the local count
   // when no relay is configured (global_follower_count == 0).
   const followerTotal = global_follower_count > 0 ? global_follower_count : user.follower_count;
@@ -368,6 +379,7 @@ export default function UserProfilePage({
           followingCount={user.following_count}
           showFederatedSplit={showFederatedSplit}
           isFollowing={user.is_following ?? false}
+          canFollow={!isOwnProfile}
           onFollowToggle={handleFollowToggle}
         />
       </div>
@@ -420,14 +432,16 @@ export default function UserProfilePage({
                       </EmptyDescription>
                     </EmptyHeader>
                     <EmptyContent>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        onClick={() => handleFollowToggle(!(user.is_following ?? false))}
-                        className="h-auto p-0"
-                      >
-                        {user.is_following ? "Unfollow" : `Follow @${user.handle}`}
-                      </Button>
+                      {!isOwnProfile && (
+                        <Button
+                          variant="link"
+                          size="sm"
+                          onClick={() => handleFollowToggle(!(user.is_following ?? false))}
+                          className="h-auto p-0"
+                        >
+                          {user.is_following ? "Unfollow" : `Follow @${user.handle}`}
+                        </Button>
+                      )}
                     </EmptyContent>
                   </Empty>
                 </div>
