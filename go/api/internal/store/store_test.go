@@ -78,8 +78,8 @@ func seedFeed(t *testing.T, s *Store, userID int, folderID *int, title string) i
 }
 
 // seedEntry creates a global entry against feedID and writes per-user state
-// (status/starred) for userID. Absent state means unread; a read-status row is
-// only inserted when status is not "unread"; a star row is only inserted when
+// (status/starred) for userID. Absent state means read; a read-status row is
+// only inserted when status is not "read"; a star row is only inserted when
 // starred is true. Returns the entry ID.
 func seedEntry(t *testing.T, s *Store, userID, feedID int, title, status string, starred bool) int64 {
 	t.Helper()
@@ -94,7 +94,7 @@ func seedEntry(t *testing.T, s *Store, userID, feedID int, title, status string,
 	if err != nil {
 		t.Fatalf("seed entry: %v", err)
 	}
-	if status != "unread" {
+	if status != "read" {
 		if _, err := s.DB.Exec(
 			`INSERT INTO entry_read_status (user_id, article_url, entry_id, status) VALUES ($1, $2, $3, $4)`,
 			userID, entryURL, id, status,

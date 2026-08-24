@@ -358,7 +358,7 @@ func visibleEntryFilter(userID int) string {
 func (s *Store) ListEntries(ctx context.Context, userID int, feedID *int, folderID *int, status string, starred *bool, search string, source string, limit, offset int) ([]Entry, error) {
 	q := `SELECT e.id, e.feed_id, e.hash, e.title, e.url, e.comments_url,
 	             e.author, '' AS content, LEFT(e.description, 400) AS description,
-	             COALESCE(rs.status, 'unread'), (es.article_url IS NOT NULL),
+	             COALESCE(rs.status, 'read'), (es.article_url IS NOT NULL),
 	             e.published_at, GREATEST(COALESCE(rs.changed_at, e.created_at), COALESCE(es.starred_at, e.created_at)), e.tags,
 	             f.id, f.feed_url, f.site_url, f.title, f.description,
 	             f.etag_header, f.last_modified_header, f.parsing_error, f.parsing_error_count,
@@ -407,7 +407,7 @@ func (s *Store) ListEntries(ctx context.Context, userID int, feedID *int, folder
 		argIdx++
 	}
 	if status != "" {
-		q += fmt.Sprintf(" AND COALESCE(rs.status, 'unread') = $%d", argIdx)
+		q += fmt.Sprintf(" AND COALESCE(rs.status, 'read') = $%d", argIdx)
 		args = append(args, status)
 		argIdx++
 	}
@@ -458,7 +458,7 @@ func (s *Store) GetEntryByID(ctx context.Context, id int64, userID int) (*Entry,
 	err := s.DB.QueryRowContext(ctx,
 		`SELECT e.id, e.feed_id, e.hash, e.title, e.url, e.comments_url,
 		        e.author, '' AS content, LEFT(e.description, 400) AS description,
-		        COALESCE(rs.status, 'unread'), (es.article_url IS NOT NULL),
+		        COALESCE(rs.status, 'read'), (es.article_url IS NOT NULL),
 		        e.published_at, GREATEST(COALESCE(rs.changed_at, e.created_at), COALESCE(es.starred_at, e.created_at)), e.tags,
 		        f.id, f.feed_url, f.site_url, f.title, f.description,
 		        f.etag_header, f.last_modified_header, f.parsing_error, f.parsing_error_count,
@@ -502,7 +502,7 @@ type EntryStateByURL struct {
 }
 
 // GetEntryStatesByURLs returns the user's read status and starred state for
-// each article URL, keyed by the input URL. Absent means unread + unstarred.
+// each article URL, keyed by the input URL. Absent means read + unstarred.
 // Used by the preview endpoint to show the user's existing state for preview
 // items. The lookup is performed on normalized URLs (so state set via one
 // source variant is visible for a textually-different variant), but the
@@ -516,7 +516,7 @@ func (s *Store) GetEntryStatesByURLs(ctx context.Context, userID int, urls []str
 		normalized[i] = urlnorm.URL(u)
 	}
 	rows, err := s.DB.QueryContext(ctx, `
-		SELECT u.article_url, COALESCE(rs.status, 'unread'), (es.article_url IS NOT NULL)
+		SELECT u.article_url, COALESCE(rs.status, 'read'), (es.article_url IS NOT NULL)
 		FROM (SELECT unnest($2::text[]) AS article_url) u
 		LEFT JOIN entry_read_status rs ON rs.user_id = $1 AND rs.article_url = u.article_url
 		LEFT JOIN entry_stars es ON es.user_id = $1 AND es.article_url = u.article_url`,
@@ -547,11 +547,23 @@ func (s *Store) GetEntryStatesByURLs(ctx context.Context, userID int, urls []str
 	return out, nil
 }
 
-// UpdateEntryStatus sets the status of a set of visible entries for the user
-// via upsert into entry_read_status, keyed by (user_id, article_url).
+// UpdateEntryStatus sets the status of a set of visible entries for the user.
+// For status "read" the matching entry_read_status rows are deleted (absence
+// = read is the default); for "unread" or "removed" the rows are upserted.
 func (s *Store) UpdateEntryStatus(ctx context.Context, entryIDs []int64, userID int, status string) error {
 	if len(entryIDs) == 0 {
 		return nil
+	}
+	if status == "read" {
+		_, err := s.DB.ExecContext(ctx,
+			`DELETE FROM entry_read_status
+			 WHERE user_id = $2
+			   AND article_url IN (
+			     SELECT e.url FROM entries e
+			     WHERE e.id = ANY($1) AND (`+visibleEntryFilter(userID)+`)
+			   )`,
+			pq.Array(entryIDs), userID)
+		return err
 	}
 	_, err := s.DB.ExecContext(ctx,
 		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
@@ -631,12 +643,18 @@ func (s *Store) ToggleEntryStarredByURL(ctx context.Context, userID int,
 }
 
 // UpdateEntryStatusByURL sets the read status of an article by URL, without
-// requiring a materialized entry. If the entry exists, entry_id is linked
-// (picks the first match if the same URL appears in multiple feeds);
-// otherwise the status row is created with a null entry_id. Used by the
-// URL-based read endpoint for preview and shared articles.
+// requiring a materialized entry. For status "read" the matching row is
+// deleted (absence = read is the default); for "unread" or "removed" the row
+// is upserted, linking entry_id when the entry exists. Used by the URL-based
+// read endpoint for preview and shared articles.
 func (s *Store) UpdateEntryStatusByURL(ctx context.Context, userID int, articleURL, status string) error {
 	articleURL = urlnorm.URL(articleURL)
+	if status == "read" {
+		_, err := s.DB.ExecContext(ctx,
+			`DELETE FROM entry_read_status WHERE user_id = $1 AND article_url = $2`,
+			userID, articleURL)
+		return err
+	}
 	_, err := s.DB.ExecContext(ctx,
 		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
 		 SELECT $1, $2, (SELECT e.id FROM entries e WHERE e.url = $2 LIMIT 1), $3, NOW()
@@ -645,15 +663,16 @@ func (s *Store) UpdateEntryStatusByURL(ctx context.Context, userID int, articleU
 	return err
 }
 
-// MarkFeedEntriesRead marks all unread entries in the given feed as read for
-// the user (upserts entry_read_status to 'read').
+// MarkFeedEntriesRead marks all entries in the given feed as read for the
+// user (deletes their entry_read_status rows — absence = read).
 func (s *Store) MarkFeedEntriesRead(ctx context.Context, feedID, userID int) error {
 	_, err := s.DB.ExecContext(ctx,
-		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
-		 SELECT $2, e.url, e.id, 'read', NOW()
-		 FROM entries e
-		 WHERE e.feed_id = $1 AND (`+visibleEntryFilter(userID)+`)
-		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = 'read', changed_at = NOW()`,
+		`DELETE FROM entry_read_status
+		 WHERE user_id = $2
+		   AND article_url IN (
+		     SELECT e.url FROM entries e
+		     WHERE e.feed_id = $1 AND (`+visibleEntryFilter(userID)+`)
+		   )`,
 		feedID, userID)
 	return err
 }
@@ -667,18 +686,52 @@ func (s *Store) CountEntriesByFeed(ctx context.Context, feedID int) (int, error)
 	return count, err
 }
 
-// MarkAllEntriesRead marks every visible unread entry as read for the user
-// (upserts entry_read_status to 'read' for all subscribed feeds and shares by
-// followed users).
+// MarkAllEntriesRead marks every visible entry as read for the user (deletes
+// their entry_read_status rows — absence = read — for all subscribed feeds
+// and shares by followed users).
 func (s *Store) MarkAllEntriesRead(ctx context.Context, userID int) error {
 	_, err := s.DB.ExecContext(ctx,
-		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
-		 SELECT $1, e.url, e.id, 'read', NOW()
-		 FROM entries e
-		 WHERE COALESCE((SELECT st.status FROM entry_read_status st WHERE st.article_url = e.url AND st.user_id = $1), 'unread') = 'unread'
-		   AND (`+visibleEntryFilter(userID)+`)
-		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = 'read', changed_at = NOW()`,
+		`DELETE FROM entry_read_status
+		 WHERE user_id = $1
+		   AND article_url IN (
+		     SELECT e.url FROM entries e
+		     WHERE `+visibleEntryFilter(userID)+`
+		   )`,
 		userID)
+	return err
+}
+
+// MarkEntryUnreadForSubscribers inserts an 'unread' entry_read_status row for
+// every user subscribed to the entry's feed. Called by the feed processor when
+// a new entry is created, so freshly scraped articles appear unread for
+// subscribers. Users who already have a row (e.g. 'removed') are not
+// overwritten.
+func (s *Store) MarkEntryUnreadForSubscribers(ctx context.Context, entryID int64, feedID int) error {
+	_, err := s.DB.ExecContext(ctx,
+		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
+		 SELECT s.user_id, e.url, e.id, 'unread', NOW()
+		 FROM entries e
+		 JOIN subscriptions s ON s.feed_id = e.feed_id
+		 WHERE e.id = $1 AND e.feed_id = $2
+		 ON CONFLICT (user_id, article_url) DO NOTHING`,
+		entryID, feedID)
+	return err
+}
+
+// MarkShareUnreadForFollowers inserts an 'unread' entry_read_status row for
+// every user following the sharer. Called when a new share is created (via the
+// API or a live relay event) so followers see the article as unread. The row
+// is keyed by article_url, matching an existing entry when one is materialized.
+// Followers who already have a row are not overwritten.
+func (s *Store) MarkShareUnreadForFollowers(ctx context.Context, sharerID int, articleURL string, entryID int64) error {
+	articleURL = urlnorm.URL(articleURL)
+	_, err := s.DB.ExecContext(ctx,
+		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
+		 SELECT uf.follower_id, $2, $3, 'unread', NOW()
+		 FROM user_follows uf
+		 WHERE uf.followee_id = $1
+		 ON CONFLICT (user_id, article_url) DO NOTHING`,
+		sharerID, articleURL, sql.NullInt64{Int64: entryID, Valid: entryID > 0})
 	return err
 }
 

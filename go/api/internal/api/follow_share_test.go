@@ -306,8 +306,11 @@ func TestRelayConsumer_UnshareEvent(t *testing.T) {
 	}()
 
 	// Seed a share with a known rkey.
-	_ = s.UpsertShareWithRkey(context.Background(), userID,
+	_, err := s.UpsertShareWithRkey(context.Background(), userID,
 		"https://example.com/unshare-event", "Title", "", "", "", "", "", nil, "rkey-unshare-evt")
+	if err != nil {
+		t.Fatalf("upsert share: %v", err)
+	}
 
 	evt := relayEvent{
 		Seq:       1,

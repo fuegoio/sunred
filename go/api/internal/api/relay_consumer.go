@@ -239,11 +239,28 @@ func (c *RelayConsumer) handleShareEvent(ctx context.Context, evt *relayEvent) e
 			publishedAt = &utc
 		}
 	}
-	return c.store.UpsertShareWithRkey(ctx, userID,
+	created, err := c.store.UpsertShareWithRkey(ctx, userID,
 		p.ArticleURL, p.Title, p.Description,
 		p.FeedURL, p.FeedTitle, p.FeedSiteURL,
 		p.Author, publishedAt, p.Rkey,
 	)
+	if err != nil {
+		return err
+	}
+	// Mark the article unread for followers only on a genuinely new share,
+	// not on an update of an existing one.
+	if created {
+		articleURL := p.ArticleURL
+		var entryID int64
+		_ = c.store.DB.QueryRowContext(ctx,
+			`SELECT COALESCE(entry_id, 0) FROM shared_articles WHERE user_id = $1 AND article_url = $2`,
+			userID, articleURL,
+		).Scan(&entryID)
+		if err := c.store.MarkShareUnreadForFollowers(ctx, userID, articleURL, entryID); err != nil {
+			slog.Warn("relay consumer: mark share unread for followers", "user_id", userID, "article_url", articleURL, "err", err)
+		}
+	}
+	return nil
 }
 
 func (c *RelayConsumer) handleUnshareEvent(ctx context.Context, evt *relayEvent) error {

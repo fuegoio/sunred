@@ -188,15 +188,17 @@ func (s *Store) DeleteFollowByRkey(ctx context.Context, followerID int, rkey str
 
 // UpsertShareWithRkey records a shared article with its AT Proto rkey so a
 // later unshare can delete the record. Used by the relay consumer to process
-// share events.
+// share events. Returns true when a new share row was inserted (as opposed to
+// an existing one updated), so callers can decide whether to notify followers.
 func (s *Store) UpsertShareWithRkey(ctx context.Context, userID int,
 	articleURL, title, description, feedURL, feedTitle, feedSiteURL, author string,
 	publishedAt *time.Time, rkey string,
-) error {
+) (bool, error) {
 	articleURL = urlnorm.URL(articleURL)
 	feedURL = urlnorm.URL(feedURL)
 	entryID := s.ensureSharedEntry(ctx, articleURL, title, description, feedURL, feedTitle, feedSiteURL, author, publishedAt)
-	_, err := s.DB.ExecContext(ctx, `
+	var created bool
+	err := s.DB.QueryRowContext(ctx, `
 		INSERT INTO shared_articles
 		  (user_id, article_url, title, description, feed_url, feed_title, feed_site_url, author, published_at, atproto_rkey, entry_id)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
@@ -210,11 +212,12 @@ func (s *Store) UpsertShareWithRkey(ctx context.Context, userID int,
 		      published_at = EXCLUDED.published_at,
 		      atproto_rkey = EXCLUDED.atproto_rkey,
 		      entry_id     = COALESCE(shared_articles.entry_id, EXCLUDED.entry_id),
-		      shared_at    = NOW()`,
+		      shared_at    = NOW()
+		RETURNING (xmax = 0)`,
 		userID, articleURL, title, description, feedURL, feedTitle, feedSiteURL, author, publishedAt, rkey,
 		sql.NullInt64{Int64: entryID, Valid: entryID > 0},
-	)
-	return err
+	).Scan(&created)
+	return created, err
 }
 
 // DeleteShareByRkey removes a shared article by its AT Proto rkey.
