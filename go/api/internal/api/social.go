@@ -272,13 +272,22 @@ func (a *API) registerSocialRoutes() {
 		if profiles == nil {
 			profiles = []store.UserProfile{}
 		}
+		// Resolve the viewer's handle so remote relay results can't surface
+		// the viewer themselves (local results already exclude them).
+		viewer, err := a.store.GetUserByID(ctx, userID)
+		if err != nil {
+			return nil, huma.Error500InternalServerError(err.Error())
+		}
 		// If local results are thin, fall back to the relay for cross-instance search.
 		if len(profiles) < input.Limit {
 			remaining := input.Limit - len(profiles)
 			remote := a.relaySearchDIDs(ctx, input.Query, remaining)
-			// Deduplicate by handle — skip remote results already in local
-			// results or earlier in the remote batch.
-			seen := make(map[string]bool, len(profiles))
+			// Deduplicate by handle — skip the viewer, remote results already
+			// in local results, or earlier in the remote batch.
+			seen := make(map[string]bool, len(profiles)+1)
+			if viewer != nil {
+				seen[viewer.Handle] = true
+			}
 			for _, p := range profiles {
 				seen[p.Handle] = true
 			}
