@@ -3,12 +3,12 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Users, UserCheck, UserPlus, Menu as MenuIcon, ChevronRight, Rss } from "lucide-react";
+import { Users, UserCheck, UserPlus, ChevronRight, Rss } from "lucide-react";
 import { toast } from "sonner";
 import { EntryCard } from "@/components/entry-card";
 import { EntryCardSkeleton } from "@/components/entry-card-skeleton";
 import { FeedIcon } from "@/components/feed-icon";
-import { useShell } from "@/components/shell-context";
+import { PageHeader } from "@/components/page-header";
 import { UserAvatar } from "@/components/user-avatar";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Button } from "@workspace/ui/components/button";
@@ -117,10 +117,10 @@ function FollowButton({
 }
 
 /**
- * Profile masthead — the feed-style header for a user's profile. Mirrors the
- * app's `PageHeader` treatment (border-b, bg-background, desktop indent) so it
- * reads as the same chrome as the unread/starred/follows timelines, and
- * inlines the mobile sidebar toggle that `PageHeader` would otherwise render.
+ * Profile masthead — renders the shared `PageHeader` (title, avatar, follow
+ * action) with the handle, follower/following counts, and bio carried in the
+ * header's metadata slot, so the profile reads as the same chrome as the
+ * unread/starred/follows timelines and feed detail pages.
  */
 function ProfileMasthead({
   displayName,
@@ -131,6 +131,9 @@ function ProfileMasthead({
   localFollowerCount,
   followingCount,
   showFederatedSplit,
+  isOwnProfile,
+  isFollowing,
+  onFollowToggle,
 }: {
   displayName: string;
   handle: string;
@@ -140,91 +143,71 @@ function ProfileMasthead({
   localFollowerCount: number;
   followingCount: number;
   showFederatedSplit: boolean;
+  isOwnProfile: boolean;
+  isFollowing: boolean;
+  onFollowToggle: (next: boolean) => void;
 }) {
-  const shell = useShell();
-
   return (
-    <div className="border-b border-border bg-background px-4 py-3 lg:pl-[48px]">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-1.5">
-          {/* Mobile sidebar toggle — same pattern as PageHeader */}
-          {shell && (
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Toggle sidebar"
-              onClick={shell.openSidebar}
-              className="-ml-2 shrink-0 lg:hidden"
-            >
-              <MenuIcon className="size-4" />
-            </Button>
+    <PageHeader
+      className="static"
+      title={displayName}
+      actions={
+        <>
+          {!isOwnProfile && (
+            <FollowButton
+              handle={handle}
+              isFollowing={isFollowing}
+              onToggle={onFollowToggle}
+            />
           )}
-          <div className="min-w-0">
-            <h1 className="truncate font-serif text-base font-bold leading-7 tracking-wider sm:text-lg">
-              {displayName}
-            </h1>
-            {hasDisplayName && (
-              <p className="truncate text-sm text-muted-foreground">@{handle}</p>
-            )}
-          </div>
-        </div>
-        <UserAvatar
-          displayName={hasDisplayName ? displayName : undefined}
-          handle={handle}
-          className="size-12 shrink-0 text-lg font-semibold"
-        />
-      </div>
-
-      <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 pl-[36px] text-xs text-muted-foreground lg:pl-0">
-        <span>
-          <span className="font-medium text-foreground">{followerTotal}</span>{" "}
-          {followerTotal === 1 ? "follower" : "followers"}
-          {showFederatedSplit && (
-            <span className="ml-1 text-muted-foreground/70">
-              ({localFollowerCount} here)
+          <UserAvatar
+            displayName={hasDisplayName ? displayName : undefined}
+            handle={handle}
+            className="size-12 shrink-0 text-lg font-semibold"
+          />
+        </>
+      }
+      metadata={
+        <>
+          {hasDisplayName && <p className="truncate">@{handle}</p>}
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+            <span>
+              <span className="font-medium text-foreground">{followerTotal}</span>{" "}
+              {followerTotal === 1 ? "follower" : "followers"}
+              {showFederatedSplit && (
+                <span className="ml-1 text-muted-foreground/70">
+                  ({localFollowerCount} here)
+                </span>
+              )}
             </span>
-          )}
-        </span>
-        <span>
-          <span className="font-medium text-foreground">{followingCount}</span>{" "}
-          following
-        </span>
-      </div>
-
-      {bio && <p className="mt-1.5 pl-[36px] text-sm text-muted-foreground lg:pl-0">{bio}</p>}
-    </div>
+            <span>
+              <span className="font-medium text-foreground">{followingCount}</span>{" "}
+              following
+            </span>
+          </div>
+          {bio && <p className="mt-1.5">{bio}</p>}
+        </>
+      }
+    />
   );
 }
 
 function MastheadSkeleton() {
-  const shell = useShell();
   return (
-    <div className="border-b border-border bg-background px-4 py-3 lg:pl-[48px]">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-1.5">
-          {shell && (
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Toggle sidebar"
-              onClick={shell.openSidebar}
-              className="-ml-2 shrink-0 lg:hidden"
-            >
-              <MenuIcon className="size-4" />
-            </Button>
-          )}
-          <div className="flex flex-col gap-1.5">
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-3.5 w-24" />
+    <PageHeader
+      className="static"
+      title={<Skeleton className="h-5 w-32" />}
+      actions={<Skeleton className="size-12 shrink-0 rounded-full" />}
+      metadata={
+        <div className="flex flex-col gap-1.5">
+          <Skeleton className="h-3.5 w-24" />
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-3.5 w-20" />
+            <Skeleton className="h-3.5 w-20" />
           </div>
         </div>
-        <Skeleton className="size-12 shrink-0 rounded-full" />
-      </div>
-      <div className="mt-2 flex items-center gap-4 pl-[36px] lg:pl-0">
-        <Skeleton className="h-3.5 w-20" />
-        <Skeleton className="h-3.5 w-20" />
-      </div>
-    </div>
+      }
+    />
   );
 }
 
@@ -345,7 +328,6 @@ export default function UserProfilePage({
     global_follower_count > 0 && global_follower_count !== user.follower_count;
   const articles = shared_articles ?? [];
   const userFeeds = feeds ?? [];
-  const canFollow = !isOwnProfile;
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -359,18 +341,12 @@ export default function UserProfilePage({
           localFollowerCount={user.follower_count}
           followingCount={user.following_count}
           showFederatedSplit={showFederatedSplit}
+          isOwnProfile={isOwnProfile}
+          isFollowing={user.is_following ?? false}
+          onFollowToggle={handleFollowToggle}
         />
       </div>
       <Tabs value={tab} onValueChange={handleTabChange} className="flex min-h-0 flex-1 flex-col gap-0">
-        {canFollow && (
-          <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 py-2 pl-[52px] lg:pl-[48px]">
-            <FollowButton
-              handle={user.handle}
-              isFollowing={user.is_following ?? false}
-              onToggle={handleFollowToggle}
-            />
-          </div>
-        )}
         <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 pt-1.5 pl-[52px] lg:pl-[48px]">
           <TabsList variant="line" className="h-8! px-0">
             <TabsTrigger value="articles">
