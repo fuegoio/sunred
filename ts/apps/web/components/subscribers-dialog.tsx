@@ -114,13 +114,13 @@ export function SubscribersDialog({
         render={
           <button
             type="button"
-            className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <Users className="size-4" />
             <span className="tabular-nums font-medium text-foreground">{total}</span>
-            <span>{total === 1 ? "subscriber" : "subscribers"}</span>
+            <span className="hidden sm:inline">{total === 1 ? "subscriber" : "subscribers"}</span>
             {globalCount > 0 && globalCount !== count && (
-              <span className="text-muted-foreground/70">&middot; {count} here</span>
+              <span className="hidden sm:inline text-muted-foreground/70">&middot; {count} here</span>
             )}
           </button>
         }

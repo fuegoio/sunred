@@ -128,35 +128,43 @@ export function FeedHeader({
             </>
           }
         />
-        <div className="flex items-center gap-2 border-b border-border px-4 py-2 pl-[52px] lg:pl-[48px]">
+        <div className="flex min-w-0 items-center gap-1.5 overflow-x-auto border-b border-border px-4 py-2 pl-[52px] sm:gap-2 lg:pl-[48px]">
           {!preview && onMarkAllRead && (
-            <Button variant="outline" size="sm" onClick={onMarkAllRead} disabled={marking}>
+            <Button variant="outline" size="sm" onClick={onMarkAllRead} disabled={marking}
+              className="shrink-0 px-2 sm:px-3"
+              aria-label="Mark all as read">
               {marking ? <Loader2 className="animate-spin" /> : <CheckCheck />}
-              Mark all as read
+              <span className="hidden sm:inline">Mark all as read</span>
             </Button>
           )}
           {!preview && onRefresh && (
-            <Button variant="outline" size="sm" onClick={onRefresh} disabled={refreshing}>
+            <Button variant="outline" size="sm" onClick={onRefresh} disabled={refreshing}
+              className="shrink-0 px-2 sm:px-3"
+              aria-label="Refresh feed">
               {refreshing ? <Loader2 className="animate-spin" /> : <RefreshCw />}
-              Refresh
+              <span className="hidden sm:inline">Refresh</span>
             </Button>
           )}
           {!preview && folders && onMoveFolder && (
-            <FolderPickerPopover
-              folders={folders}
-              currentFolderId={feed.folder_id}
-              disabled={movingFolder}
-              onSelect={onMoveFolder}
-            />
+            <div className="shrink-0">
+              <FolderPickerPopover
+                folders={folders}
+                currentFolderId={feed.folder_id}
+                disabled={movingFolder}
+                onSelect={onMoveFolder}
+              />
+            </div>
           )}
           {preview && (
-            <SubscribeButton
-              feedUrl={feed.feed_url}
-              feedTitle={feed.title}
-            />
+            <div className="shrink-0">
+              <SubscribeButton
+                feedUrl={feed.feed_url}
+                feedTitle={feed.title}
+              />
+            </div>
           )}
           {subscribers !== undefined && (
-            <div className="ml-auto">
+            <div className="ml-auto shrink-0">
               <SubscribersDialog
                 count={subscribers.count}
                 globalCount={subscribers.global_count}

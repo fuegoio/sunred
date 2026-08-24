@@ -155,7 +155,7 @@ export function FolderPickerPopover({
         aria-label="Move to folder"
       >
         <FolderOpen className="size-3.5" />
-        <span className="max-w-[8rem] truncate">
+        <span className="max-w-[4rem] truncate sm:max-w-[8rem]">
           {currentFolder ? currentFolder.title : "No folder"}
         </span>
         <ChevronDown className="size-3 text-muted-foreground" />
