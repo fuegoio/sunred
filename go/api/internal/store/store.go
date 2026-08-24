@@ -489,6 +489,43 @@ func (s *Store) GetEntryByID(ctx context.Context, id int64, userID int) (*Entry,
 	return &e, nil
 }
 
+// EntryStateByURL holds the read status and starred flag for a single
+// article URL, used to populate preview items with the user's existing state.
+type EntryStateByURL struct {
+	Status  string
+	Starred bool
+}
+
+// GetEntryStatesByURLs returns the user's read status and starred state for
+// each article URL, keyed by URL. Absent means unread + unstarred. Used by
+// the preview endpoint to show the user's existing state for preview items.
+func (s *Store) GetEntryStatesByURLs(ctx context.Context, userID int, urls []string) (map[string]EntryStateByURL, error) {
+	if len(urls) == 0 {
+		return map[string]EntryStateByURL{}, nil
+	}
+	rows, err := s.DB.QueryContext(ctx, `
+		SELECT rs.article_url, COALESCE(rs.status, 'unread'), (es.article_url IS NOT NULL)
+		FROM (SELECT unnest($2::text[]) AS article_url) u
+		LEFT JOIN entry_read_status rs ON rs.user_id = $1 AND rs.article_url = u.article_url
+		LEFT JOIN entry_stars es ON es.user_id = $1 AND es.article_url = u.article_url`,
+		userID, pq.Array(urls))
+	if err != nil {
+		return nil, fmt.Errorf("get entry states by url: %w", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	out := make(map[string]EntryStateByURL, len(urls))
+	for rows.Next() {
+		var url, status string
+		var starred bool
+		if err := rows.Scan(&url, &status, &starred); err != nil {
+			return nil, err
+		}
+		out[url] = EntryStateByURL{Status: status, Starred: starred}
+	}
+	return out, rows.Err()
+}
+
 // UpdateEntryStatus sets the status of a set of visible entries for the user
 // via upsert into entry_read_status, keyed by (user_id, article_url).
 func (s *Store) UpdateEntryStatus(ctx context.Context, entryIDs []int64, userID int, status string) error {

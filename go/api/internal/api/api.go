@@ -317,6 +317,8 @@ type PreviewFeedItem struct {
 	Content     string    `json:"content"`
 	PublishedAt time.Time `json:"published_at"`
 	Tags        []string  `json:"tags,omitempty"`
+	Status      string    `json:"status,omitempty"`
+	Starred     bool      `json:"starred,omitempty"`
 }
 
 type PreviewFeedBody struct {
@@ -579,6 +581,24 @@ func (a *API) registerFeedRoutes() {
 				PublishedAt: publishedAt,
 				Tags:        item.Tags,
 			})
+		}
+
+		// Populate the user's existing read/star state for the preview items so
+		// the UI reflects state that was set before subscribing (the state is
+		// keyed by article URL, so it persists independently of the feed).
+		userID := auth.UserIDFromCtx(ctx)
+		if len(items) > 0 {
+			urls := make([]string, len(items))
+			for i, it := range items {
+				urls[i] = it.URL
+			}
+			states, _ := a.store.GetEntryStatesByURLs(ctx, userID, urls)
+			for i := range items {
+				if st, ok := states[items[i].URL]; ok {
+					items[i].Status = st.Status
+					items[i].Starred = st.Starred
+				}
+			}
 		}
 
 		faviconURL := ""
