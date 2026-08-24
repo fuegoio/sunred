@@ -50,14 +50,15 @@ export function FeedDiscovery({ preview }: { preview: PreviewFeedBody }) {
   const entries = items.map((item, i) => toEntry(item, i));
 
   // The preview response embeds the subscriber summary when the feed is
-  // known to the instance; map it to the shape FeedHeader expects.
-  const subscribers: FeedSubscribersResponse | undefined = preview.subscribers
+  // known to the instance; when it's not (no one subscribes), default to a
+  // zeroed summary so the count always renders.
+  const subscribers: FeedSubscribersResponse = preview.subscribers
     ? {
         count: preview.subscribers.count,
         global_count: preview.subscribers.global_count,
         subscribers: preview.subscribers.subscribers ?? [],
       }
-    : undefined;
+    : { count: 0, global_count: 0, subscribers: [] };
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
