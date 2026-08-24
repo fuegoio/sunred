@@ -26,18 +26,12 @@ const EASE = [0.25, 1, 0.5, 1] as const;
  * star it or open comments before it leaves on the next genuine refetch
  * (navigation, manual refresh, or another article opening).
  */
-function patchEntryStatus(
-  queryClient: QueryClient,
-  entryId: number,
-  status: Entry["status"],
-) {
+function patchEntryStatus(queryClient: QueryClient, entryId: number, status: Entry["status"]) {
   queryClient.setQueriesData<InfiniteData<Entry[]>>({ queryKey: ["entries"] }, (data) => {
     if (!data?.pages) return data;
     return {
       ...data,
-      pages: data.pages.map((page) =>
-        page.map((e) => (e.id === entryId ? { ...e, status } : e)),
-      ),
+      pages: data.pages.map((page) => page.map((e) => (e.id === entryId ? { ...e, status } : e))),
     };
   });
 }
@@ -115,8 +109,7 @@ export function EntryCard({
   // The entry's feed is not subscribed when no `feed` prop was resolved by the
   // timeline (i.e. feed_id is absent from the user's subscriptions). A share
   // from a followed user surfaces such entries; offer a one-click subscribe.
-  const canSubscribe =
-    !preview && !subscribedOverride && !feed && Boolean(entry.feed?.feed_url);
+  const canSubscribe = !preview && !subscribedOverride && !feed && Boolean(entry.feed?.feed_url);
 
   async function handleSubscribe(e: React.MouseEvent) {
     e.preventDefault();
@@ -291,12 +284,17 @@ export function EntryCard({
         <h3
           className={cn(
             "mt-1 line-clamp-2 text-sm",
-            unread ? "font-semibold text-foreground" : "font-medium",
+            unread ? "font-semibold text-foreground" : "font-medium text-foreground/80",
           )}
         >
           {entry.title || "Untitled"}
         </h3>
-        <p className="mt-1 line-clamp-4 min-h-[5rem] text-sm text-muted-foreground sm:line-clamp-2 sm:min-h-[2.5rem]">
+        <p
+          className={cn(
+            "mt-1 line-clamp-4 min-h-[5rem] text-sm sm:line-clamp-2 sm:min-h-[2.5rem]",
+            unread ? "text-muted-foreground" : "text-muted-foreground/80",
+          )}
+        >
           {snippet}
         </p>
       </div>
