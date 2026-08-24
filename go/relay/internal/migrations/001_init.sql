@@ -31,6 +31,8 @@ CREATE TABLE tracked_dids (
 CREATE INDEX idx_tracked_dids_pds_url ON tracked_dids (pds_url);
 CREATE INDEX idx_tracked_dids_status  ON tracked_dids (status);
 CREATE INDEX idx_tracked_dids_handle  ON tracked_dids (handle);
+-- A handle resolves to at most one DID; enforce uniqueness for non-empty handles.
+CREATE UNIQUE INDEX idx_tracked_dids_handle_unique ON tracked_dids (handle) WHERE handle <> '';
 
 -- Global follower counts: for each (follower_did, followee_did) pair seen
 -- across any tracked PDS repo, we store the follow record key so we can

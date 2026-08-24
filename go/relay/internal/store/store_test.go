@@ -64,6 +64,8 @@ CREATE TABLE IF NOT EXISTS tracked_dids (
   announced_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   last_event_at TIMESTAMPTZ
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_tracked_dids_handle_unique
+  ON tracked_dids (handle) WHERE handle <> '';
 
 CREATE TABLE IF NOT EXISTS observed_follows (
   id           BIGSERIAL PRIMARY KEY,
@@ -169,6 +171,60 @@ func TestUpsertTrackedDID(t *testing.T) {
 	}
 	if isNew2 {
 		t.Error("expected isNew=false on second upsert")
+	}
+}
+
+func TestUpsertTrackedDID_DedupHandle(t *testing.T) {
+	s := relayTestDB(t)
+	ctx := context.Background()
+
+	instURL := fmt.Sprintf("https://inst-dedup-%d.example.com", time.Now().UnixNano())
+	instID, _ := s.UpsertInstance(ctx, instURL)
+	t.Cleanup(func() { _, _ = s.DB.Exec(`DELETE FROM instances WHERE id=$1`, instID) })
+
+	did1 := fmt.Sprintf("did:plc:dup1-%d", time.Now().UnixNano())
+	did2 := fmt.Sprintf("did:plc:dup2-%d", time.Now().UnixNano())
+	handle := fmt.Sprintf("duphandle-%d", time.Now().UnixNano())
+	t.Cleanup(func() {
+		_, _ = s.DB.Exec(`DELETE FROM tracked_dids WHERE did IN ($1,$2)`, did1, did2)
+	})
+
+	// First DID claims the handle.
+	_, _, err := s.UpsertTrackedDID(ctx, did1, "https://pds1.example.com", handle, instID)
+	if err != nil {
+		t.Fatalf("UpsertTrackedDID did1: %v", err)
+	}
+
+	// Second DID claims the same handle — should steal it from did1.
+	_, _, err = s.UpsertTrackedDID(ctx, did2, "https://pds2.example.com", handle, instID)
+	if err != nil {
+		t.Fatalf("UpsertTrackedDID did2: %v", err)
+	}
+
+	// did1's handle should now be empty.
+	var h1, h2 string
+	_ = s.DB.QueryRow(`SELECT handle FROM tracked_dids WHERE did=$1`, did1).Scan(&h1)
+	_ = s.DB.QueryRow(`SELECT handle FROM tracked_dids WHERE did=$1`, did2).Scan(&h2)
+	if h1 != "" {
+		t.Errorf("did1 handle=%q, want '' (should have been cleared)", h1)
+	}
+	if h2 != handle {
+		t.Errorf("did2 handle=%q, want %q", h2, handle)
+	}
+
+	// Search should return the handle exactly once.
+	results, err := s.SearchDIDs(ctx, handle, 50)
+	if err != nil {
+		t.Fatalf("SearchDIDs: %v", err)
+	}
+	count := 0
+	for _, r := range results {
+		if r.Handle == handle {
+			count++
+		}
+	}
+	if count != 1 {
+		t.Errorf("expected 1 result for handle %q, got %d", handle, count)
 	}
 }
 
