@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -73,17 +74,19 @@ func mustSeedUser(t *testing.T, s *store.Store, did string) int {
 
 func TestRelayConsumer_FeedSubscriptionEvent(t *testing.T) {
 	s := testDB(t)
-	userID := mustSeedUser(t, s, "did:plc:alice")
+	suffix := fmt.Sprintf("%d", time.Now().UnixNano())
+	userID := mustSeedUser(t, s, "did:plc:alice-"+suffix)
+	feedURL := fmt.Sprintf("https://feedsub-%s.example.com/rss", suffix)
 
 	evt := relayEvent{
 		Seq:       1,
 		EventType: "feedSubscription",
-		DID:       "did:plc:alice",
+		DID:       "did:plc:alice-" + suffix,
 	}
 	evt.Payload, _ = json.Marshal(map[string]any{
 		"rkey":    "rkey001",
-		"feedUrl": "https://example.com/rss",
-		"siteUrl": "https://example.com",
+		"feedUrl": feedURL,
+		"siteUrl": "https://feedsub.example.com",
 		"title":   "Example",
 	})
 
@@ -97,13 +100,15 @@ func TestRelayConsumer_FeedSubscriptionEvent(t *testing.T) {
 	// Wait for the feed + subscription to appear.
 	deadline := time.Now().Add(3 * time.Second)
 	for time.Now().Before(deadline) {
-		feed, _ := s.GetFeedByURL(context.Background(), "https://example.com/rss")
+		feed, _ := s.GetFeedByURL(context.Background(), feedURL)
 		if feed != nil {
 			if feed.Title != "Example" {
 				t.Errorf("feed title=%q, want 'Example'", feed.Title)
 			}
 			if sub, _ := s.GetSubscriptionFeed(context.Background(), feed.ID, userID); sub == nil {
-				t.Error("expected subscription to exist after feedSubscription event")
+				// Feed exists but subscription isn't created yet — keep polling.
+				time.Sleep(50 * time.Millisecond)
+				continue
 			}
 			cancel()
 			return
