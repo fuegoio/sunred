@@ -261,24 +261,19 @@ func TestUpdateEntryStatusByURL_MarkReadWithoutEntry(t *testing.T) {
 		t.Fatalf("mark read by URL: %v", err)
 	}
 
+	// Marking read deletes the row (absence = read), so no row should exist.
 	status, exists := entryReadStatus(t, s, userID, articleURL)
-	if !exists {
-		t.Fatal("expected read status row to exist")
-	}
-	if status != "read" {
-		t.Errorf("status=%q, want 'read'", status)
+	if exists {
+		t.Errorf("expected no read-status row after marking read (absent = read), got status=%q", status)
 	}
 
-	// entry_id should be null (no materialized entry).
-	var entryID *int64
-	if err := s.DB.QueryRow(
-		`SELECT entry_id FROM entry_read_status WHERE user_id = $1 AND article_url = $2`,
-		userID, articleURL,
-	).Scan(&entryID); err != nil {
-		t.Fatalf("read entry_id: %v", err)
+	// Verify the default state via GetEntryStatesByURLs reports 'read'.
+	states, err := s.GetEntryStatesByURLs(ctx, userID, []string{articleURL})
+	if err != nil {
+		t.Fatalf("GetEntryStatesByURLs: %v", err)
 	}
-	if entryID != nil {
-		t.Errorf("expected null entry_id, got %d", *entryID)
+	if st := states[articleURL]; st.Status != "read" {
+		t.Errorf("status=%q, want 'read'", st.Status)
 	}
 }
 
@@ -294,27 +289,25 @@ func TestUpdateEntryStatusByURL_MarkReadWithEntry(t *testing.T) {
 		t.Fatalf("mark read by URL: %v", err)
 	}
 
-	status, exists := entryReadStatus(t, s, userID, articleURL)
-	if !exists {
-		t.Fatal("expected read status row to exist")
-	}
-	if status != "read" {
-		t.Errorf("status=%q, want 'read'", status)
+	// Marking read deletes the row (absence = read).
+	_, exists := entryReadStatus(t, s, userID, articleURL)
+	if exists {
+		t.Error("expected no read-status row after marking read (absent = read)")
 	}
 
-	// entry_id should be linked to the materialized entry.
-	var linkedID *int64
-	if err := s.DB.QueryRow(
-		`SELECT entry_id FROM entry_read_status WHERE user_id = $1 AND article_url = $2`,
-		userID, articleURL,
-	).Scan(&linkedID); err != nil {
-		t.Fatalf("read entry_id: %v", err)
+	// ListEntries should report the entry as read.
+	fid := 0
+	_ = fid
+	entries, err := s.ListEntries(ctx, userID, nil, nil, "", nil, "", "", 50, 0)
+	if err != nil {
+		t.Fatalf("ListEntries: %v", err)
 	}
-	if linkedID == nil {
-		t.Fatal("expected non-null entry_id")
-	}
-	if *linkedID != entryID {
-		t.Errorf("entry_id=%d, want %d", *linkedID, entryID)
+	for _, e := range entries {
+		if e.ID == entryID {
+			if e.Status != "read" {
+				t.Errorf("status=%q, want 'read'", e.Status)
+			}
+		}
 	}
 }
 
@@ -356,12 +349,10 @@ func TestUpdateEntryStatusByURL_SameURLInMultipleFeeds(t *testing.T) {
 		t.Fatalf("mark read by URL with duplicate entries: %v", err)
 	}
 
-	status, exists := entryReadStatus(t, s, userID, articleURL)
-	if !exists {
-		t.Fatal("expected read status row to exist")
-	}
-	if status != "read" {
-		t.Errorf("status=%q, want 'read'", status)
+	// Marking read deletes the row (absence = read).
+	_, exists := entryReadStatus(t, s, userID, articleURL)
+	if exists {
+		t.Error("expected no read-status row after marking read (absent = read)")
 	}
 }
 
@@ -373,9 +364,9 @@ func TestUpdateEntryStatusByURL_StatusPersistsAfterEntryDeleted(t *testing.T) {
 
 	_, entryID := seedFeedAndEntryWithURL(t, s, userID, "Persist Feed", articleURL, "Persist Entry")
 
-	// Mark read.
-	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "read"); err != nil {
-		t.Fatalf("mark read: %v", err)
+	// Mark unread (creates a row), then delete the entry.
+	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "unread"); err != nil {
+		t.Fatalf("mark unread: %v", err)
 	}
 
 	// Delete the entry (simulates feed cleanup).
@@ -386,10 +377,10 @@ func TestUpdateEntryStatusByURL_StatusPersistsAfterEntryDeleted(t *testing.T) {
 	// Read status should still exist (entry_id SET NULL on delete).
 	status, exists := entryReadStatus(t, s, userID, articleURL)
 	if !exists {
-		t.Fatal("expected read status to persist after entry deletion")
+		t.Fatal("expected unread status to persist after entry deletion")
 	}
-	if status != "read" {
-		t.Errorf("status=%q, want 'read'", status)
+	if status != "unread" {
+		t.Errorf("status=%q, want 'unread'", status)
 	}
 }
 
@@ -654,12 +645,10 @@ func TestUpdateEntryStatus_ExistingEntryID(t *testing.T) {
 		t.Fatalf("mark read by ID: %v", err)
 	}
 
-	status, exists := entryReadStatus(t, s, userID, articleURL)
-	if !exists {
-		t.Fatal("expected read status row")
-	}
-	if status != "read" {
-		t.Errorf("status=%q, want 'read'", status)
+	// Marking read deletes the row (absence = read).
+	_, exists := entryReadStatus(t, s, userID, articleURL)
+	if exists {
+		t.Error("expected no read-status row after marking read (absent = read)")
 	}
 }
 
@@ -687,8 +676,8 @@ func TestGetEntryStatesByURLs_AllAbsent(t *testing.T) {
 			t.Errorf("expected URL %q to be in map", url)
 			continue
 		}
-		if st.Status != "unread" {
-			t.Errorf("status=%q, want 'unread' (absent = unread)", st.Status)
+		if st.Status != "read" {
+			t.Errorf("status=%q, want 'read' (absent = read)", st.Status)
 		}
 		if st.Starred {
 			t.Error("expected starred=false (absent = unstarred)")
@@ -716,9 +705,9 @@ func TestGetEntryStatesByURLs_WithReadAndStarred(t *testing.T) {
 	); err != nil {
 		t.Fatalf("star: %v", err)
 	}
-	// Both read and starred.
-	if err := s.UpdateEntryStatusByURL(ctx, userID, bothURL, "read"); err != nil {
-		t.Fatalf("mark both read: %v", err)
+	// Both unread and starred.
+	if err := s.UpdateEntryStatusByURL(ctx, userID, bothURL, "unread"); err != nil {
+		t.Fatalf("mark both unread: %v", err)
 	}
 	if err := s.ToggleEntryStarredByURL(ctx, userID,
 		bothURL, "Both", "", "https://feed.example.com/rss", "Feed", "", "", nil, true,
@@ -738,14 +727,14 @@ func TestGetEntryStatesByURLs_WithReadAndStarred(t *testing.T) {
 	if st := states[readURL]; st.Status != "read" || st.Starred {
 		t.Errorf("readURL: status=%q starred=%v, want 'read' false", st.Status, st.Starred)
 	}
-	if st := states[starredURL]; st.Status != "unread" || !st.Starred {
-		t.Errorf("starredURL: status=%q starred=%v, want 'unread' true", st.Status, st.Starred)
+	if st := states[starredURL]; st.Status != "read" || !st.Starred {
+		t.Errorf("starredURL: status=%q starred=%v, want 'read' true", st.Status, st.Starred)
 	}
-	if st := states[bothURL]; st.Status != "read" || !st.Starred {
-		t.Errorf("bothURL: status=%q starred=%v, want 'read' true", st.Status, st.Starred)
+	if st := states[bothURL]; st.Status != "unread" || !st.Starred {
+		t.Errorf("bothURL: status=%q starred=%v, want 'unread' true", st.Status, st.Starred)
 	}
-	if st := states[noneURL]; st.Status != "unread" || st.Starred {
-		t.Errorf("noneURL: status=%q starred=%v, want 'unread' false", st.Status, st.Starred)
+	if st := states[noneURL]; st.Status != "read" || st.Starred {
+		t.Errorf("noneURL: status=%q starred=%v, want 'read' false", st.Status, st.Starred)
 	}
 }
 

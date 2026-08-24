@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"log/slog"
 	"regexp"
 	"strings"
 	"time"
@@ -312,6 +313,14 @@ func (s *Store) ensureSharedEntry(ctx context.Context,
 		pubAt = *publishedAt
 	}
 	eid, _ := s.CreateEntry(ctx, feed.ID, hash, title, articleURL, "", author, "", description, pubAt, nil)
+	if eid == 0 {
+		// Entry already existed for this feed+hash; look up its id so the
+		// share can link to it and followers can be notified.
+		_ = s.DB.QueryRowContext(ctx,
+			`SELECT id FROM entries WHERE feed_id = $1 AND hash = $2`,
+			feed.ID, hash,
+		).Scan(&eid)
+	}
 	return eid
 }
 
@@ -322,6 +331,14 @@ func (s *Store) ShareArticle(ctx context.Context, userID int,
 	articleURL = urlnorm.URL(articleURL)
 	feedURL = urlnorm.URL(feedURL)
 	entryID := s.ensureSharedEntry(ctx, articleURL, title, description, feedURL, feedTitle, feedSiteURL, author, publishedAt)
+
+	// Detect whether the share already existed so we only notify followers
+	// on a genuinely new share (not a reshare/update of an existing one).
+	var existed bool
+	_ = s.DB.QueryRowContext(ctx,
+		`SELECT EXISTS(SELECT 1 FROM shared_articles WHERE user_id = $1 AND article_url = $2)`,
+		userID, articleURL,
+	).Scan(&existed)
 
 	var sa SharedArticle
 	err := s.DB.QueryRowContext(ctx, `
@@ -347,6 +364,13 @@ func (s *Store) ShareArticle(ctx context.Context, userID int,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("share article: %w", err)
+	}
+	// Mark the article unread for followers on a new share. Reshares of an
+	// already-shared article do not re-notify.
+	if !existed && sa.EntryID != nil && *sa.EntryID > 0 {
+		if err := s.MarkShareUnreadForFollowers(ctx, userID, articleURL, *sa.EntryID); err != nil {
+			slog.Warn("share: mark unread for followers", "user_id", userID, "article_url", articleURL, "err", err)
+		}
 	}
 	return &sa, nil
 }
@@ -422,7 +446,7 @@ func (s *Store) ListSharedArticlesByUser(ctx context.Context, userID, viewerID i
 		SELECT sa.id, sa.user_id, sa.article_url, sa.title, sa.description,
 		       sa.feed_url, sa.feed_title, sa.feed_site_url, sa.author,
 		       sa.published_at, sa.shared_at, sa.entry_id,
-		       COALESCE(rs.status, 'unread'), (es.article_url IS NOT NULL)
+		       COALESCE(rs.status, 'read'), (es.article_url IS NOT NULL)
 		FROM shared_articles sa
 		LEFT JOIN entry_read_status rs ON rs.user_id = $2 AND rs.article_url = sa.article_url
 		LEFT JOIN entry_stars es ON es.user_id = $2 AND es.article_url = sa.article_url

@@ -103,7 +103,10 @@ func backfillShares(ctx context.Context, c *atproto.Client, st *store.Store, use
 					publishedAt = &utc
 				}
 			}
-			if err := st.UpsertShareWithRkey(ctx, userID,
+			// Backfilled shares are not marked unread for followers — following
+			// someone marks their past shares as read by default. Only new shares
+			// arriving after the follow (live relay events) create unread state.
+			if _, err := st.UpsertShareWithRkey(ctx, userID,
 				s.ArticleURL, s.Title, s.Description,
 				s.FeedURL, s.FeedTitle, s.FeedSiteURL,
 				s.Author, publishedAt, rkey,
