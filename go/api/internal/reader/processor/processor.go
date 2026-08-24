@@ -124,11 +124,11 @@ func (p *Processor) ProcessFeed(ctx context.Context, feed *store.Feed) error {
 }
 
 // hashItem computes the per-feed entry dedup hash from the article's
-// normalized link, title, and publication date. The link is normalized so
-// the same article is not duplicated within a feed when the publisher
-// appends or strips tracking query parameters between refreshes.
+// normalized link. URL-only hashing matches how read/star state and sharing
+// identify articles (by URL), so a title edit or date reformat by the
+// publisher doesn't create a duplicate entry row for the same article.
 func hashItem(item parser.Item) string {
-	h := sha256.Sum256([]byte(urlnorm.URL(item.Link) + item.Title + item.PublishedAt))
+	h := sha256.Sum256([]byte(urlnorm.URL(item.Link)))
 	return hex.EncodeToString(h[:])
 }
 

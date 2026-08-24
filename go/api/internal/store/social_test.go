@@ -341,12 +341,23 @@ func TestShareArticle_NoDuplicateInSubscribedFeed(t *testing.T) {
 		t.Fatalf("CreateSubscription: %v", err)
 	}
 
-	// Simulate a feed refresh ingesting the article — the processor hashes
-	// with sha256(url+title+publishedAt), not sha256(url) like ensureSharedEntry.
+	// Simulate a feed refresh ingesting the article — both the processor and
+	// ensureSharedEntry now hash with sha256(url), so they collide on the
+	// (feed_id, hash) unique constraint.
 	pub := time.Now().Add(-1 * time.Hour)
-	refreshHash := hashItemTest(articleURL, "Great Post", pub.Format(time.RFC1123Z))
-	if _, err := s.CreateEntry(ctx, feed.ID, refreshHash, "Great Post", articleURL, "", "Author", "", "desc", pub, nil); err != nil {
+	refreshHash := hashItemTest(articleURL)
+	entryID, err := s.CreateEntry(ctx, feed.ID, refreshHash, "Great Post", articleURL, "", "Author", "", "desc", pub, nil)
+	if err != nil {
 		t.Fatalf("CreateEntry: %v", err)
+	}
+	if entryID == 0 {
+		t.Fatal("expected non-zero entry ID from CreateEntry")
+	}
+
+	// Mark the article unread — the default read state is now 'read', so we
+	// must explicitly mark it to reproduce the "unread" scenario.
+	if err := s.UpdateEntryStatusByURL(ctx, u, articleURL, "unread"); err != nil {
+		t.Fatalf("UpdateEntryStatusByURL: %v", err)
 	}
 
 	// Share the same article using the same feed_url.
@@ -584,10 +595,10 @@ func TestUpsertHandle_AllowedChars(t *testing.T) {
 	}
 }
 
-// hashItemTest mirrors the reader processor's hashItem (sha256 of normalized
-// URL + title + publishedAt string) so tests can simulate feed-refresh entries
-// that collide on URL but not on hash with ensureSharedEntry's sha256(url).
-func hashItemTest(link, title, publishedAt string) string {
-	h := sha256.Sum256([]byte(urlnorm.URL(link) + title + publishedAt))
+// hashItemTest mirrors the reader processor's hashItem (sha256 of the
+// normalized article URL) so tests can simulate feed-refresh entries that
+// collide with ensureSharedEntry's hash on the same (feed_id, hash) key.
+func hashItemTest(link string) string {
+	h := sha256.Sum256([]byte(urlnorm.URL(link)))
 	return hex.EncodeToString(h[:])
 }
