@@ -99,18 +99,17 @@ function FollowButton({
       variant={isFollowing ? "outline" : "default"}
       size="sm"
       onClick={handleClick}
-      aria-label={isFollowing ? "Unfollow" : "Follow"}
-      className="gap-1.5 px-2 sm:px-3"
+      className="gap-1.5"
     >
       {isFollowing ? (
         <>
           <UserCheck className="size-3.5" />
-          <span className="hidden sm:inline">Following</span>
+          Following
         </>
       ) : (
         <>
           <UserPlus className="size-3.5" />
-          <span className="hidden sm:inline">Follow</span>
+          Follow
         </>
       )}
     </Button>
@@ -132,9 +131,6 @@ function ProfileMasthead({
   localFollowerCount,
   followingCount,
   showFederatedSplit,
-  isFollowing,
-  canFollow,
-  onFollowToggle,
 }: {
   displayName: string;
   handle: string;
@@ -144,9 +140,6 @@ function ProfileMasthead({
   localFollowerCount: number;
   followingCount: number;
   showFederatedSplit: boolean;
-  isFollowing: boolean;
-  canFollow: boolean;
-  onFollowToggle: (next: boolean) => void;
 }) {
   const shell = useShell();
 
@@ -165,51 +158,37 @@ function ProfileMasthead({
         </Button>
       )}
 
-      <div className="flex items-start gap-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col">
+          <h1 className="truncate font-serif text-base font-bold tracking-wider sm:text-lg">
+            {displayName}
+          </h1>
+          <p className="truncate text-sm text-muted-foreground">@{handle}</p>
+        </div>
         <UserAvatar
           displayName={hasDisplayName ? displayName : undefined}
           handle={handle}
           className="size-12 shrink-0 text-lg font-semibold"
         />
-
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2 sm:gap-3">
-            <div className="min-w-0">
-              <h1 className="truncate font-serif text-base font-bold tracking-wider sm:text-lg">
-                {displayName}
-              </h1>
-              {hasDisplayName && (
-                <p className="truncate text-sm text-muted-foreground">@{handle}</p>
-              )}
-            </div>
-            {canFollow && (
-              <FollowButton
-                handle={handle}
-                isFollowing={isFollowing}
-                onToggle={onFollowToggle}
-              />
-            )}
-          </div>
-
-          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <span>
-              <span className="font-medium text-foreground">{followerTotal}</span>{" "}
-              {followerTotal === 1 ? "follower" : "followers"}
-              {showFederatedSplit && (
-                <span className="ml-1 text-muted-foreground/70">
-                  ({localFollowerCount} here)
-                </span>
-              )}
-            </span>
-            <span>
-              <span className="font-medium text-foreground">{followingCount}</span>{" "}
-              following
-            </span>
-          </div>
-
-          {bio && <p className="mt-2 text-sm text-muted-foreground">{bio}</p>}
-        </div>
       </div>
+
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        <span>
+          <span className="font-medium text-foreground">{followerTotal}</span>{" "}
+          {followerTotal === 1 ? "follower" : "followers"}
+          {showFederatedSplit && (
+            <span className="ml-1 text-muted-foreground/70">
+              ({localFollowerCount} here)
+            </span>
+          )}
+        </span>
+        <span>
+          <span className="font-medium text-foreground">{followingCount}</span>{" "}
+          following
+        </span>
+      </div>
+
+      {bio && <p className="mt-2 text-sm text-muted-foreground">{bio}</p>}
     </div>
   );
 }
@@ -229,21 +208,16 @@ function MastheadSkeleton() {
           <MenuIcon className="size-4" />
         </Button>
       )}
-      <div className="flex items-start gap-3">
-        <Skeleton className="size-12 shrink-0 rounded-full" />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex flex-col gap-1.5">
-              <Skeleton className="h-5 w-32" />
-              <Skeleton className="h-3.5 w-24" />
-            </div>
-            <Skeleton className="h-8 w-20" />
-          </div>
-          <div className="mt-1 flex items-center gap-4">
-            <Skeleton className="h-3.5 w-20" />
-            <Skeleton className="h-3.5 w-20" />
-          </div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-1.5">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-3.5 w-24" />
         </div>
+        <Skeleton className="size-12 shrink-0 rounded-full" />
+      </div>
+      <div className="mt-2 flex items-center gap-4">
+        <Skeleton className="h-3.5 w-20" />
+        <Skeleton className="h-3.5 w-20" />
       </div>
     </div>
   );
@@ -366,6 +340,7 @@ export default function UserProfilePage({
     global_follower_count > 0 && global_follower_count !== user.follower_count;
   const articles = shared_articles ?? [];
   const userFeeds = feeds ?? [];
+  const canFollow = !isOwnProfile;
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -379,31 +354,37 @@ export default function UserProfilePage({
           localFollowerCount={user.follower_count}
           followingCount={user.following_count}
           showFederatedSplit={showFederatedSplit}
-          isFollowing={user.is_following ?? false}
-          canFollow={!isOwnProfile}
-          onFollowToggle={handleFollowToggle}
         />
       </div>
       <Tabs value={tab} onValueChange={handleTabChange} className="flex min-h-0 flex-1 flex-col gap-0">
         <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 pt-1.5 lg:pl-[48px]">
-          <TabsList variant="line" className="h-8! px-0">
-            <TabsTrigger value="articles">
-              Articles
-              {articles.length > 0 && (
-                <span className="rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums text-foreground/70">
-                  {articles.length}
-                </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="feeds">
-              Feeds
-              {userFeeds.length > 0 && (
-                <span className="rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums text-foreground/70">
-                  {userFeeds.length}
-                </span>
-              )}
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between gap-2">
+            <TabsList variant="line" className="h-8! px-0">
+              <TabsTrigger value="articles">
+                Articles
+                {articles.length > 0 && (
+                  <span className="rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums text-foreground/70">
+                    {articles.length}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="feeds">
+                Feeds
+                {userFeeds.length > 0 && (
+                  <span className="rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums text-foreground/70">
+                    {userFeeds.length}
+                  </span>
+                )}
+              </TabsTrigger>
+            </TabsList>
+            {canFollow && (
+              <FollowButton
+                handle={user.handle}
+                isFollowing={user.is_following ?? false}
+                onToggle={handleFollowToggle}
+              />
+            )}
+          </div>
         </div>
         <TabsContent value="articles" className="min-h-0 flex-1">
           <ScrollArea className="h-full">
