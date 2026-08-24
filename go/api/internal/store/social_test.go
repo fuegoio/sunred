@@ -390,7 +390,18 @@ func TestListFeedSubscribers_OnlyWithHandles(t *testing.T) {
 	feedURL := fmt.Sprintf("https://subscriber-list-%d.example.com/rss", time.Now().UnixNano())
 	handle := fmt.Sprintf("sublisth%d", time.Now().UnixNano()%99999)
 	u1 := seedUser(t, s, fmt.Sprintf("sublist-u1-%d@example.com", time.Now().UnixNano()))
-	u2 := seedUser(t, s, fmt.Sprintf("sublist-u2-%d@example.com", time.Now().UnixNano()))
+	// u2 has no handle — should be excluded from the public subscriber list.
+	var u2 int
+	err := s.DB.QueryRow(
+		`INSERT INTO users (did, handle) VALUES ($1, '') RETURNING id`,
+		fmt.Sprintf("did:plc:sublist-u2-%d", time.Now().UnixNano()),
+	).Scan(&u2)
+	if err != nil {
+		t.Fatalf("seed u2: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = s.DB.Exec(`DELETE FROM users WHERE id = $1`, u2)
+	})
 
 	feed, err := s.GetOrCreateFeed(ctx, feedURL, "", "Feed", "")
 	if err != nil {

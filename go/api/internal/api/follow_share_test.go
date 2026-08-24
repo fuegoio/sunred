@@ -23,6 +23,11 @@ func TestATProtoSyncFollow_Follow(t *testing.T) {
 	seedCredentials(t, s, followerID, "did:plc:follower", pdsURL)
 	seedProfile(t, s, followeeID, "did:plc:followee", "followee")
 
+	// Insert the local follow row so SetFollowATProtoRkey has a row to update.
+	if err := s.FollowUser(context.Background(), followerID, "followee"); err != nil {
+		t.Fatalf("follow user: %v", err)
+	}
+
 	api := &API{store: s}
 	api.ATProtoSyncFollow(followerID, followeeID, "followee", true, "")
 
