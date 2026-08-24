@@ -1,0 +1,277 @@
+---
+import Base from "../layouts/Base.astro"
+import Nav from "../components/Nav.astro"
+import Footer from "../components/Footer.astro"
+import Logo from "../components/Logo.astro"
+
+const loginUrl = "/login"
+const selfHostUrl = "https://github.com/fuegoio/sunred"
+---
+
+<Base title="Features — Sunred" description="Everything an RSS reader should be: all feed formats, full-text search, starring, categories, social, self-hosting, and a clean REST API.">
+  <a href="#main" class="skip-link">Skip to content</a>
+  <Nav active="features" />
+
+  <section class="page-hero" aria-label="Features">
+    <div class="page-hero-glow" aria-hidden="true"></div>
+    <div class="page-hero-inner reveal">
+      <h1 class="page-hero-headline">
+        Everything an RSS reader should be.
+      </h1>
+      <p class="page-hero-lede">
+        No feature bloat. No tracking. Just the tools you need to subscribe,
+        read, share, and self-host — across web, terminal, and CLI.
+      </p>
+    </div>
+  </section>
+
+  <main id="main">
+    <!-- Reading -->
+    <section class="feat-group" aria-labelledby="reading-heading">
+      <div class="section-inner">
+        <header class="section-head">
+          <span class="section-mark">/ reading</span>
+          <h2 id="reading-heading" class="section-headline">A calm space built for reading.</h2>
+        </header>
+        <div class="feat-grid">
+          <article class="feature-cell">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1" fill="currentColor" stroke="none"/></svg>
+            </div>
+            <h3>All feed formats</h3>
+            <p>RSS 2.0, Atom 1.0, and JSON Feed. Subscribe to anything with a feed URL — blogs, news, podcasts, anything that publishes a feed.</p>
+            <ul class="feature-tags"><li>RSS 2.0</li><li>Atom 1.0</li><li>JSON Feed</li></ul>
+          </article>
+          <article class="feature-cell">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </div>
+            <h3>Full-text search</h3>
+            <p>Search across every entry from every feed. Find that article you read last month in seconds — the whole archive is indexed.</p>
+          </article>
+          <article class="feature-cell">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 2 9.6 8.6 3 10.5l6.6 1.9L11.5 19l1.9-6.6 6.6-1.9-6.6-1.9L11.5 2Z"/></svg>
+            </div>
+            <h3>Star and save</h3>
+            <p>Mark entries as starred for a permanent reading list. Unread, read, and removed statuses keep your timeline clean.</p>
+          </article>
+          <article class="feature-cell">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2v11Z"/></svg>
+            </div>
+            <h3>Categories</h3>
+            <p>Organize feeds into folders. Browse by topic, collapse what you're behind on, keep your sidebar tidy.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Social -->
+    <section class="feat-group feat-group-alt" aria-labelledby="social-feat-heading">
+      <div class="section-inner">
+        <header class="section-head">
+          <span class="section-mark">/ social</span>
+          <h2 id="social-feat-heading" class="section-headline">Reading with people you trust.</h2>
+          <p class="section-lede">
+            Follow people, share articles, and discover feeds through your
+            network. Federated on the AT Protocol.
+          </p>
+        </header>
+        <div class="feat-grid">
+          <article class="feature-cell">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <h3>Follow people</h3>
+            <p>Find people by handle or name across instances. New follows are backfilled so you don't miss prior shares.</p>
+          </article>
+          <article class="feature-cell">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/></svg>
+            </div>
+            <h3>Share articles</h3>
+            <p>One click to share any entry. Your followers see it in their timeline with your name attached — no engagement metrics.</p>
+          </article>
+          <article class="feature-cell">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+            </div>
+            <h3>Public profiles</h3>
+            <p>Every user gets a public page with shared articles, public feeds, and federated follower counts.</p>
+          </article>
+          <article class="feature-cell">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <h3>Federated graph</h3>
+            <p>Your follows and shares are AT Protocol records on your PDS. They travel with you across instances — no export step.</p>
+          </article>
+        </div>
+        <div class="feat-more">
+          <a class="link-arrow" href="/social">
+            Explore the social layer
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Self-hosting -->
+    <section class="feat-group" aria-labelledby="self-host-heading">
+      <div class="section-inner">
+        <header class="section-head">
+          <span class="section-mark">/ self-hosting</span>
+          <h2 id="self-host-heading" class="section-headline">Own your data, or skip the setup.</h2>
+        </header>
+        <div class="feat-grid">
+          <article class="feature-cell">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="6" rx="1"/><rect x="3" y="14" width="18" height="6" rx="1"/><path d="M7 7h.01M7 17h.01"/></svg>
+            </div>
+            <h3>Docker deploy</h3>
+            <p>A single command gets you a server, database, and web frontend. Run it on a VPS, a Raspberry Pi, or your home server.</p>
+          </article>
+          <article class="feature-cell">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3>Own your data</h3>
+            <p>Self-hosting means your feeds, reads, and stars live on your machine. No one else has them. Export anytime with OPML.</p>
+          </article>
+          <article class="feature-cell">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><path d="M9 12l2 2 4-4"/></svg>
+            </div>
+            <h3>OPML import</h3>
+            <p>Export your feeds from Feedly, Inoreader, NetNewsWire, or any reader as OPML and import them directly. Switching is one file.</p>
+          </article>
+          <article class="feature-cell">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20" opacity="0.4"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 2a10 10 0 0 0 0 20"/></svg>
+            </div>
+            <h3>Hosted or self-hosted</h3>
+            <p>Use the hosted version and skip the setup, or run your own. Same API, same interfaces, same social graph either way.</p>
+          </article>
+        </div>
+        <div class="feat-more">
+          <a class="link-arrow" href="/self-host">
+            Self-hosting guide
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- API / CLI -->
+    <section class="feat-group feat-group-alt" aria-labelledby="api-heading">
+      <div class="section-inner">
+        <header class="section-head">
+          <span class="section-mark">/ api</span>
+          <h2 id="api-heading" class="section-headline">Scriptable end to end.</h2>
+          <p class="section-lede">
+            A clean REST API with JSON responses. Authenticate with a bearer
+            token, then automate everything.
+          </p>
+        </header>
+        <div class="feat-grid feat-grid-3">
+          <article class="feature-cell">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <h3>REST API</h3>
+            <p>List feeds, add subscriptions, search entries, share articles, follow people. JSON in, JSON out. Full OpenAPI spec in the docs.</p>
+          </article>
+          <article class="feature-cell">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </div>
+            <h3>CLI</h3>
+            <p>Add feeds, list entries, mark as read, share, and follow — all from the command line. Pipe entries into your workflow.</p>
+          </article>
+          <article class="feature-cell">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            </div>
+            <h3>TUI</h3>
+            <p>A full terminal user interface with vim-style navigation. Read and share feeds without leaving your terminal session.</p>
+          </article>
+        </div>
+
+        <div class="code-sample" role="region" aria-label="API sample">
+          <div class="code-tabbar" aria-hidden="true">
+            <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
+            <span class="code-label">terminal</span>
+            <span class="code-spacer"></span>
+            <span class="code-keys">bash</span>
+          </div>
+          <pre class="code-body"><code><span class="code-prompt">$</span> curl -H "Authorization: Bearer $TOKEN" \
+    https://sunred.app/api/v1/entries?source=follows
+<span class="code-comment"># → entries shared by people you follow</span>
+
+<span class="code-prompt">$</span> curl -X POST -H "Authorization: Bearer $TOKEN" \
+    -d "url=https://example.com/post" \
+    https://sunred.app/api/v1/social/shares
+<span class="code-comment"># → shared to 14 followers</span></code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <section class="closing" aria-label="Get started">
+    <div class="closing-glow" aria-hidden="true"></div>
+    <div class="closing-inner">
+      <Logo class="closing-mark" static />
+      <h2 class="closing-headline">Start reading.</h2>
+      <p class="closing-lede">Subscribe to your first feed in under a minute.</p>
+      <div class="cta-row">
+        <a class="cta cta-primary" href={loginUrl}>
+          <span>Open the app</span>
+          <svg class="cta-arrow" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </a>
+        <a class="cta cta-ghost" href={selfHostUrl}>Self-host</a>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Base>
+
+<style is:global>
+  .feat-group {
+    padding: clamp(4rem, 10vh, 6.5rem) 0;
+    border-top: 1px solid var(--color-rule);
+  }
+  .feat-group-alt {
+    background-color: color-mix(in oklab, var(--color-bg-sunken) 50%, var(--color-bg));
+  }
+  .feat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+  .feat-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .feat-more {
+    margin-top: 2.5rem;
+  }
+  .feat-group .code-sample {
+    margin-top: 2.5rem;
+  }
+  .link-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    color: color-mix(in oklab, var(--primary) 85%, var(--color-ink));
+    transition: gap 0.2s ease;
+  }
+  .link-arrow:hover { gap: 0.6rem; }
+
+  @media (max-width: 860px) {
+    .feat-grid, .feat-grid-3 { grid-template-columns: 1fr; }
+  }
+</style>
