@@ -1,15 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink, Rss } from "lucide-react";
-import { FeedIcon } from "@/components/feed-icon";
-import { SubscribeButton } from "@/components/subscribe-button";
-import { SubscribersDialog } from "@/components/subscribers-dialog";
-import { PageHeader } from "@/components/page-header";
+import { FeedHeader } from "@/components/feed-header";
 import { EntryCard } from "@/components/entry-card";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
-import { buttonVariants } from "@workspace/ui/components/button";
-import { cn } from "@workspace/ui/lib/utils";
 import { getClient, feedSubscribers, unwrap } from "@/lib/sunred";
 import type { Entry, Feed, PreviewFeedBody, PreviewFeedItem, FeedSubscribersResponse } from "@/lib/types";
 
@@ -54,7 +48,6 @@ export function FeedDiscovery({
   feedId?: number;
 }) {
   const items = preview.items ?? [];
-  const siteUrl = preview.site_url || undefined;
 
   // The feed metadata passed to each EntryCard so the favicon + title render.
   const feed: Feed = {
@@ -77,70 +70,14 @@ export function FeedDiscovery({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <div className="shrink-0">
-        <div className="mx-auto w-full max-w-3xl">
-          <PageHeader
-            className="static"
-            title={preview.title || "Untitled feed"}
-            icon={<FeedIcon siteUrl={siteUrl} className="size-5 shrink-0 rounded-md" />}
-            actions={
-              <div className="flex items-center gap-1">
-                <SubscribeButton
-                  feedUrl={preview.feed_url}
-                  feedTitle={preview.title}
-                  subscribed={false}
-                />
-                {siteUrl && (
-                  <a
-                    href={siteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Open website"
-                    className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }))}
-                  >
-                    <ExternalLink className="size-3.5" />
-                  </a>
-                )}
-                <a
-                  href={preview.feed_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Open feed XML"
-                  className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }))}
-                >
-                  <Rss className="size-3.5" />
-                </a>
-              </div>
-            }
-            metadata={
-              preview.description ? (
-                <p className="line-clamp-2 text-sm text-muted-foreground">
-                  {preview.description}
-                </p>
-              ) : undefined
-            }
-          />
-        </div>
-      </div>
+      <FeedHeader
+        feed={feed}
+        subscribed={false}
+        preview
+        subscribers={subscribers}
+      />
       <ScrollArea className="flex-1 min-h-0">
         <div className="mx-auto w-full max-w-3xl">
-          <div className="flex items-center justify-between border-b border-border px-4 py-2.5 pl-[52px] lg:pl-[48px]">
-            <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Recent articles
-              {entries.length > 0 && (
-                <span className="ml-1.5 text-muted-foreground/70">({entries.length})</span>
-              )}
-            </h2>
-            {subscribers !== undefined && (
-              <div className="ml-auto">
-                <SubscribersDialog
-                  count={subscribers.count}
-                  globalCount={subscribers.global_count}
-                  subscribers={subscribers.subscribers ?? []}
-                />
-              </div>
-            )}
-          </div>
           {entries.length === 0 ? (
             <p className="px-4 py-6 text-sm text-muted-foreground">
               No articles found in this feed.
