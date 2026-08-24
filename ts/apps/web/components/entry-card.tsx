@@ -5,16 +5,15 @@ import { useRouter } from "next/navigation";
 import { useQueryClient, type InfiniteData, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { motion } from "motion/react";
-import { MessageSquare, Plus } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { StarToggle } from "@/components/star-toggle";
 import { ShareToggle } from "@/components/share-toggle";
 import { FeedIcon } from "@/components/feed-icon";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getClient, updateEntries, createFeed } from "@/lib/sunred";
+import { getClient, updateEntries } from "@/lib/sunred";
 import { getApiErrorMessage } from "@/lib/errors";
 import { formatRelative, htmlSnippet } from "@/lib/format";
 import { cn } from "@workspace/ui/lib/utils";
-import { buttonVariants } from "@workspace/ui/components/button";
 import type { Entry, Feed } from "@/lib/types";
 
 const EASE = [0.25, 1, 0.5, 1] as const;
@@ -74,10 +73,6 @@ export function EntryCard({
   const isMobile = useIsMobile();
   const [readOptimistic, setReadOptimistic] = useOptimistic(entry.status === "read");
   const [pending, setPending] = useState(false);
-  // Tracks a subscribe action performed from this card; the feed prop may
-  // arrive after mount (feeds load in parallel with entries), so derive
-  // subscription from the prop and let a local override flip it on subscribe.
-  const [subscribedOverride, setSubscribedOverride] = useState(false);
 
   const unread = !readOptimistic;
   const snippet = htmlSnippet(entry.description, 200);
@@ -106,32 +101,6 @@ export function EntryCard({
     : entry.shared_by
       ? `@${entry.shared_by}`
       : null;
-  // The entry's feed is not subscribed when no `feed` prop was resolved by the
-  // timeline (i.e. feed_id is absent from the user's subscriptions). A share
-  // from a followed user surfaces such entries; offer a one-click subscribe.
-  const canSubscribe = !preview && !subscribedOverride && !feed && Boolean(entry.feed?.feed_url);
-
-  async function handleSubscribe(e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    const feedURL = entry.feed?.feed_url;
-    if (!feedURL) return;
-    setPending(true);
-    try {
-      const { error } = await createFeed({
-        client: await getClient(),
-        body: { feed_url: feedURL },
-      });
-      if (error) throw error;
-      setSubscribedOverride(true);
-      await queryClient.invalidateQueries({ queryKey: ["feeds"] });
-      toast.success(`Subscribed to "${entry.feed?.title || "feed"}"`);
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, "Could not subscribe to feed"));
-    } finally {
-      setPending(false);
-    }
-  }
 
   function toggleRead(e: React.MouseEvent) {
     e.preventDefault();
@@ -265,21 +234,6 @@ export function EntryCard({
           )}
           <span aria-hidden>·</span>
           <time className="shrink-0">{formatRelative(entry.published_at)}</time>
-          {canSubscribe && (
-            <button
-              type="button"
-              onClick={handleSubscribe}
-              disabled={pending}
-              aria-label={`Subscribe to ${entry.feed?.title || "this feed"}`}
-              className={cn(
-                buttonVariants({ variant: "outline", size: "xs" }),
-                "ml-auto h-5 shrink-0 gap-0.5 px-1.5 text-[11px]",
-              )}
-            >
-              <Plus className="size-3" />
-              Subscribe
-            </button>
-          )}
         </div>
         <h3
           className={cn(
