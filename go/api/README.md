@@ -194,8 +194,10 @@ discoverer.Discover → fetcher.Fetch → parser.Parse → sanitizer.Sanitize �
   `computeNextCheck` averages observed publish intervals (clamped 10m–24h).
 
 Feeds and entries are **global**: one row per feed URL shared across all
-subscribers. Per-user state (read/starred, folder placement, title override)
-lives in `subscriptions` and `entry_state`. A shared article is also
+subscribers. Per-user state (read, star, folder placement, title override)
+lives in `subscriptions`, `entry_read_status`, and `entry_stars`. Read and
+star state are keyed by `(user_id, article_url)` — not `entry_id` — so state
+can exist before the feed is materialized locally. A shared article is also
 materialized as a global entry against a synthetic source feed (keyed by
 `sha256(articleURL)`), so it appears in followers' entry streams via the same
 `ListEntries` query.
@@ -369,7 +371,8 @@ is no `003_*` file; the applied set is `001`–`002`, `004`–`015`.
 | `feeds` | Global RSS sources (one per feed_url; shared fetch state) |
 | `subscriptions` | Per-user link to a global feed (folder, title override, atproto_rkey) |
 | `entries` | Global articles (one per feed+hash; generated `document` tsvector) |
-| `entry_state` | Per-user read/starred/liked (absence = unread) |
+| `entry_stars` | Per-user stars, keyed by (user_id, article_url); carries article metadata + atproto_rkey |
+| `entry_read_status` | Per-user read status, keyed by (user_id, article_url) |
 | `enclosures` | Entry media attachments |
 | `feed_icons` | Feed favicon bytes |
 | `user_follows` | Follow graph (follower/followee unique; atproto_rkey) |

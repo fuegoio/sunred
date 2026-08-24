@@ -47,11 +47,20 @@ type SubscriptionRecord struct {
 	CreatedAt string `json:"createdAt"`
 }
 
-// StarRecord is the io.sunred.entry.star record.
+// StarRecord is the io.sunred.entry.star record. It carries the same article
+// metadata as ShareRecord so a remote instance can materialize the entry from
+// a star event alone, without needing the feed to be fetched locally.
 type StarRecord struct {
-	Type       string `json:"$type"`
-	ArticleURL string `json:"articleUrl"`
-	CreatedAt  string `json:"createdAt"`
+	Type        string `json:"$type"`
+	ArticleURL  string `json:"articleUrl"`
+	Title       string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
+	FeedURL     string `json:"feedUrl,omitempty"`
+	FeedTitle   string `json:"feedTitle,omitempty"`
+	FeedSiteURL string `json:"feedSiteUrl,omitempty"`
+	Author      string `json:"author,omitempty"`
+	PublishedAt string `json:"publishedAt,omitempty"`
+	CreatedAt   string `json:"createdAt"`
 }
 
 // ProfileRecord is the app.bsky.actor.profile record (rkey "self"). Only the

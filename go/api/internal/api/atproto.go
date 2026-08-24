@@ -277,11 +277,12 @@ func (a *API) ATProtoSyncFeedSubscription(userID, feedID int, feedURL, siteURL, 
 	}
 }
 
-// ATProtoSyncStar writes or deletes a star record on the PDS. Called
-// fire-and-forget from the toggle-entry-starred handler. For unstars, the
-// handler must pass the rkey fetched before the DB row's starred flag was
-// cleared — after the toggle the rkey column may be reset.
-func (a *API) ATProtoSyncStar(userID int, entryID int64, articleURL string, isStar bool, rkey string) {
+// ATProtoSyncStar writes or deletes a star record on the PDS, carrying the
+// same article metadata as PutShare so remote instances can materialize the
+// entry from the star record alone. Called fire-and-forget from the
+// toggle-entry-starred handler. For unstars, the handler must pass the rkey
+// fetched before the DB row was deleted — after the toggle the row is gone.
+func (a *API) ATProtoSyncStar(userID int, entry *store.Entry, isStar bool, rkey string) {
 	ctx := context.Background()
 	w, err := a.writerForUserOrFallback(ctx, userID)
 	if err != nil {
@@ -293,32 +294,44 @@ func (a *API) ATProtoSyncStar(userID int, entryID int64, articleURL string, isSt
 		return
 	}
 
+	var pubAt *time.Time
+	if !entry.PublishedAt.IsZero() {
+		pubAt = &entry.PublishedAt
+	}
+
+	var feedURL, feedTitle, feedSiteURL string
+	if entry.Feed != nil {
+		feedURL = entry.Feed.FeedURL
+		feedTitle = entry.Feed.Title
+		feedSiteURL = entry.Feed.SiteURL
+	}
+
 	if isStar {
-		slog.Info("atproto: writing star to PDS", "user_id", userID, "entry_id", entryID, "article_url", articleURL)
-		rkey, err := w.PutStar(ctx, articleURL)
+		slog.Info("atproto: writing star to PDS", "user_id", userID, "article_url", entry.URL)
+		rkey, err := w.PutStar(ctx,
+			entry.URL, entry.Title, entry.Description,
+			feedURL, feedTitle, feedSiteURL, entry.Author, pubAt,
+		)
 		if err != nil {
 			slog.Warn("atproto: put star failed", "user_id", userID, "err", err)
 			return
 		}
-		slog.Info("atproto: star written", "user_id", userID, "entry_id", entryID, "rkey", rkey)
-		if err := a.store.SetStarATProtoRkey(ctx, userID, entryID, rkey); err != nil {
-			slog.Warn("atproto: persist star rkey", "user_id", userID, "entry_id", entryID, "rkey", rkey, "err", err)
+		slog.Info("atproto: star written", "user_id", userID, "article_url", entry.URL, "rkey", rkey)
+		if err := a.store.SetStarATProtoRkey(ctx, userID, entry.URL, rkey); err != nil {
+			slog.Warn("atproto: persist star rkey", "user_id", userID, "article_url", entry.URL, "rkey", rkey, "err", err)
 		}
 	} else {
 		if rkey == "" {
-			rkey, _ = a.store.GetStarATProtoRkey(ctx, userID, entryID)
+			rkey, _ = a.store.GetStarATProtoRkey(ctx, userID, entry.URL)
 		}
 		if rkey == "" {
 			return
 		}
-		slog.Info("atproto: deleting star from PDS", "user_id", userID, "entry_id", entryID, "rkey", rkey)
+		slog.Info("atproto: deleting star from PDS", "user_id", userID, "article_url", entry.URL, "rkey", rkey)
 		if err := w.DeleteStar(ctx, rkey); err != nil {
 			slog.Warn("atproto: delete star failed", "user_id", userID, "rkey", rkey, "err", err)
 		} else {
-			slog.Info("atproto: star deleted", "user_id", userID, "entry_id", entryID, "rkey", rkey)
-		}
-		if err := a.store.SetStarATProtoRkey(ctx, userID, entryID, ""); err != nil {
-			slog.Warn("atproto: clear star rkey", "user_id", userID, "entry_id", entryID, "err", err)
+			slog.Info("atproto: star deleted", "user_id", userID, "article_url", entry.URL, "rkey", rkey)
 		}
 	}
 }
@@ -375,6 +388,7 @@ func (a *API) backfillFollowee(followeeUserID int) {
 	c := atproto.NewClient(pdsURL, "")
 	if err := backfillUserFromPDS(ctx, c, a.store, followeeUserID, did, []string{
 		atproto.CollectionShare,
+		atproto.CollectionStar,
 		atproto.CollectionSubscription,
 	}); err != nil {
 		slog.Warn("backfill: followee", "did", did, "err", err)

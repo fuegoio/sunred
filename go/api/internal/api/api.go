@@ -731,18 +731,21 @@ func (a *API) registerEntryRoutes() {
 		}
 	}) (*struct{}, error) {
 		userID := auth.UserIDFromCtx(ctx)
-		// Fetch the entry URL (for the PDS record) and the existing rkey
-		// before toggling — on unstar the rkey is needed to delete the PDS
-		// record and the row's starred flag is cleared by the toggle.
-		var articleURL string
-		if entry, err := a.store.GetEntryByID(ctx, input.EntryID, userID); err == nil && entry != nil {
-			articleURL = entry.URL
+		// Fetch the entry before toggling — we need the article URL and
+		// metadata for the PDS record and the rkey lookup. For unstars,
+		// the rkey must be fetched before the toggle deletes the star row.
+		entry, err := a.store.GetEntryByID(ctx, input.EntryID, userID)
+		if err != nil {
+			return nil, huma.Error500InternalServerError(err.Error())
 		}
-		rkey, _ := a.store.GetStarATProtoRkey(ctx, userID, input.EntryID)
+		if entry == nil {
+			return nil, huma.Error404NotFound("entry not found")
+		}
+		rkey, _ := a.store.GetStarATProtoRkey(ctx, userID, entry.URL)
 		if err := a.store.ToggleEntryStarred(ctx, input.EntryID, userID, input.Body.Starred); err != nil {
 			return nil, huma.Error500InternalServerError(err.Error())
 		}
-		go a.ATProtoSyncStar(userID, input.EntryID, articleURL, input.Body.Starred, rkey)
+		go a.ATProtoSyncStar(userID, entry, input.Body.Starred, rkey)
 		return nil, nil
 	})
 }

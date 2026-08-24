@@ -124,13 +124,28 @@ func (w *Writer) DeleteFeedSubscription(ctx context.Context, rkey string) error 
 }
 
 // PutStar writes an io.sunred.entry.star record and returns the rkey.
-func (w *Writer) PutStar(ctx context.Context, articleURL string) (string, error) {
+// The article metadata is carried so remote instances can materialize the
+// entry from the star record alone, mirroring PutShare.
+func (w *Writer) PutStar(ctx context.Context,
+	articleURL, title, description, feedURL, feedTitle, feedSiteURL, author string,
+	publishedAt *time.Time,
+) (string, error) {
 	rkey := NewTID()
-	_, err := w.putRecord(ctx, CollectionStar, rkey, StarRecord{
-		Type:       CollectionStar,
-		ArticleURL: articleURL,
-		CreatedAt:  FormatTime(time.Now()),
-	})
+	rec := StarRecord{
+		Type:        CollectionStar,
+		ArticleURL:  articleURL,
+		Title:       title,
+		Description: description,
+		FeedURL:     feedURL,
+		FeedTitle:   feedTitle,
+		FeedSiteURL: feedSiteURL,
+		Author:      author,
+		CreatedAt:   FormatTime(time.Now()),
+	}
+	if publishedAt != nil {
+		rec.PublishedAt = FormatTime(*publishedAt)
+	}
+	_, err := w.putRecord(ctx, CollectionStar, rkey, rec)
 	if err != nil {
 		return "", fmt.Errorf("put star: %w", err)
 	}

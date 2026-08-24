@@ -124,6 +124,50 @@ func TestWriter_PutShare_NilPublishedAt(t *testing.T) {
 	}
 }
 
+func TestWriter_PutStar(t *testing.T) {
+	pdsURL, cap := writerMock(t)
+	w := NewWriter(atclient.NewAPIClient(pdsURL), "did:plc:alice")
+	pub := time.Date(2025, 3, 1, 10, 0, 0, 0, time.UTC)
+	rkey, err := w.PutStar(context.Background(),
+		"https://example.com/article",
+		"Test Article", "A test", "https://feed.example.com", "Feed Title",
+		"https://example.com", "Author Name", &pub,
+	)
+	if err != nil {
+		t.Fatalf("PutStar: %v", err)
+	}
+	if len(rkey) != 13 {
+		t.Errorf("rkey length=%d, want 13", len(rkey))
+	}
+	if cap.Collection != CollectionStar {
+		t.Errorf("collection=%q, want %q", cap.Collection, CollectionStar)
+	}
+	if cap.Value["articleUrl"] != "https://example.com/article" {
+		t.Errorf("articleUrl=%v", cap.Value["articleUrl"])
+	}
+	if cap.Value["feedTitle"] != "Feed Title" {
+		t.Errorf("feedTitle=%v", cap.Value["feedTitle"])
+	}
+	if cap.Value["author"] != "Author Name" {
+		t.Errorf("author=%v", cap.Value["author"])
+	}
+	if cap.Value["publishedAt"] == "" || cap.Value["publishedAt"] == nil {
+		t.Error("publishedAt should be set")
+	}
+}
+
+func TestWriter_PutStar_NilPublishedAt(t *testing.T) {
+	pdsURL, cap := writerMock(t)
+	w := NewWriter(atclient.NewAPIClient(pdsURL), "did:plc:alice")
+	_, err := w.PutStar(context.Background(), "https://x.com", "Title", "", "", "", "", "", nil)
+	if err != nil {
+		t.Fatalf("PutStar nil publishedAt: %v", err)
+	}
+	if v, ok := cap.Value["publishedAt"]; ok && v != "" {
+		t.Errorf("publishedAt should be absent/empty when nil, got %v", v)
+	}
+}
+
 func TestWriter_PutFeedSubscription(t *testing.T) {
 	pdsURL, cap := writerMock(t)
 	w := NewWriter(atclient.NewAPIClient(pdsURL), "did:plc:alice")

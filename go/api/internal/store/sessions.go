@@ -222,18 +222,34 @@ func (s *Store) DeleteShareByRkey(ctx context.Context, userID int, rkey string) 
 	return err
 }
 
-// UpsertStarWithRkey marks an entry as starred for a user via a relay event,
-// matching the entry by its article URL. If the entry doesn't exist locally
-// yet (the user hasn't fetched the feed), the star is a no-op — the entry
-// will be starred on the next feed refresh when the star is replayed.
-func (s *Store) UpsertStarWithRkey(ctx context.Context, userID int, articleURL, rkey string) error {
+// UpsertStarWithRkey records a star with its AT Proto rkey so a later unstar
+// can delete the record. Used by the relay consumer to process star events.
+// Materializes the entry via ensureSharedEntry (same as shares) so the star
+// is visible even before the feed is fetched locally.
+func (s *Store) UpsertStarWithRkey(ctx context.Context, userID int,
+	articleURL, title, description, feedURL, feedTitle, feedSiteURL, author string,
+	publishedAt *time.Time, rkey string,
+) error {
+	entryID := s.ensureSharedEntry(ctx, articleURL, title, description, feedURL, feedTitle, feedSiteURL, author, publishedAt)
 	_, err := s.DB.ExecContext(ctx, `
-		INSERT INTO entry_state (user_id, entry_id, starred, atproto_rkey, changed_at)
-		SELECT $1, e.id, true, $3, NOW()
-		FROM entries e WHERE e.url = $2
-		ON CONFLICT (user_id, entry_id) DO UPDATE
-			SET starred = true, atproto_rkey = EXCLUDED.atproto_rkey, changed_at = NOW()`,
-		userID, articleURL, rkey,
+		INSERT INTO entry_stars
+		  (user_id, article_url, entry_id, title, description, feed_url, feed_title,
+		   feed_site_url, author, published_at, atproto_rkey, starred_at)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+		ON CONFLICT (user_id, article_url) DO UPDATE
+		  SET title        = EXCLUDED.title,
+		      description  = EXCLUDED.description,
+		      feed_url     = EXCLUDED.feed_url,
+		      feed_title   = EXCLUDED.feed_title,
+		      feed_site_url= EXCLUDED.feed_site_url,
+		      author       = EXCLUDED.author,
+		      published_at = EXCLUDED.published_at,
+		      atproto_rkey = EXCLUDED.atproto_rkey,
+		      entry_id     = COALESCE(entry_stars.entry_id, EXCLUDED.entry_id),
+		      starred_at   = NOW()`,
+		userID, articleURL, sql.NullInt64{Int64: entryID, Valid: entryID > 0},
+		title, description, feedURL, feedTitle, feedSiteURL, author, publishedAt,
+		rkey, time.Now(),
 	)
 	return err
 }
@@ -242,8 +258,7 @@ func (s *Store) UpsertStarWithRkey(ctx context.Context, userID int, articleURL, 
 // consumer to process unstar events.
 func (s *Store) DeleteStarByRkey(ctx context.Context, userID int, rkey string) error {
 	_, err := s.DB.ExecContext(ctx, `
-		UPDATE entry_state SET starred = false, atproto_rkey = NULL
-		 WHERE user_id = $1 AND atproto_rkey = $2`,
+		DELETE FROM entry_stars WHERE user_id = $1 AND atproto_rkey = $2`,
 		userID, rkey,
 	)
 	return err
