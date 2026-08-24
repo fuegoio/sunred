@@ -2,14 +2,16 @@
 
 import { use } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Users, UserCheck, UserPlus, Menu as MenuIcon } from "lucide-react";
+import { Users, UserCheck, UserPlus, Menu as MenuIcon, ExternalLink, Rss } from "lucide-react";
 import { Avatar } from "@base-ui/react/avatar";
 import { toast } from "sonner";
 import { SharedArticleCard } from "@/components/shared-article-card";
+import { FeedIcon } from "@/components/feed-icon";
 import { useShell } from "@/components/shell-context";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Button } from "@workspace/ui/components/button";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
 import {
   Empty,
   EmptyContent,
@@ -319,7 +321,7 @@ export default function UserProfilePage({
     );
   }
 
-  const { profile: user, shared_articles, global_follower_count } = profile;
+  const { profile: user, shared_articles, feeds, global_follower_count } = profile;
   const hasDisplayName = !!(user.display_name?.trim());
   const displayName = hasDisplayName ? user.display_name!.trim() : `@${user.handle}`;
   // Federated total from the relay aggregates; fall back to the local count
@@ -328,6 +330,7 @@ export default function UserProfilePage({
   const showFederatedSplit =
     global_follower_count > 0 && global_follower_count !== user.follower_count;
   const articles = shared_articles ?? [];
+  const userFeeds = feeds ?? [];
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -345,47 +348,113 @@ export default function UserProfilePage({
           onFollowToggle={handleFollowToggle}
         />
       </div>
-      <ScrollArea className="flex-1 min-h-0">
-        <div className="mx-auto w-full max-w-3xl">
-          {articles.length > 0 ? (
-            <div className="divide-y divide-border">
-              {articles.map((article, i) => (
-                <SharedArticleCard
-                  key={article.id}
-                  article={article}
-                  staggerIndex={i}
-                  showSharer={false}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="p-4">
-              <Empty className="border">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <Users className="size-6 text-primary" />
-                  </EmptyMedia>
-                  <EmptyTitle>Nothing shared yet</EmptyTitle>
-                  <EmptyDescription>
-                    {displayName}{" "}hasn&apos;t shared any articles. When they do,
-                    they&apos;ll land here in reverse-chronological order.
-                  </EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    onClick={() => handleFollowToggle(!(user.is_following ?? false))}
-                    className="h-auto p-0"
-                  >
-                    {user.is_following ? "Unfollow" : `Follow @${user.handle}`}
-                  </Button>
-                </EmptyContent>
-              </Empty>
-            </div>
-          )}
+      <Tabs defaultValue="articles" className="flex min-h-0 flex-1 flex-col gap-0">
+        <div className="mx-auto w-full max-w-3xl shrink-0 px-4 pt-3 lg:pl-[48px]">
+          <TabsList>
+            <TabsTrigger value="articles">
+              Articles
+              {articles.length > 0 && (
+                <span className="text-xs text-muted-foreground">{articles.length}</span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="feeds">
+              Feeds
+              {userFeeds.length > 0 && (
+                <span className="text-xs text-muted-foreground">{userFeeds.length}</span>
+              )}
+            </TabsTrigger>
+          </TabsList>
         </div>
-      </ScrollArea>
+        <TabsContent value="articles" className="min-h-0 flex-1">
+          <ScrollArea className="h-full">
+            <div className="mx-auto w-full max-w-3xl">
+              {articles.length > 0 ? (
+                <div className="divide-y divide-border">
+                  {articles.map((article, i) => (
+                    <SharedArticleCard
+                      key={article.id}
+                      article={article}
+                      staggerIndex={i}
+                      showSharer={false}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4">
+                  <Empty className="border">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <Users className="size-6 text-primary" />
+                      </EmptyMedia>
+                      <EmptyTitle>Nothing shared yet</EmptyTitle>
+                      <EmptyDescription>
+                        {displayName}{" "}hasn&apos;t shared any articles. When they do,
+                        they&apos;ll land here in reverse-chronological order.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        onClick={() => handleFollowToggle(!(user.is_following ?? false))}
+                        className="h-auto p-0"
+                      >
+                        {user.is_following ? "Unfollow" : `Follow @${user.handle}`}
+                      </Button>
+                    </EmptyContent>
+                  </Empty>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </TabsContent>
+        <TabsContent value="feeds" className="min-h-0 flex-1">
+          <ScrollArea className="h-full">
+            <div className="mx-auto w-full max-w-3xl">
+              {userFeeds.length > 0 ? (
+                <ul className="divide-y divide-border">
+                  {userFeeds.map((feed) => (
+                    <li key={feed.id}>
+                      <a
+                        href={feed.site_url || feed.feed_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          "group flex items-center gap-3 px-4 py-3",
+                          "hover:bg-muted/50 transition-colors",
+                        )}
+                      >
+                        <FeedIcon
+                          siteUrl={feed.site_url}
+                          className="size-4 shrink-0 rounded-sm"
+                        />
+                        <span className="flex-1 truncate text-sm">
+                          {feed.title || feed.feed_url}
+                        </span>
+                        <ExternalLink className="size-3.5 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="p-4">
+                  <Empty className="border">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <Rss className="size-6 text-primary" />
+                      </EmptyMedia>
+                      <EmptyTitle>No public feeds</EmptyTitle>
+                      <EmptyDescription>
+                        {displayName} isn&apos;t sharing any public feeds.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
