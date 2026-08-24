@@ -382,14 +382,45 @@ func (s *Store) GetSharedArticleByURL(ctx context.Context, userID int, articleUR
 }
 
 // ListSharedArticlesByUser returns shared articles for the given user_id,
-// newest first. Used for profile view.
-func (s *Store) ListSharedArticlesByUser(ctx context.Context, userID int) ([]SharedArticle, error) {
+// newest first. When viewerID > 0, joins entry_read_status and entry_stars by
+// article URL to populate the viewer's read/star state. Used for profile view.
+func (s *Store) ListSharedArticlesByUser(ctx context.Context, userID, viewerID int) ([]SharedArticle, error) {
+	if viewerID == 0 {
+		rows, err := s.DB.QueryContext(ctx, `
+			SELECT id, user_id, article_url, title, description,
+			       feed_url, feed_title, feed_site_url, author, published_at, shared_at, entry_id
+			FROM shared_articles
+			WHERE user_id = $1
+			ORDER BY shared_at DESC`, userID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		defer func() { _ = rows.Close() }()
+		var out []SharedArticle
+		for rows.Next() {
+			var sa SharedArticle
+			if err := rows.Scan(
+				&sa.ID, &sa.UserID, &sa.ArticleURL, &sa.Title, &sa.Description,
+				&sa.FeedURL, &sa.FeedTitle, &sa.FeedSiteURL, &sa.Author, &sa.PublishedAt, &sa.SharedAt, &sa.EntryID,
+			); err != nil {
+				return nil, err
+			}
+			out = append(out, sa)
+		}
+		return out, rows.Err()
+	}
+
 	rows, err := s.DB.QueryContext(ctx, `
-		SELECT id, user_id, article_url, title, description,
-		       feed_url, feed_title, feed_site_url, author, published_at, shared_at, entry_id
-		FROM shared_articles
-		WHERE user_id = $1
-		ORDER BY shared_at DESC`, userID,
+		SELECT sa.id, sa.user_id, sa.article_url, sa.title, sa.description,
+		       sa.feed_url, sa.feed_title, sa.feed_site_url, sa.author,
+		       sa.published_at, sa.shared_at, sa.entry_id,
+		       COALESCE(rs.status, 'unread'), (es.article_url IS NOT NULL)
+		FROM shared_articles sa
+		LEFT JOIN entry_read_status rs ON rs.user_id = $2 AND rs.article_url = sa.article_url
+		LEFT JOIN entry_stars es ON es.user_id = $2 AND es.article_url = sa.article_url
+		WHERE sa.user_id = $1
+		ORDER BY sa.shared_at DESC`, userID, viewerID,
 	)
 	if err != nil {
 		return nil, err
@@ -400,7 +431,9 @@ func (s *Store) ListSharedArticlesByUser(ctx context.Context, userID int) ([]Sha
 		var sa SharedArticle
 		if err := rows.Scan(
 			&sa.ID, &sa.UserID, &sa.ArticleURL, &sa.Title, &sa.Description,
-			&sa.FeedURL, &sa.FeedTitle, &sa.FeedSiteURL, &sa.Author, &sa.PublishedAt, &sa.SharedAt, &sa.EntryID,
+			&sa.FeedURL, &sa.FeedTitle, &sa.FeedSiteURL, &sa.Author,
+			&sa.PublishedAt, &sa.SharedAt, &sa.EntryID,
+			&sa.Status, &sa.Starred,
 		); err != nil {
 			return nil, err
 		}

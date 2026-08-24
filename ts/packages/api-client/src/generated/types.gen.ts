@@ -345,6 +345,8 @@ export type SharedArticle = {
     shared_at: string;
     sharer_display_name?: string;
     sharer_handle?: string;
+    starred?: boolean;
+    status?: string;
     title: string;
     user_id: number;
 };
@@ -672,6 +674,8 @@ export type SharedArticleWritable = {
     shared_at: string;
     sharer_display_name?: string;
     sharer_handle?: string;
+    starred?: boolean;
+    status?: string;
     title: string;
     user_id: number;
 };

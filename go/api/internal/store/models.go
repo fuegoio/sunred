@@ -177,6 +177,9 @@ type SharedArticle struct {
 	PublishedAt *time.Time `json:"published_at,omitempty"`
 	SharedAt    time.Time  `json:"shared_at"`
 	EntryID     *int64     `json:"entry_id,omitempty"`
+	// Viewer state, populated when fetched with a viewer context.
+	Status  string `json:"status,omitempty"`
+	Starred bool   `json:"starred,omitempty"`
 	// Sharer info, populated on social timeline queries.
 	SharerHandle      string `json:"sharer_handle,omitempty"`
 	SharerDisplayName string `json:"sharer_display_name,omitempty"`

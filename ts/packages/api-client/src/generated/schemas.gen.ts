@@ -1111,6 +1111,12 @@ export const SharedArticleSchema = {
         sharer_handle: {
             type: 'string'
         },
+        starred: {
+            type: 'boolean'
+        },
+        status: {
+            type: 'string'
+        },
         title: {
             type: 'string'
         },
@@ -2282,6 +2288,12 @@ export const SharedArticleWritableSchema = {
             type: 'string'
         },
         sharer_handle: {
+            type: 'string'
+        },
+        starred: {
+            type: 'boolean'
+        },
+        status: {
             type: 'string'
         },
         title: {

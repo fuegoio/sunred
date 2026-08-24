@@ -1085,6 +1085,12 @@
                     "sharer_handle": {
                         "type": "string"
                     },
+                    "starred": {
+                        "type": "boolean"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
                     "title": {
                         "type": "string"
                     },

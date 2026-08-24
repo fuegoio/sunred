@@ -132,7 +132,7 @@ func (a *API) registerSocialRoutes() {
 			return nil, huma.Error500InternalServerError(err.Error())
 		}
 
-		shared, err := a.store.ListSharedArticlesByUser(ctx, profile.UserID)
+		shared, err := a.store.ListSharedArticlesByUser(ctx, profile.UserID, viewerID)
 		if err != nil {
 			return nil, huma.Error500InternalServerError(err.Error())
 		}
@@ -424,7 +424,7 @@ func (a *API) registerSocialRoutes() {
 		Tags:        []string{"social"},
 	}, func(ctx context.Context, _ *struct{}) (*SharedArticleListOutput, error) {
 		userID := auth.UserIDFromCtx(ctx)
-		articles, err := a.store.ListSharedArticlesByUser(ctx, userID)
+		articles, err := a.store.ListSharedArticlesByUser(ctx, userID, userID)
 		if err != nil {
 			return nil, huma.Error500InternalServerError(err.Error())
 		}
