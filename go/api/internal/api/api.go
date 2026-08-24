@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -592,7 +593,10 @@ func (a *API) registerFeedRoutes() {
 			for i, it := range items {
 				urls[i] = it.URL
 			}
-			states, _ := a.store.GetEntryStatesByURLs(ctx, userID, urls)
+			states, err := a.store.GetEntryStatesByURLs(ctx, userID, urls)
+			if err != nil {
+				slog.Warn("preview: get entry states", "user_id", userID, "err", err)
+			}
 			for i := range items {
 				if st, ok := states[items[i].URL]; ok {
 					items[i].Status = st.Status
