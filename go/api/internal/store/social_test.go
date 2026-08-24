@@ -2,10 +2,14 @@ package store
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/fuegoio/sunred/go/api/internal/urlnorm"
 )
 
 // --- Handle / Profile ---
@@ -315,6 +319,66 @@ func TestShareArticle_Idempotent(t *testing.T) {
 	}
 }
 
+func TestShareArticle_NoDuplicateInSubscribedFeed(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	suffix := fmt.Sprintf("%d", time.Now().UnixNano())
+	u := seedUser(t, s, fmt.Sprintf("share-dup-%s@example.com", suffix))
+	feedURL := fmt.Sprintf("https://feed.example.com/%s/rss", suffix)
+	articleURL := fmt.Sprintf("https://example.com/%s/dup-test", suffix)
+
+	feed, err := s.GetOrCreateFeed(ctx, feedURL, "https://example.com", "Example Feed", "")
+	if err != nil {
+		t.Fatalf("GetOrCreateFeed: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = s.DB.Exec(`DELETE FROM shared_articles WHERE user_id=$1`, u)
+		_, _ = s.DB.Exec(`DELETE FROM subscriptions WHERE user_id=$1`, u)
+		_, _ = s.DB.Exec(`DELETE FROM feeds WHERE id=$1`, feed.ID)
+	})
+
+	if _, err := s.CreateSubscription(ctx, u, feed.ID, nil, ""); err != nil {
+		t.Fatalf("CreateSubscription: %v", err)
+	}
+
+	// Simulate a feed refresh ingesting the article — the processor hashes
+	// with sha256(url+title+publishedAt), not sha256(url) like ensureSharedEntry.
+	pub := time.Now().Add(-1 * time.Hour)
+	refreshHash := hashItemTest(articleURL, "Great Post", pub.Format(time.RFC1123Z))
+	if _, err := s.CreateEntry(ctx, feed.ID, refreshHash, "Great Post", articleURL, "", "Author", "", "desc", pub, nil); err != nil {
+		t.Fatalf("CreateEntry: %v", err)
+	}
+
+	// Share the same article using the same feed_url.
+	if _, err := s.ShareArticle(ctx, u, articleURL, "Great Post", "desc", feedURL, "Example Feed", "https://example.com", "Author", &pub); err != nil {
+		t.Fatalf("ShareArticle: %v", err)
+	}
+
+	// The unread feed should contain exactly one entry for this article.
+	entries, err := s.ListEntries(ctx, u, nil, nil, "unread", nil, "", "", 50, 0)
+	if err != nil {
+		t.Fatalf("ListEntries: %v", err)
+	}
+	var count int
+	for _, e := range entries {
+		if e.URL == articleURL {
+			count++
+		}
+	}
+	if count != 1 {
+		t.Errorf("expected 1 entry for %s in unread feed, got %d", articleURL, count)
+	}
+
+	// And only one entries row should exist for this URL in the feed.
+	var rowCount int
+	if err := s.DB.QueryRow(`SELECT COUNT(*) FROM entries WHERE feed_id=$1 AND url=$2`, feed.ID, articleURL).Scan(&rowCount); err != nil {
+		t.Fatalf("count entries: %v", err)
+	}
+	if rowCount != 1 {
+		t.Errorf("expected 1 entries row, got %d", rowCount)
+	}
+}
+
 func TestUnshareArticle(t *testing.T) {
 	s := testDB(t)
 	ctx := context.Background()
@@ -518,4 +582,12 @@ func TestUpsertHandle_AllowedChars(t *testing.T) {
 			t.Errorf("expected invalid handle %q to fail, got nil", h)
 		}
 	}
+}
+
+// hashItemTest mirrors the reader processor's hashItem (sha256 of normalized
+// URL + title + publishedAt string) so tests can simulate feed-refresh entries
+// that collide on URL but not on hash with ensureSharedEntry's sha256(url).
+func hashItemTest(link, title, publishedAt string) string {
+	h := sha256.Sum256([]byte(urlnorm.URL(link) + title + publishedAt))
+	return hex.EncodeToString(h[:])
 }

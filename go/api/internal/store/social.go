@@ -289,9 +289,14 @@ func (s *Store) SearchUsers(ctx context.Context, q string, viewerID, limit int) 
 // ShareArticle creates or replaces a shared article for the user.
 // ensureSharedEntry materializes a shared article as a global entry against its
 // source feed (creating the feed if missing) so that the article appears in
-// followers' entry streams via the ListEntries UNION. The entry is keyed by a
-// hash of the article URL within the source feed. Returns the entry id (0 if
-// the share carries no feed_url or on insert failure).
+// followers' entry streams via the ListEntries UNION. If an entry with the
+// same article URL already exists in that feed (e.g. the sharer subscribes to
+// the source feed and the article was ingested during a refresh), the existing
+// entry id is reused instead of inserting a duplicate row — the feed
+// processor and this function use different hash schemes, so the
+// (feed_id, hash) unique constraint alone does not prevent a same-URL
+// duplicate. Returns the entry id (0 if the share carries no feed_url or on
+// insert failure).
 func (s *Store) ensureSharedEntry(ctx context.Context,
 	articleURL, title, description, feedURL, feedTitle, feedSiteURL, author string,
 	publishedAt *time.Time,
@@ -305,6 +310,18 @@ func (s *Store) ensureSharedEntry(ctx context.Context,
 	if err != nil || feed == nil {
 		return 0
 	}
+
+	// Reuse an existing entry for this article URL in the same feed rather
+	// than inserting a second row with a different hash.
+	var existingID int64
+	err = s.DB.QueryRowContext(ctx,
+		`SELECT id FROM entries WHERE feed_id = $1 AND url = $2 LIMIT 1`,
+		feed.ID, articleURL,
+	).Scan(&existingID)
+	if err == nil && existingID > 0 {
+		return existingID
+	}
+
 	h := sha256.Sum256([]byte(articleURL))
 	hash := hex.EncodeToString(h[:])
 	pubAt := time.Now()
