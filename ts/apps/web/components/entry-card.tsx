@@ -143,17 +143,24 @@ export function EntryCard({
   function toggleRead(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
+    const current = readOptimistic ? "read" : "unread";
     const next = readOptimistic ? "unread" : "read";
     startTransition(() => {
       setReadOptimistic(next === "read");
       setPending(true);
     });
+    // Patch the cache in place so the base value matches the optimistic
+    // state. Without this, invalidating would revert useOptimistic to the
+    // stale server value mid-refetch and the dot would flash back to its
+    // previous state until the refetch lands.
+    patchEntryStatus(queryClient, entry.id, next);
     void (async () => {
       const { error } = await updateEntries({
         client: await getClient(),
         body: { entry_ids: [entry.id], status: next },
       });
       if (error) {
+        patchEntryStatus(queryClient, entry.id, current);
         toast.error(getApiErrorMessage(error, "Could not update entry"));
         return;
       }
