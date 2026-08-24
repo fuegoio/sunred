@@ -34,21 +34,20 @@ import { cn } from "@workspace/ui/lib/utils";
 import type { Entry, PublicProfileResponse, SharedArticle } from "@/lib/types";
 
 /**
- * Map a SharedArticle to the Entry shape EntryCard expects. Shared articles
- * have no id/status/starred state — those fields are stubbed and never read
- * because `preview` mode gates the actions that use them. The shared_at
+ * Map a SharedArticle to the Entry shape EntryCard expects. The shared_at
  * timestamp is used as the publish date so the card shows when the article
- * was shared, not when it was originally published.
+ * was shared. Status and starred are populated from the viewer's state
+ * (joined by article URL on the server).
  */
 function toEntry(article: SharedArticle): Entry {
   return {
-    id: article.id,
+    id: 0,
     feed_id: 0,
     hash: "",
     changed_at: article.shared_at,
-    published_at: article.shared_at,
-    status: "unread",
-    starred: false,
+    published_at: article.published_at ?? article.shared_at,
+    status: article.status || "unread",
+    starred: article.starred || false,
     title: article.title,
     url: article.article_url,
     description: article.description,
