@@ -6,7 +6,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Users, UserCheck, UserPlus, Menu as MenuIcon, ChevronRight, Rss } from "lucide-react";
 import { Avatar } from "@base-ui/react/avatar";
 import { toast } from "sonner";
-import { SharedArticleCard } from "@/components/shared-article-card";
+import { EntryCard } from "@/components/entry-card";
+import { EntryCardSkeleton } from "@/components/entry-card-skeleton";
 import { FeedIcon } from "@/components/feed-icon";
 import { useShell } from "@/components/shell-context";
 import { Skeleton } from "@workspace/ui/components/skeleton";
@@ -30,7 +31,36 @@ import {
 } from "@/lib/sunred";
 import { getApiErrorMessage } from "@/lib/errors";
 import { cn } from "@workspace/ui/lib/utils";
-import type { PublicProfileResponse } from "@/lib/types";
+import type { Entry, PublicProfileResponse, SharedArticle } from "@/lib/types";
+
+/**
+ * Map a SharedArticle to the Entry shape EntryCard expects. Shared articles
+ * have no id/status/starred state — those fields are stubbed and never read
+ * because `preview` mode gates the actions that use them. The shared_at
+ * timestamp is used as the publish date so the card shows when the article
+ * was shared, not when it was originally published.
+ */
+function toEntry(article: SharedArticle): Entry {
+  return {
+    id: article.id,
+    feed_id: 0,
+    hash: "",
+    changed_at: article.shared_at,
+    published_at: article.shared_at,
+    status: "unread",
+    starred: false,
+    title: article.title,
+    url: article.article_url,
+    description: article.description,
+    author: article.author,
+    feed: {
+      id: 0,
+      title: article.feed_title ?? "",
+      site_url: article.feed_site_url ?? "",
+      feed_url: article.feed_url ?? "",
+    } as Entry["feed"],
+  } as unknown as Entry;
+}
 
 function FollowButton({
   handle,
@@ -216,30 +246,6 @@ function MastheadSkeleton() {
   );
 }
 
-/** Lightweight placeholder mirroring SharedArticleCard's layout (avatar glyph + metadata + title + snippet). */
-function SharedArticleCardSkeleton() {
-  return (
-    <div className="flex gap-3 px-4 py-3">
-      <div className="flex size-5 shrink-0 items-start justify-center pt-1">
-        <Skeleton className="size-5 rounded-full" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <Skeleton className="size-3.5 shrink-0 rounded-sm" />
-          <Skeleton className="h-4 w-28" />
-          <span aria-hidden className="text-xs text-muted-foreground">
-            ·
-          </span>
-          <Skeleton className="h-4 w-10" />
-        </div>
-        <Skeleton className="mt-1.5 h-4 w-3/4" />
-        <Skeleton className="mt-1 h-4 w-full" />
-        <Skeleton className="mt-1 h-4 w-2/3" />
-      </div>
-    </div>
-  );
-}
-
 export default function UserProfilePage({
   params,
 }: {
@@ -286,7 +292,7 @@ export default function UserProfilePage({
           <div className="mx-auto w-full max-w-3xl">
             <div className="divide-y divide-border">
               {Array.from({ length: 6 }).map((_, i) => (
-                <SharedArticleCardSkeleton key={i} />
+                <EntryCardSkeleton key={i} />
               ))}
             </div>
           </div>
@@ -376,11 +382,11 @@ export default function UserProfilePage({
               {articles.length > 0 ? (
                 <div className="divide-y divide-border">
                   {articles.map((article, i) => (
-                    <SharedArticleCard
+                    <EntryCard
                       key={article.id}
-                      article={article}
+                      entry={toEntry(article)}
                       staggerIndex={i}
-                      showSharer={false}
+                      preview
                     />
                   ))}
                 </div>
