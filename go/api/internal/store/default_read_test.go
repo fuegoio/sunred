@@ -8,18 +8,20 @@ import (
 )
 
 // TestMarkEntryUnreadForSubscribers verifies that when a new entry is created
-// by the feed processor, an 'unread' row is inserted for every subscriber.
+// by the feed processor, an 'unread' row is inserted for every subscriber
+// whose subscription predates the entry's publication.
 func TestMarkEntryUnreadForSubscribers(t *testing.T) {
 	s := testDB(t)
 	ctx := context.Background()
 	userID := seedUser(t, s, "unread-subs@example.com")
 	feedID := seedFeed(t, s, userID, nil, "Unread Subs Feed")
 
-	// Create an entry directly (simulating what the processor does).
+	// Entry published in the future relative to the subscription (created
+	// moments ago), so the subscriber should get an unread row.
 	var entryID int64
 	err := s.DB.QueryRow(
 		`INSERT INTO entries (feed_id, hash, title, url, content, published_at)
-		 VALUES ($1, $2, $3, $4, $3, NOW()) RETURNING id`,
+		 VALUES ($1, $2, $3, $4, $3, NOW() + INTERVAL '1 hour') RETURNING id`,
 		feedID, "hash-unread-subs", "Unread Subs Entry", "https://example.com/unread-subs",
 	).Scan(&entryID)
 	if err != nil {
@@ -27,18 +29,48 @@ func TestMarkEntryUnreadForSubscribers(t *testing.T) {
 	}
 	t.Cleanup(func() { _, _ = s.DB.Exec(`DELETE FROM entries WHERE id = $1`, entryID) })
 
-	// Mark unread for subscribers (what the processor calls).
 	if err := s.MarkEntryUnreadForSubscribers(ctx, entryID, feedID); err != nil {
 		t.Fatalf("MarkEntryUnreadForSubscribers: %v", err)
 	}
 
-	// The subscriber should have an 'unread' row.
 	status, exists := entryReadStatus(t, s, userID, "https://example.com/unread-subs")
 	if !exists {
 		t.Fatal("expected unread row for subscriber")
 	}
 	if status != "unread" {
 		t.Errorf("status=%q, want 'unread'", status)
+	}
+}
+
+// TestMarkEntryUnreadForSubscribers_OldEntryStaysRead verifies that entries
+// published before the subscription (e.g. historical articles on first scrape)
+// are NOT marked unread for the subscriber.
+func TestMarkEntryUnreadForSubscribers_OldEntryStaysRead(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	userID := seedUser(t, s, "old-entry@example.com")
+	feedID := seedFeed(t, s, userID, nil, "Old Entry Feed")
+
+	// Entry published in the past, before the subscription was created.
+	var entryID int64
+	err := s.DB.QueryRow(
+		`INSERT INTO entries (feed_id, hash, title, url, content, published_at)
+		 VALUES ($1, $2, $3, $4, $3, NOW() - INTERVAL '7 days') RETURNING id`,
+		feedID, "hash-old-entry", "Old Entry", "https://example.com/old-entry",
+	).Scan(&entryID)
+	if err != nil {
+		t.Fatalf("seed entry: %v", err)
+	}
+	t.Cleanup(func() { _, _ = s.DB.Exec(`DELETE FROM entries WHERE id = $1`, entryID) })
+
+	if err := s.MarkEntryUnreadForSubscribers(ctx, entryID, feedID); err != nil {
+		t.Fatalf("MarkEntryUnreadForSubscribers: %v", err)
+	}
+
+	// No unread row should exist — the entry predates the subscription.
+	_, exists := entryReadStatus(t, s, userID, "https://example.com/old-entry")
+	if exists {
+		t.Error("expected no unread row for entry published before subscription")
 	}
 }
 
