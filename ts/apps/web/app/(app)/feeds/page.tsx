@@ -19,7 +19,7 @@ export const metadata = { title: "Feeds" };
 export default async function FeedsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ url?: string; id?: string }>;
+  searchParams: Promise<{ url?: string }>;
 }) {
   const sp = await searchParams;
   if (!sp.url) return <FeedsTimeline />;
@@ -62,12 +62,7 @@ export default async function FeedsPage({
     );
   }
 
-  // An optional global feed ID (passed from entry cards and profile links)
-  // lets the discovery view show the subscriber count.
-  const feedId = Number(sp.id);
-  const globalFeedId = Number.isFinite(feedId) && feedId > 0 ? feedId : undefined;
-
-  return <FeedDiscovery preview={preview as PreviewFeedBody} feedId={globalFeedId} />;
+  return <FeedDiscovery preview={preview as PreviewFeedBody} />;
 }
 
 function FeedsTimeline() {

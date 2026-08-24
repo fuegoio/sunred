@@ -827,6 +827,10 @@ export const PreviewFeedBodySchema = {
         feed_url: {
             type: 'string'
         },
+        id: {
+            format: 'int64',
+            type: 'integer'
+        },
         items: {
             items: {
                 $ref: '#/components/schemas/PreviewFeedItem'
@@ -1953,6 +1957,10 @@ export const PreviewFeedBodyWritableSchema = {
         },
         feed_url: {
             type: 'string'
+        },
+        id: {
+            format: 'int64',
+            type: 'integer'
         },
         items: {
             items: {

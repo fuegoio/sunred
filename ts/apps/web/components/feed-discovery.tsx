@@ -31,23 +31,17 @@ function toEntry(item: PreviewFeedItem, index: number): Entry {
 
 /**
  * Discovery view for a feed the viewer is not subscribed to. Mirrors the feed
- * detail page's layout (max-w-3xl, PageHeader, ScrollArea) so the two surfaces
- * read as the same chrome — mutualized via the shared `SubscribeButton` in the
- * header actions slot and the same `EntryCard` for articles (in preview mode,
- * which hides the read/unread dot, share, star, and comments actions).
+ * detail page's layout via the shared FeedHeader (with the Subscribe button in
+ * the toolbar) and the same EntryCard for articles (in preview mode, which
+ * hides the read/unread dot, share, star, and comments actions).
  *
- * When a global `feedId` is available (passed from entry cards and profile
- * links), the subscriber count is fetched and shown via the same
- * `SubscribersDialog` as the feed page, in the same toolbar position.
+ * The preview endpoint returns the global feed ID when the feed exists in the
+ * database, so the subscriber count is always available via the same
+ * SubscribersDialog as the feed page.
  */
-export function FeedDiscovery({
-  preview,
-  feedId,
-}: {
-  preview: PreviewFeedBody;
-  feedId?: number;
-}) {
+export function FeedDiscovery({ preview }: { preview: PreviewFeedBody }) {
   const items = preview.items ?? [];
+  const feedId = preview.id;
 
   // The feed metadata passed to each EntryCard so the favicon + title render.
   const feed: Feed = {
@@ -59,13 +53,11 @@ export function FeedDiscovery({
 
   const entries = items.map((item, i) => toEntry(item, i));
 
-  // Subscriber count is only available when the global feed ID is known
-  // (the feed exists in the database because someone subscribes to it).
   const { data: subscribers } = useQuery<FeedSubscribersResponse>({
     queryKey: ["feed-subscribers", feedId],
     queryFn: async () =>
       unwrap(feedSubscribers({ client: await getClient(), path: { feedId: feedId! } })),
-    enabled: feedId !== undefined,
+    enabled: feedId !== undefined && feedId > 0,
   });
 
   return (
