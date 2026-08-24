@@ -45,12 +45,12 @@ export function MarkAllReadButton() {
   return (
     <Button
       variant="ghost"
-      size="icon"
+      size="icon-xs"
       aria-label="Mark all as read"
       disabled={pending || !hasUnread}
       onClick={handleClick}
     >
-      <CheckCheck className="size-4" />
+      <CheckCheck className="size-3.5" />
     </Button>
   );
 }
