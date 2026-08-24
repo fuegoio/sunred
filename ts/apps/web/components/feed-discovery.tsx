@@ -1,10 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { FeedHeader } from "@/components/feed-header";
 import { EntryCard } from "@/components/entry-card";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
-import { getClient, feedSubscribers, unwrap } from "@/lib/sunred";
 import type { Entry, Feed, PreviewFeedBody, PreviewFeedItem, FeedSubscribersResponse } from "@/lib/types";
 
 /**
@@ -35,15 +33,13 @@ function toEntry(item: PreviewFeedItem, index: number): Entry {
  * the toolbar) and the same EntryCard for articles (in preview mode, which
  * hides the read/unread dot, share, star, and comments actions).
  *
- * The preview endpoint returns the global feed ID when the feed exists in the
- * database, so the subscriber count is always available via the same
- * SubscribersDialog as the feed page.
+ * The preview endpoint includes the subscriber summary directly in its
+ * response (looked up by feed URL on the server), so the SubscribersDialog
+ * renders without a separate round trip.
  */
 export function FeedDiscovery({ preview }: { preview: PreviewFeedBody }) {
   const items = preview.items ?? [];
-  const feedId = preview.id;
 
-  // The feed metadata passed to each EntryCard so the favicon + title render.
   const feed: Feed = {
     id: 0,
     title: preview.title,
@@ -53,12 +49,15 @@ export function FeedDiscovery({ preview }: { preview: PreviewFeedBody }) {
 
   const entries = items.map((item, i) => toEntry(item, i));
 
-  const { data: subscribers } = useQuery<FeedSubscribersResponse>({
-    queryKey: ["feed-subscribers", feedId],
-    queryFn: async () =>
-      unwrap(feedSubscribers({ client: await getClient(), path: { feedId: feedId! } })),
-    enabled: feedId !== undefined && feedId > 0,
-  });
+  // The preview response embeds the subscriber summary when the feed is
+  // known to the instance; map it to the shape FeedHeader expects.
+  const subscribers: FeedSubscribersResponse | undefined = preview.subscribers
+    ? {
+        count: preview.subscribers.count,
+        global_count: preview.subscribers.global_count,
+        subscribers: preview.subscribers.subscribers ?? [],
+      }
+    : undefined;
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
