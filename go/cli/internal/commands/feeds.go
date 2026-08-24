@@ -85,9 +85,9 @@ var feedsDeleteCmd = &cobra.Command{
 	},
 }
 
-var feedsPreviewCmd = &cobra.Command{
-	Use:   "preview <url>",
-	Short: "Preview a feed without subscribing (discovery)",
+var feedsGetCmd = &cobra.Command{
+	Use:   "get <url>",
+	Short: "Get a feed by URL (works for feeds you haven't subscribed to)",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		_, c := mustClient()
@@ -116,7 +116,7 @@ var feedsPreviewCmd = &cobra.Command{
 		}
 		fmt.Println()
 		if p.Items == nil || len(*p.Items) == 0 {
-			fmt.Println("No preview items.")
+			fmt.Println("No items.")
 			return
 		}
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
@@ -285,7 +285,7 @@ var feedsMoveCmd = &cobra.Command{
 
 func init() {
 	feedsCmd.AddCommand(feedsListCmd, feedsAddCmd, feedsDeleteCmd,
-		feedsPreviewCmd, feedsSubscribersCmd, feedsRefreshCmd,
+		feedsGetCmd, feedsSubscribersCmd, feedsRefreshCmd,
 		feedsMarkReadCmd, feedsRenameCmd, feedsMoveCmd)
 	rootCmd.AddCommand(feedsCmd)
 }
