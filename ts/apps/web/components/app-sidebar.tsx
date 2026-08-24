@@ -12,6 +12,7 @@ import {
   LogOut,
   Sun,
   Moon,
+  User,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Menu } from "@base-ui/react/menu";
@@ -112,6 +113,10 @@ export function AccountButton({ userHandle }: { userHandle: string }) {
           side="top"
         >
           <Menu.Popup>
+            <Menu.Item className={menuItemClass} render={<Link href={`/users/${userHandle}`} />}>
+              <User className="size-4" />
+              Profile
+            </Menu.Item>
             <Menu.Item className={menuItemClass} render={<Link href="/settings" />}>
               <Settings className="size-4" />
               Settings
