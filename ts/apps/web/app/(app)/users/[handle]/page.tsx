@@ -145,25 +145,28 @@ function ProfileMasthead({
 
   return (
     <div className="border-b border-border bg-background px-4 py-3 lg:pl-[48px]">
-      {/* Mobile sidebar toggle — same pattern as PageHeader */}
-      {shell && (
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Toggle sidebar"
-          onClick={shell.openSidebar}
-          className="-ml-2 shrink-0 lg:hidden"
-        >
-          <MenuIcon className="size-4" />
-        </Button>
-      )}
-
       <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-col">
-          <h1 className="truncate font-serif text-base font-bold tracking-wider sm:text-lg">
-            {displayName}
-          </h1>
-          <p className="truncate text-sm text-muted-foreground">@{handle}</p>
+        <div className="flex min-w-0 items-start gap-1.5">
+          {/* Mobile sidebar toggle — same pattern as PageHeader */}
+          {shell && (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Toggle sidebar"
+              onClick={shell.openSidebar}
+              className="-ml-2 shrink-0 lg:hidden"
+            >
+              <MenuIcon className="size-4" />
+            </Button>
+          )}
+          <div className="min-w-0">
+            <h1 className="truncate font-serif text-base font-bold tracking-wider sm:text-lg">
+              {displayName}
+            </h1>
+            {hasDisplayName && (
+              <p className="truncate text-sm text-muted-foreground">@{handle}</p>
+            )}
+          </div>
         </div>
         <UserAvatar
           displayName={hasDisplayName ? displayName : undefined}
@@ -172,7 +175,7 @@ function ProfileMasthead({
         />
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 pl-[36px] text-xs text-muted-foreground lg:pl-0">
         <span>
           <span className="font-medium text-foreground">{followerTotal}</span>{" "}
           {followerTotal === 1 ? "follower" : "followers"}
@@ -188,7 +191,7 @@ function ProfileMasthead({
         </span>
       </div>
 
-      {bio && <p className="mt-2 text-sm text-muted-foreground">{bio}</p>}
+      {bio && <p className="mt-2 pl-[36px] text-sm text-muted-foreground lg:pl-0">{bio}</p>}
     </div>
   );
 }
@@ -197,25 +200,27 @@ function MastheadSkeleton() {
   const shell = useShell();
   return (
     <div className="border-b border-border bg-background px-4 py-3 lg:pl-[48px]">
-      {shell && (
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Toggle sidebar"
-          onClick={shell.openSidebar}
-          className="-ml-2 shrink-0 lg:hidden"
-        >
-          <MenuIcon className="size-4" />
-        </Button>
-      )}
       <div className="flex items-start justify-between gap-3">
-        <div className="flex flex-col gap-1.5">
-          <Skeleton className="h-5 w-32" />
-          <Skeleton className="h-3.5 w-24" />
+        <div className="flex items-start gap-1.5">
+          {shell && (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Toggle sidebar"
+              onClick={shell.openSidebar}
+              className="-ml-2 shrink-0 lg:hidden"
+            >
+              <MenuIcon className="size-4" />
+            </Button>
+          )}
+          <div className="flex flex-col gap-1.5">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-3.5 w-24" />
+          </div>
         </div>
         <Skeleton className="size-12 shrink-0 rounded-full" />
       </div>
-      <div className="mt-2 flex items-center gap-4">
+      <div className="mt-2 flex items-center gap-4 pl-[36px] lg:pl-0">
         <Skeleton className="h-3.5 w-20" />
         <Skeleton className="h-3.5 w-20" />
       </div>
