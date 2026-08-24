@@ -129,6 +129,10 @@ func (c *RelayConsumer) processEvent(ctx context.Context, evt *relayEvent) error
 		return c.handleShareEvent(ctx, evt)
 	case "unshare":
 		return c.handleUnshareEvent(ctx, evt)
+	case "star":
+		return c.handleStarEvent(ctx, evt)
+	case "unstar":
+		return c.handleUnstarEvent(ctx, evt)
 	case "backfillComplete":
 		return c.handleBackfillComplete(ctx, evt)
 	default:
@@ -254,6 +258,38 @@ func (c *RelayConsumer) handleUnshareEvent(ctx context.Context, evt *relayEvent)
 		return nil
 	}
 	return c.store.DeleteShareByRkey(ctx, userID, p.Rkey)
+}
+
+type starPayload struct {
+	Rkey       string `json:"rkey"`
+	ArticleURL string `json:"articleUrl"`
+	CreatedAt  string `json:"createdAt"`
+}
+
+func (c *RelayConsumer) handleStarEvent(ctx context.Context, evt *relayEvent) error {
+	var p starPayload
+	if err := json.Unmarshal(evt.Payload, &p); err != nil {
+		return fmt.Errorf("unmarshal star payload: %w", err)
+	}
+	userID, _ := c.store.GetUserIDByDID(ctx, evt.DID)
+	if userID == 0 {
+		return nil
+	}
+	return c.store.UpsertStarWithRkey(ctx, userID, p.ArticleURL, p.Rkey)
+}
+
+func (c *RelayConsumer) handleUnstarEvent(ctx context.Context, evt *relayEvent) error {
+	var p struct {
+		Rkey string `json:"rkey"`
+	}
+	if err := json.Unmarshal(evt.Payload, &p); err != nil {
+		return fmt.Errorf("unmarshal unstar payload: %w", err)
+	}
+	userID, _ := c.store.GetUserIDByDID(ctx, evt.DID)
+	if userID == 0 {
+		return nil
+	}
+	return c.store.DeleteStarByRkey(ctx, userID, p.Rkey)
 }
 
 func (c *RelayConsumer) handleBackfillComplete(ctx context.Context, evt *relayEvent) error {

@@ -33,6 +33,8 @@ type fanoutStore interface {
 	DeleteShare(ctx context.Context, did, rkey string) (bool, error)
 	RecordFeedSubscription(ctx context.Context, did, rkey, feedURL, pdsURL string, createdAt *time.Time) (bool, error)
 	DeleteFeedSubscription(ctx context.Context, did, rkey string) (bool, error)
+	RecordStar(ctx context.Context, did, rkey, articleURL, pdsURL string) (bool, error)
+	DeleteStar(ctx context.Context, did, rkey string) (bool, error)
 	AppendEvent(ctx context.Context, eventType, did string, payload any) (int64, error)
 }
 
@@ -227,6 +229,8 @@ func (f *Fanout) processOp(ctx context.Context, did, pdsURL string, op repoOp) {
 		f.handleShare(ctx, did, effectivePDS, rkey, op.Action)
 	case "io.sunred.feed.subscription":
 		f.handleFeedSub(ctx, did, effectivePDS, rkey, op.Action)
+	case "io.sunred.entry.star":
+		f.handleStar(ctx, did, effectivePDS, rkey, op.Action)
 	default:
 		slog.Debug("fanout: unknown collection", "did", did, "collection", col, "rkey", rkey)
 	}
@@ -375,6 +379,40 @@ func (f *Fanout) processFeedSubRecord(ctx context.Context, did, pdsURL, rkey str
 		f.emit(ctx, "feedSubscription", did, map[string]any{
 			"did": did, "rkey": rkey, "feedUrl": feedURL,
 			"siteUrl": siteURL, "title": title, "createdAt": createdAt,
+		})
+	}
+}
+
+func (f *Fanout) handleStar(ctx context.Context, did, pdsURL, rkey, action string) {
+	if action == "delete" {
+		deleted, err := f.store.DeleteStar(ctx, did, rkey)
+		if err != nil {
+			slog.Warn("fanout: delete star", "did", did, "rkey", rkey, "err", err)
+			return
+		}
+		if deleted {
+			f.emit(ctx, "unstar", did, map[string]any{"did": did, "rkey": rkey})
+		}
+		return
+	}
+	rec, err := f.fetchRecord(ctx, pdsURL, did, "io.sunred.entry.star", rkey)
+	if err != nil {
+		slog.Warn("fanout: fetch star", "did", did, "rkey", rkey, "err", err)
+		return
+	}
+	articleURL, _ := rec["articleUrl"].(string)
+	if articleURL == "" {
+		slog.Warn("fanout: star record missing articleUrl", "did", did, "rkey", rkey)
+		return
+	}
+	isNew, err := f.store.RecordStar(ctx, did, rkey, articleURL, pdsURL)
+	if err != nil {
+		slog.Warn("fanout: record star", "did", did, "rkey", rkey, "err", err)
+		return
+	}
+	if isNew {
+		f.emit(ctx, "star", did, map[string]any{
+			"did": did, "rkey": rkey, "articleUrl": articleURL,
 		})
 	}
 }

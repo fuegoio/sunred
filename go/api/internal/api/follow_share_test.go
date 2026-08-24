@@ -24,7 +24,7 @@ func TestATProtoSyncFollow_Follow(t *testing.T) {
 	seedProfile(t, s, followeeID, "did:plc:followee", "followee")
 
 	api := &API{store: s}
-	api.ATProtoSyncFollow(followerID, followeeID, "followee", true)
+	api.ATProtoSyncFollow(followerID, followeeID, "followee", true, "")
 
 	// Verify the PDS received a putRecord for io.sunred.graph.follow.
 	found := false
@@ -65,7 +65,7 @@ func TestATProtoSyncFollow_Unfollow(t *testing.T) {
 	_ = s.UpsertFollowWithRkey(context.Background(), followerID, followeeID, "rkey-unfollow-test")
 
 	api := &API{store: s}
-	api.ATProtoSyncFollow(followerID, followeeID, "unfollowee", false)
+	api.ATProtoSyncFollow(followerID, followeeID, "unfollowee", false, "")
 
 	// Verify the PDS received a deleteRecord for io.sunred.graph.follow.
 	found := false
@@ -159,7 +159,7 @@ func TestATProtoSyncShare_Share(t *testing.T) {
 	}
 
 	api := &API{store: s}
-	api.ATProtoSyncShare(userID, sa, true)
+	api.ATProtoSyncShare(userID, sa, true, "")
 
 	// Verify the PDS received a putRecord for io.sunred.share.article.
 	found := false
@@ -216,7 +216,7 @@ func TestATProtoSyncShare_Unshare(t *testing.T) {
 	_ = s.SetShareATProtoRkey(context.Background(), sa.ID, "rkey-unshare-test")
 
 	api := &API{store: s}
-	api.ATProtoSyncShare(userID, sa, false)
+	api.ATProtoSyncShare(userID, sa, false, "")
 
 	// Verify the PDS received a deleteRecord for io.sunred.share.article.
 	found := false

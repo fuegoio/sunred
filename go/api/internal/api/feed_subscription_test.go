@@ -102,7 +102,7 @@ func TestATProtoSyncFeedSubscription_Subscribe(t *testing.T) {
 
 	// Simulate the subscribe sync.
 	api := &API{store: s}
-	api.ATProtoSyncFeedSubscription(userID, feed.ID, feed.FeedURL, feed.SiteURL, feed.Title, true, feed.CreatedAt)
+	api.ATProtoSyncFeedSubscription(userID, feed.ID, feed.FeedURL, feed.SiteURL, feed.Title, true, feed.CreatedAt, "")
 
 	// Verify the PDS received a putRecord for io.sunred.feed.subscription.
 	found := false
@@ -168,7 +168,7 @@ func TestATProtoSyncFeedSubscription_Unsubscribe(t *testing.T) {
 
 	// Simulate the unsubscribe sync (isSubscribe=false).
 	api := &API{store: s}
-	api.ATProtoSyncFeedSubscription(userID, feed.ID, feed.FeedURL, feed.SiteURL, feed.Title, false, time.Now())
+	api.ATProtoSyncFeedSubscription(userID, feed.ID, feed.FeedURL, feed.SiteURL, feed.Title, false, time.Now(), "")
 
 	// Verify the PDS received a deleteRecord for io.sunred.feed.subscription.
 	found := false

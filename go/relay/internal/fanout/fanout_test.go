@@ -20,6 +20,7 @@ type stubStore struct {
 	followCounts map[string]int    // followee_did → count
 	shares       map[string]bool   // rkey → exists
 	feedSubs     map[string]string // rkey → feed_url
+	stars        map[string]string // rkey → article_url
 	events       []store.RelayEvent
 	didCursors   map[string]int64
 	errorDIDs    map[string]string
@@ -31,6 +32,7 @@ func newStubStore() *stubStore {
 		followCounts: make(map[string]int),
 		shares:       make(map[string]bool),
 		feedSubs:     make(map[string]string),
+		stars:        make(map[string]string),
 		didCursors:   make(map[string]int64),
 		errorDIDs:    make(map[string]string),
 	}
@@ -100,6 +102,24 @@ func (s *stubStore) DeleteFeedSubscription(_ context.Context, did, rkey string) 
 		return false, nil
 	}
 	delete(s.feedSubs, key)
+	return true, nil
+}
+
+func (s *stubStore) RecordStar(_ context.Context, did, rkey, articleURL, _ string) (bool, error) {
+	key := did + "/" + rkey
+	if _, exists := s.stars[key]; exists {
+		return false, nil
+	}
+	s.stars[key] = articleURL
+	return true, nil
+}
+
+func (s *stubStore) DeleteStar(_ context.Context, did, rkey string) (bool, error) {
+	key := did + "/" + rkey
+	if _, exists := s.stars[key]; !exists {
+		return false, nil
+	}
+	delete(s.stars, key)
 	return true, nil
 }
 

@@ -216,6 +216,32 @@ func (s *Store) CountFeedSubscriptions(ctx context.Context, feedURL string) (int
 	return n, err
 }
 
+// RecordStar inserts an observed star record. Idempotent on (did, rkey).
+func (s *Store) RecordStar(ctx context.Context, did, rkey, articleURL, pdsURL string) (bool, error) {
+	res, err := s.DB.ExecContext(ctx, `
+		INSERT INTO observed_stars (did, rkey, article_url, pds_url)
+		VALUES ($1,$2,$3,$4)
+		ON CONFLICT (did, rkey) DO NOTHING`,
+		did, rkey, articleURL, pdsURL,
+	)
+	if err != nil {
+		return false, err
+	}
+	n, _ := res.RowsAffected()
+	return n > 0, nil
+}
+
+// DeleteStar removes an observed star by (did, rkey).
+func (s *Store) DeleteStar(ctx context.Context, did, rkey string) (bool, error) {
+	res, err := s.DB.ExecContext(ctx, `
+		DELETE FROM observed_stars WHERE did=$1 AND rkey=$2`, did, rkey)
+	if err != nil {
+		return false, err
+	}
+	n, _ := res.RowsAffected()
+	return n > 0, nil
+}
+
 // GetCounts returns the global follower, share, and feed subscription counts for a DID.
 func (s *Store) GetCounts(ctx context.Context, did string) (followers, shares, feedSubs int64, err error) {
 	err = s.DB.QueryRowContext(ctx, `
