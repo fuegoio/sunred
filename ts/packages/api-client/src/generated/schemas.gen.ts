@@ -639,9 +639,18 @@ export const FeedSchema = {
     type: 'object'
 } as const;
 
-export const FeedSubscribersRespSchema = {
+export const FeedSubscribersResponseSchema = {
     additionalProperties: false,
     properties: {
+        $schema: {
+            description: 'A URL to the JSON Schema for this object.',
+            examples: [
+                'https://example.com/schemas/FeedSubscribersResponse.json'
+            ],
+            format: 'uri',
+            readOnly: true,
+            type: 'string'
+        },
         count: {
             format: 'int64',
             type: 'integer'
@@ -668,18 +677,9 @@ export const FeedSubscribersRespSchema = {
     type: 'object'
 } as const;
 
-export const FeedSubscribersResponseSchema = {
+export const FeedSubscribersSummarySchema = {
     additionalProperties: false,
     properties: {
-        $schema: {
-            description: 'A URL to the JSON Schema for this object.',
-            examples: [
-                'https://example.com/schemas/FeedSubscribersResponse.json'
-            ],
-            format: 'uri',
-            readOnly: true,
-            type: 'string'
-        },
         count: {
             format: 'int64',
             type: 'integer'
@@ -870,7 +870,7 @@ export const PreviewFeedBodySchema = {
             type: 'string'
         },
         subscribers: {
-            $ref: '#/components/schemas/FeedSubscribersResp'
+            $ref: '#/components/schemas/FeedSubscribersSummary'
         },
         title: {
             type: 'string'
@@ -1949,7 +1949,7 @@ export const FeedWritableSchema = {
     type: 'object'
 } as const;
 
-export const FeedSubscribersRespWritableSchema = {
+export const FeedSubscribersResponseWritableSchema = {
     additionalProperties: false,
     properties: {
         count: {
@@ -1978,7 +1978,7 @@ export const FeedSubscribersRespWritableSchema = {
     type: 'object'
 } as const;
 
-export const FeedSubscribersResponseWritableSchema = {
+export const FeedSubscribersSummaryWritableSchema = {
     additionalProperties: false,
     properties: {
         count: {
@@ -2135,7 +2135,7 @@ export const PreviewFeedBodyWritableSchema = {
             type: 'string'
         },
         subscribers: {
-            $ref: '#/components/schemas/FeedSubscribersRespWritable'
+            $ref: '#/components/schemas/FeedSubscribersSummaryWritable'
         },
         title: {
             type: 'string'

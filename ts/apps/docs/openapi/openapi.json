@@ -623,9 +623,18 @@
                 ],
                 "type": "object"
             },
-            "FeedSubscribersResp": {
+            "FeedSubscribersResponse": {
                 "additionalProperties": false,
                 "properties": {
+                    "$schema": {
+                        "description": "A URL to the JSON Schema for this object.",
+                        "examples": [
+                            "https://example.com/schemas/FeedSubscribersResponse.json"
+                        ],
+                        "format": "uri",
+                        "readOnly": true,
+                        "type": "string"
+                    },
                     "count": {
                         "format": "int64",
                         "type": "integer"
@@ -651,18 +660,9 @@
                 ],
                 "type": "object"
             },
-            "FeedSubscribersResponse": {
+            "FeedSubscribersSummary": {
                 "additionalProperties": false,
                 "properties": {
-                    "$schema": {
-                        "description": "A URL to the JSON Schema for this object.",
-                        "examples": [
-                            "https://example.com/schemas/FeedSubscribersResponse.json"
-                        ],
-                        "format": "uri",
-                        "readOnly": true,
-                        "type": "string"
-                    },
                     "count": {
                         "format": "int64",
                         "type": "integer"
@@ -849,7 +849,7 @@
                         "type": "string"
                     },
                     "subscribers": {
-                        "$ref": "#/components/schemas/FeedSubscribersResp"
+                        "$ref": "#/components/schemas/FeedSubscribersSummary"
                     },
                     "title": {
                         "type": "string"

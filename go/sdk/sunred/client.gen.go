@@ -38,6 +38,27 @@ func (e UpdateEntriesRequestStatus) Valid() bool {
 	}
 }
 
+// Defines values for UpdateEntryStatusByUrlRequestStatus.
+const (
+	UpdateEntryStatusByUrlRequestStatusRead    UpdateEntryStatusByUrlRequestStatus = "read"
+	UpdateEntryStatusByUrlRequestStatusRemoved UpdateEntryStatusByUrlRequestStatus = "removed"
+	UpdateEntryStatusByUrlRequestStatusUnread  UpdateEntryStatusByUrlRequestStatus = "unread"
+)
+
+// Valid indicates whether the value is a known member of the UpdateEntryStatusByUrlRequestStatus enum.
+func (e UpdateEntryStatusByUrlRequestStatus) Valid() bool {
+	switch e {
+	case UpdateEntryStatusByUrlRequestStatusRead:
+		return true
+	case UpdateEntryStatusByUrlRequestStatusRemoved:
+		return true
+	case UpdateEntryStatusByUrlRequestStatusUnread:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListEntriesParamsStatus.
 const (
 	ListEntriesParamsStatusRead    ListEntriesParamsStatus = "read"
@@ -97,6 +118,16 @@ type ATProtoStatusOutputBody struct {
 	Connected bool    `json:"connected"`
 	Did       *string `json:"did,omitempty"`
 	Handle    *string `json:"handle,omitempty"`
+}
+
+// ArticleShareCountResponse defines model for ArticleShareCountResponse.
+type ArticleShareCountResponse struct {
+	// Schema A URL to the JSON Schema for this object.
+	//
+	// Examples: https://example.com/schemas/ArticleShareCountResponse.json
+	Schema     *string `json:"$schema,omitempty"`
+	ArticleUrl string  `json:"article_url"`
+	Count      int64   `json:"count"`
 }
 
 // CreateFeedInputBody defines model for CreateFeedInputBody.
@@ -214,7 +245,6 @@ type Entry struct {
 	FeedId       int64        `json:"feed_id"`
 	Hash         string       `json:"hash"`
 	Id           int64        `json:"id"`
-	Liked        *bool        `json:"liked,omitempty"`
 	PublishedAt  time.Time    `json:"published_at"`
 	SharedBy     *string      `json:"shared_by,omitempty"`
 	SharedByName *string      `json:"shared_by_name,omitempty"`
@@ -304,6 +334,14 @@ type FeedSubscribersResponse struct {
 	// Examples: https://example.com/schemas/FeedSubscribersResponse.json
 	Schema      *string        `json:"$schema,omitempty"`
 	Count       int64          `json:"count"`
+	GlobalCount int64          `json:"global_count"`
+	Subscribers *[]UserProfile `json:"subscribers"`
+}
+
+// FeedSubscribersSummary defines model for FeedSubscribersSummary.
+type FeedSubscribersSummary struct {
+	Count       int64          `json:"count"`
+	GlobalCount int64          `json:"global_count"`
 	Subscribers *[]UserProfile `json:"subscribers"`
 }
 
@@ -349,13 +387,15 @@ type PreviewFeedBody struct {
 	// Schema A URL to the JSON Schema for this object.
 	//
 	// Examples: https://example.com/schemas/PreviewFeedBody.json
-	Schema      *string            `json:"$schema,omitempty"`
-	Description *string            `json:"description,omitempty"`
-	FaviconUrl  *string            `json:"favicon_url,omitempty"`
-	FeedUrl     string             `json:"feed_url"`
-	Items       *[]PreviewFeedItem `json:"items"`
-	SiteUrl     string             `json:"site_url"`
-	Title       string             `json:"title"`
+	Schema      *string                 `json:"$schema,omitempty"`
+	Description *string                 `json:"description,omitempty"`
+	FaviconUrl  *string                 `json:"favicon_url,omitempty"`
+	FeedUrl     string                  `json:"feed_url"`
+	Id          *int64                  `json:"id,omitempty"`
+	Items       *[]PreviewFeedItem      `json:"items"`
+	SiteUrl     string                  `json:"site_url"`
+	Subscribers *FeedSubscribersSummary `json:"subscribers,omitempty"`
+	Title       string                  `json:"title"`
 }
 
 // PreviewFeedInputBody defines model for PreviewFeedInputBody.
@@ -370,9 +410,12 @@ type PreviewFeedInputBody struct {
 // PreviewFeedItem defines model for PreviewFeedItem.
 type PreviewFeedItem struct {
 	Author      *string   `json:"author,omitempty"`
+	CommentsUrl *string   `json:"comments_url,omitempty"`
 	Content     string    `json:"content"`
 	Description *string   `json:"description,omitempty"`
 	PublishedAt time.Time `json:"published_at"`
+	Starred     *bool     `json:"starred,omitempty"`
+	Status      *string   `json:"status,omitempty"`
 	Tags        *[]string `json:"tags,omitempty"`
 	Title       string    `json:"title"`
 	Url         string    `json:"url"`
@@ -383,10 +426,11 @@ type PublicProfileResponse struct {
 	// Schema A URL to the JSON Schema for this object.
 	//
 	// Examples: https://example.com/schemas/PublicProfileResponse.json
-	Schema         *string          `json:"$schema,omitempty"`
-	Feeds          *[]Feed          `json:"feeds"`
-	Profile        UserProfile      `json:"profile"`
-	SharedArticles *[]SharedArticle `json:"shared_articles"`
+	Schema              *string          `json:"$schema,omitempty"`
+	Feeds               *[]Feed          `json:"feeds"`
+	GlobalFollowerCount int64            `json:"global_follower_count"`
+	Profile             UserProfile      `json:"profile"`
+	SharedArticles      *[]SharedArticle `json:"shared_articles"`
 }
 
 // ShareArticleInputBody defines model for ShareArticleInputBody.
@@ -423,8 +467,27 @@ type SharedArticle struct {
 	SharedAt          time.Time  `json:"shared_at"`
 	SharerDisplayName *string    `json:"sharer_display_name,omitempty"`
 	SharerHandle      *string    `json:"sharer_handle,omitempty"`
+	Starred           *bool      `json:"starred,omitempty"`
+	Status            *string    `json:"status,omitempty"`
 	Title             string     `json:"title"`
 	UserId            int64      `json:"user_id"`
+}
+
+// ToggleEntryStarredByUrlRequest defines model for Toggle-entry-starred-by-urlRequest.
+type ToggleEntryStarredByUrlRequest struct {
+	// Schema A URL to the JSON Schema for this object.
+	//
+	// Examples: https://example.com/schemas/Toggle-entry-starred-by-urlRequest.json
+	Schema      *string    `json:"$schema,omitempty"`
+	ArticleUrl  string     `json:"article_url"`
+	Author      *string    `json:"author,omitempty"`
+	Description *string    `json:"description,omitempty"`
+	FeedSiteUrl *string    `json:"feed_site_url,omitempty"`
+	FeedTitle   *string    `json:"feed_title,omitempty"`
+	FeedUrl     *string    `json:"feed_url,omitempty"`
+	PublishedAt *time.Time `json:"published_at,omitempty"`
+	Starred     bool       `json:"starred"`
+	Title       string     `json:"title"`
 }
 
 // ToggleEntryStarredRequest defines model for Toggle-entry-starredRequest.
@@ -460,6 +523,19 @@ type UpdateEntriesRequest struct {
 
 // UpdateEntriesRequestStatus defines model for UpdateEntriesRequest.Status.
 type UpdateEntriesRequestStatus string
+
+// UpdateEntryStatusByUrlRequest defines model for Update-entry-status-by-urlRequest.
+type UpdateEntryStatusByUrlRequest struct {
+	// Schema A URL to the JSON Schema for this object.
+	//
+	// Examples: https://example.com/schemas/Update-entry-status-by-urlRequest.json
+	Schema     *string                             `json:"$schema,omitempty"`
+	ArticleUrl string                              `json:"article_url"`
+	Status     UpdateEntryStatusByUrlRequestStatus `json:"status"`
+}
+
+// UpdateEntryStatusByUrlRequestStatus defines model for UpdateEntryStatusByUrlRequest.Status.
+type UpdateEntryStatusByUrlRequestStatus string
 
 // UpdateFeedInputBody defines model for UpdateFeedInputBody.
 type UpdateFeedInputBody struct {
@@ -512,8 +588,6 @@ type User struct {
 	DisplayName   *string    `json:"display_name,omitempty"`
 	Handle        string     `json:"handle"`
 	Id            int64      `json:"id"`
-	IsAdmin       bool       `json:"is_admin"`
-	IsRemote      *bool      `json:"is_remote,omitempty"`
 	PdsSyncStatus string     `json:"pds_sync_status"`
 	PdsSyncedAt   *time.Time `json:"pds_synced_at,omitempty"`
 }
@@ -532,7 +606,6 @@ type UserProfile struct {
 	FollowingCount int64     `json:"following_count"`
 	Handle         string    `json:"handle"`
 	IsFollowing    *bool     `json:"is_following,omitempty"`
-	IsRemote       *bool     `json:"is_remote,omitempty"`
 	PdsUrl         *string   `json:"pds_url,omitempty"`
 	UserId         int64     `json:"user_id"`
 }
@@ -541,6 +614,11 @@ type UserProfile struct {
 type SearchUsersParams struct {
 	Q     *string `form:"q,omitempty" json:"q,omitempty"`
 	Limit *int64  `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// ArticleShareCountParams defines parameters for ArticleShareCount.
+type ArticleShareCountParams struct {
+	ArticleUrl string `form:"article_url" json:"article_url"`
 }
 
 // SocialTimelineParams defines parameters for SocialTimeline.
@@ -586,6 +664,12 @@ type DeviceTokenJSONRequestBody = DeviceTokenInputBody
 
 // UpdateEntriesJSONRequestBody defines body for UpdateEntries for application/json ContentType.
 type UpdateEntriesJSONRequestBody = UpdateEntriesRequest
+
+// UpdateEntryStatusByUrlJSONRequestBody defines body for UpdateEntryStatusByUrl for application/json ContentType.
+type UpdateEntryStatusByUrlJSONRequestBody = UpdateEntryStatusByUrlRequest
+
+// ToggleEntryStarredByUrlJSONRequestBody defines body for ToggleEntryStarredByUrl for application/json ContentType.
+type ToggleEntryStarredByUrlJSONRequestBody = ToggleEntryStarredByUrlRequest
 
 // ToggleEntryStarredJSONRequestBody defines body for ToggleEntryStarred for application/json ContentType.
 type ToggleEntryStarredJSONRequestBody = ToggleEntryStarredRequest
@@ -719,6 +803,11 @@ type ClientInterface interface {
 	// Corresponds with GET /api/v1/social/search (the `SearchUsers` operationId).
 	SearchUsers(ctx context.Context, params *SearchUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ArticleShareCount Get the global share count for an article URL
+	//
+	// Corresponds with GET /api/v1/social/share-count (the `ArticleShareCount` operationId).
+	ArticleShareCount(ctx context.Context, params *ArticleShareCountParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// MySharedArticles List your shared articles
 	//
 	// Corresponds with GET /api/v1/social/shares (the `MySharedArticles` operationId).
@@ -829,6 +918,34 @@ type ClientInterface interface {
 	//
 	// Corresponds with PUT /v1/entries (the `UpdateEntries` operationId).
 	UpdateEntries(ctx context.Context, body UpdateEntriesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateEntryStatusByUrlWithBody Update an article's read status by URL (no entry ID required)
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /v1/entries/by-url (the `UpdateEntryStatusByUrl` operationId).
+	UpdateEntryStatusByUrlWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateEntryStatusByUrl Update an article's read status by URL (no entry ID required)
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /v1/entries/by-url (the `UpdateEntryStatusByUrl` operationId).
+	UpdateEntryStatusByUrl(ctx context.Context, body UpdateEntryStatusByUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ToggleEntryStarredByUrlWithBody Toggle starred on an article by URL (no entry ID required)
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /v1/entries/by-url/starred (the `ToggleEntryStarredByUrl` operationId).
+	ToggleEntryStarredByUrlWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ToggleEntryStarredByUrl Toggle starred on an article by URL (no entry ID required)
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /v1/entries/by-url/starred (the `ToggleEntryStarredByUrl` operationId).
+	ToggleEntryStarredByUrl(ctx context.Context, body ToggleEntryStarredByUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetEntry Get an entry
 	//
@@ -1132,6 +1249,21 @@ func (c *Client) SearchUsers(ctx context.Context, params *SearchUsersParams, req
 	return c.Client.Do(req)
 }
 
+// ArticleShareCount Get the global share count for an article URL
+//
+// Corresponds with GET /api/v1/social/share-count (the `ArticleShareCount` operationId).
+func (c *Client) ArticleShareCount(ctx context.Context, params *ArticleShareCountParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewArticleShareCountRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // MySharedArticles List your shared articles
 //
 // Corresponds with GET /api/v1/social/shares (the `MySharedArticles` operationId).
@@ -1423,6 +1555,74 @@ func (c *Client) UpdateEntriesWithBody(ctx context.Context, contentType string, 
 // Corresponds with PUT /v1/entries (the `UpdateEntries` operationId).
 func (c *Client) UpdateEntries(ctx context.Context, body UpdateEntriesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateEntriesRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateEntryStatusByUrlWithBody Update an article's read status by URL (no entry ID required)
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /v1/entries/by-url (the `UpdateEntryStatusByUrl` operationId).
+func (c *Client) UpdateEntryStatusByUrlWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateEntryStatusByUrlRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateEntryStatusByUrl Update an article's read status by URL (no entry ID required)
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /v1/entries/by-url (the `UpdateEntryStatusByUrl` operationId).
+func (c *Client) UpdateEntryStatusByUrl(ctx context.Context, body UpdateEntryStatusByUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateEntryStatusByUrlRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ToggleEntryStarredByUrlWithBody Toggle starred on an article by URL (no entry ID required)
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /v1/entries/by-url/starred (the `ToggleEntryStarredByUrl` operationId).
+func (c *Client) ToggleEntryStarredByUrlWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewToggleEntryStarredByUrlRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ToggleEntryStarredByUrl Toggle starred on an article by URL (no entry ID required)
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /v1/entries/by-url/starred (the `ToggleEntryStarredByUrl` operationId).
+func (c *Client) ToggleEntryStarredByUrl(ctx context.Context, body ToggleEntryStarredByUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewToggleEntryStarredByUrlRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2144,6 +2344,56 @@ func NewSearchUsersRequest(server string, params *SearchUsersParams) (*http.Requ
 	return req, nil
 }
 
+// NewArticleShareCountRequest constructs an http.Request for the ArticleShareCount method
+func NewArticleShareCountRequest(server string, params *ArticleShareCountParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/social/share-count")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", false, "article_url", params.ArticleUrl, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewMySharedArticlesRequest constructs an http.Request for the MySharedArticles method
 func NewMySharedArticlesRequest(server string) (*http.Request, error) {
 	var err error
@@ -2801,6 +3051,86 @@ func NewUpdateEntriesRequestWithBody(server string, contentType string, body io.
 	}
 
 	operationPath := fmt.Sprintf("/v1/entries")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewUpdateEntryStatusByUrlRequest calls the generic UpdateEntryStatusByUrl builder with application/json body
+func NewUpdateEntryStatusByUrlRequest(server string, body UpdateEntryStatusByUrlJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateEntryStatusByUrlRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewUpdateEntryStatusByUrlRequestWithBody constructs an http.Request for the UpdateEntryStatusByUrl method, with any body, and a specified content type
+func NewUpdateEntryStatusByUrlRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/entries/by-url")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewToggleEntryStarredByUrlRequest calls the generic ToggleEntryStarredByUrl builder with application/json body
+func NewToggleEntryStarredByUrlRequest(server string, body ToggleEntryStarredByUrlJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewToggleEntryStarredByUrlRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewToggleEntryStarredByUrlRequestWithBody constructs an http.Request for the ToggleEntryStarredByUrl method, with any body, and a specified content type
+func NewToggleEntryStarredByUrlRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/entries/by-url/starred")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -3703,6 +4033,13 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /api/v1/social/search (the `SearchUsers` operationId).
 	SearchUsersWithResponse(ctx context.Context, params *SearchUsersParams, reqEditors ...RequestEditorFn) (*SearchUsersResp, error)
 
+	// ArticleShareCountWithResponse Get the global share count for an article URL
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /api/v1/social/share-count (the `ArticleShareCount` operationId).
+	ArticleShareCountWithResponse(ctx context.Context, params *ArticleShareCountParams, reqEditors ...RequestEditorFn) (*ArticleShareCountResp, error)
+
 	// MySharedArticlesWithResponse List your shared articles
 	//
 	// Returns a wrapper object for the known response body format(s).
@@ -3835,6 +4172,34 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with PUT /v1/entries (the `UpdateEntries` operationId).
 	UpdateEntriesWithResponse(ctx context.Context, body UpdateEntriesJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEntriesResp, error)
+
+	// UpdateEntryStatusByUrlWithBodyWithResponse Update an article's read status by URL (no entry ID required)
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/entries/by-url (the `UpdateEntryStatusByUrl` operationId).
+	UpdateEntryStatusByUrlWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEntryStatusByUrlResp, error)
+
+	// UpdateEntryStatusByUrlWithResponse Update an article's read status by URL (no entry ID required)
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/entries/by-url (the `UpdateEntryStatusByUrl` operationId).
+	UpdateEntryStatusByUrlWithResponse(ctx context.Context, body UpdateEntryStatusByUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEntryStatusByUrlResp, error)
+
+	// ToggleEntryStarredByUrlWithBodyWithResponse Toggle starred on an article by URL (no entry ID required)
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/entries/by-url/starred (the `ToggleEntryStarredByUrl` operationId).
+	ToggleEntryStarredByUrlWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ToggleEntryStarredByUrlResp, error)
+
+	// ToggleEntryStarredByUrlWithResponse Toggle starred on an article by URL (no entry ID required)
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/entries/by-url/starred (the `ToggleEntryStarredByUrl` operationId).
+	ToggleEntryStarredByUrlWithResponse(ctx context.Context, body ToggleEntryStarredByUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*ToggleEntryStarredByUrlResp, error)
 
 	// GetEntryWithResponse Get an entry
 	//
@@ -4306,6 +4671,54 @@ func (r SearchUsersResp) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r SearchUsersResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ArticleShareCountResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ArticleShareCountResponse
+	// ApplicationproblemJSONDefault the response for an HTTP default `application/problem+json` response
+	ApplicationproblemJSONDefault *ErrorModel
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ArticleShareCountResp) GetJSON200() *ArticleShareCountResponse {
+	return r.JSON200
+}
+
+// GetApplicationproblemJSONDefault returns the response for an HTTP default `application/problem+json` response
+func (r ArticleShareCountResp) GetApplicationproblemJSONDefault() *ErrorModel {
+	return r.ApplicationproblemJSONDefault
+}
+
+// GetBody returns the raw response body bytes
+func (r ArticleShareCountResp) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ArticleShareCountResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ArticleShareCountResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ArticleShareCountResp) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -4998,6 +5411,88 @@ func (r UpdateEntriesResp) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateEntriesResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateEntryStatusByUrlResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// ApplicationproblemJSONDefault the response for an HTTP default `application/problem+json` response
+	ApplicationproblemJSONDefault *ErrorModel
+}
+
+// GetApplicationproblemJSONDefault returns the response for an HTTP default `application/problem+json` response
+func (r UpdateEntryStatusByUrlResp) GetApplicationproblemJSONDefault() *ErrorModel {
+	return r.ApplicationproblemJSONDefault
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateEntryStatusByUrlResp) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateEntryStatusByUrlResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateEntryStatusByUrlResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateEntryStatusByUrlResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ToggleEntryStarredByUrlResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// ApplicationproblemJSONDefault the response for an HTTP default `application/problem+json` response
+	ApplicationproblemJSONDefault *ErrorModel
+}
+
+// GetApplicationproblemJSONDefault returns the response for an HTTP default `application/problem+json` response
+func (r ToggleEntryStarredByUrlResp) GetApplicationproblemJSONDefault() *ErrorModel {
+	return r.ApplicationproblemJSONDefault
+}
+
+// GetBody returns the raw response body bytes
+func (r ToggleEntryStarredByUrlResp) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ToggleEntryStarredByUrlResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ToggleEntryStarredByUrlResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ToggleEntryStarredByUrlResp) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -6144,6 +6639,19 @@ func (c *ClientWithResponses) SearchUsersWithResponse(ctx context.Context, param
 	return ParseSearchUsersResp(rsp)
 }
 
+// ArticleShareCountWithResponse Get the global share count for an article URL
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /api/v1/social/share-count (the `ArticleShareCount` operationId).
+func (c *ClientWithResponses) ArticleShareCountWithResponse(ctx context.Context, params *ArticleShareCountParams, reqEditors ...RequestEditorFn) (*ArticleShareCountResp, error) {
+	rsp, err := c.ArticleShareCount(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseArticleShareCountResp(rsp)
+}
+
 // MySharedArticlesWithResponse List your shared articles
 //
 // Returns a wrapper object for the known response body format(s).
@@ -6389,6 +6897,58 @@ func (c *ClientWithResponses) UpdateEntriesWithResponse(ctx context.Context, bod
 		return nil, err
 	}
 	return ParseUpdateEntriesResp(rsp)
+}
+
+// UpdateEntryStatusByUrlWithBodyWithResponse Update an article's read status by URL (no entry ID required)
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/entries/by-url (the `UpdateEntryStatusByUrl` operationId).
+func (c *ClientWithResponses) UpdateEntryStatusByUrlWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEntryStatusByUrlResp, error) {
+	rsp, err := c.UpdateEntryStatusByUrlWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateEntryStatusByUrlResp(rsp)
+}
+
+// UpdateEntryStatusByUrlWithResponse Update an article's read status by URL (no entry ID required)
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/entries/by-url (the `UpdateEntryStatusByUrl` operationId).
+func (c *ClientWithResponses) UpdateEntryStatusByUrlWithResponse(ctx context.Context, body UpdateEntryStatusByUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEntryStatusByUrlResp, error) {
+	rsp, err := c.UpdateEntryStatusByUrl(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateEntryStatusByUrlResp(rsp)
+}
+
+// ToggleEntryStarredByUrlWithBodyWithResponse Toggle starred on an article by URL (no entry ID required)
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/entries/by-url/starred (the `ToggleEntryStarredByUrl` operationId).
+func (c *ClientWithResponses) ToggleEntryStarredByUrlWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ToggleEntryStarredByUrlResp, error) {
+	rsp, err := c.ToggleEntryStarredByUrlWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseToggleEntryStarredByUrlResp(rsp)
+}
+
+// ToggleEntryStarredByUrlWithResponse Toggle starred on an article by URL (no entry ID required)
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/entries/by-url/starred (the `ToggleEntryStarredByUrl` operationId).
+func (c *ClientWithResponses) ToggleEntryStarredByUrlWithResponse(ctx context.Context, body ToggleEntryStarredByUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*ToggleEntryStarredByUrlResp, error) {
+	rsp, err := c.ToggleEntryStarredByUrl(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseToggleEntryStarredByUrlResp(rsp)
 }
 
 // GetEntryWithResponse Get an entry
@@ -6977,6 +7537,39 @@ func ParseSearchUsersResp(rsp *http.Response) (*SearchUsersResp, error) {
 	return response, nil
 }
 
+// ParseArticleShareCountResp parses an HTTP response from a ArticleShareCountWithResponse call
+func ParseArticleShareCountResp(rsp *http.Response) (*ArticleShareCountResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ArticleShareCountResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ArticleShareCountResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest ErrorModel
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseMySharedArticlesResp parses an HTTP response from a MySharedArticlesWithResponse call
 func ParseMySharedArticlesResp(rsp *http.Response) (*MySharedArticlesResp, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -7436,6 +8029,64 @@ func ParseUpdateEntriesResp(rsp *http.Response) (*UpdateEntriesResp, error) {
 	}
 
 	response := &UpdateEntriesResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest ErrorModel
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateEntryStatusByUrlResp parses an HTTP response from a UpdateEntryStatusByUrlWithResponse call
+func ParseUpdateEntryStatusByUrlResp(rsp *http.Response) (*UpdateEntryStatusByUrlResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateEntryStatusByUrlResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest ErrorModel
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationproblemJSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseToggleEntryStarredByUrlResp parses an HTTP response from a ToggleEntryStarredByUrlWithResponse call
+func ParseToggleEntryStarredByUrlResp(rsp *http.Response) (*ToggleEntryStarredByUrlResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ToggleEntryStarredByUrlResp{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
