@@ -46,6 +46,16 @@ export function faviconUrl(siteUrl: string): string {
   return `https://www.google.com/s2/favicons?domain=${siteUrl}&sz=64`;
 }
 
+/** Hostname for a site URL, falling back to the raw string. */
+export function siteDomain(siteUrl: string | undefined | null): string {
+  if (!siteUrl) return "";
+  try {
+    return new URL(siteUrl).hostname.replace(/^www\./, "");
+  } catch {
+    return siteUrl;
+  }
+}
+
 /** Strip HTML tags to produce a plain-text snippet of `maxLen` chars. */
 export function htmlSnippet(html: string | undefined | null, maxLen = 240): string {
   if (!html) return "";

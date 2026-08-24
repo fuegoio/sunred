@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Users, UserCheck, UserPlus, Menu as MenuIcon, ChevronRight, Rss } from "lucide-react";
@@ -30,6 +30,7 @@ import {
   unwrap,
 } from "@/lib/sunred";
 import { getApiErrorMessage } from "@/lib/errors";
+import { siteDomain, htmlSnippet } from "@/lib/format";
 import { cn } from "@workspace/ui/lib/utils";
 import type { Entry, PublicProfileResponse, SharedArticle } from "@/lib/types";
 
@@ -250,6 +251,25 @@ export default function UserProfilePage({
   const { handle } = use(params);
   const queryClient = useQueryClient();
 
+  // Reflect the active tab in the URL hash (#articles / #feeds) so it can be
+  // shared and restored. Syncs with the browser location — an external system.
+  const [tab, setTab] = useState("articles");
+  useEffect(() => {
+    const fromHash = () => {
+      const h = window.location.hash.replace(/^#/, "");
+      setTab(h === "feeds" ? "feeds" : "articles");
+    };
+    fromHash();
+    window.addEventListener("hashchange", fromHash);
+    return () => window.removeEventListener("hashchange", fromHash);
+  }, []);
+  function handleTabChange(value: string) {
+    setTab(value);
+    if (typeof window !== "undefined") {
+      window.location.hash = value;
+    }
+  }
+
   const {
     data: profile,
     isLoading,
@@ -351,7 +371,7 @@ export default function UserProfilePage({
           onFollowToggle={handleFollowToggle}
         />
       </div>
-      <Tabs defaultValue="articles" className="flex min-h-0 flex-1 flex-col gap-0">
+      <Tabs value={tab} onValueChange={handleTabChange} className="flex min-h-0 flex-1 flex-col gap-0">
         <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 pt-1.5 lg:pl-[48px]">
           <TabsList variant="line" className="h-8! px-0">
             <TabsTrigger value="articles">
@@ -420,26 +440,42 @@ export default function UserProfilePage({
             <div className="mx-auto w-full max-w-3xl">
               {userFeeds.length > 0 ? (
                 <ul className="divide-y divide-border">
-                  {userFeeds.map((feed) => (
-                    <li key={feed.id}>
-                      <Link
-                        href={`/feeds?url=${encodeURIComponent(feed.feed_url)}`}
-                        className={cn(
-                          "group flex items-center gap-3 px-4 py-3",
-                          "hover:bg-muted/50 transition-colors",
-                        )}
-                      >
-                        <FeedIcon
-                          siteUrl={feed.site_url}
-                          className="size-4 shrink-0 rounded-sm"
-                        />
-                        <span className="flex-1 truncate text-sm">
-                          {feed.title || feed.feed_url}
-                        </span>
-                        <ChevronRight className="size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-                      </Link>
-                    </li>
-                  ))}
+                  {userFeeds.map((feed) => {
+                    const domain = siteDomain(feed.site_url);
+                    const summary = htmlSnippet(feed.description, 240);
+                    return (
+                      <li key={feed.id}>
+                        <Link
+                          href={`/feeds?url=${encodeURIComponent(feed.feed_url)}`}
+                          className={cn(
+                            "group flex items-start gap-3 px-4 py-3",
+                            "hover:bg-muted/50 transition-colors",
+                          )}
+                        >
+                          <FeedIcon
+                            siteUrl={feed.site_url}
+                            className="size-5 shrink-0 rounded-md"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-medium text-foreground">
+                              {feed.title || feed.feed_url}
+                            </span>
+                            {domain && (
+                              <span className="block truncate text-xs text-muted-foreground">
+                                {domain}
+                              </span>
+                            )}
+                            {summary && (
+                              <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                                {summary}
+                              </p>
+                            )}
+                          </div>
+                          <ChevronRight className="size-4 shrink-0 self-center text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                        </Link>
+                      </li>
+                    );
+                  })}
                 </ul>
               ) : (
                 <div className="p-4">
@@ -450,7 +486,7 @@ export default function UserProfilePage({
                       </EmptyMedia>
                       <EmptyTitle>No public feeds</EmptyTitle>
                       <EmptyDescription>
-                        {displayName} isn&apos;t sharing any public feeds.
+                        {displayName}{" "}isn&apos;t sharing any public feeds.
                       </EmptyDescription>
                     </EmptyHeader>
                   </Empty>
