@@ -367,7 +367,7 @@ export default function UserProfilePage({
                   </EmptyMedia>
                   <EmptyTitle>Nothing shared yet</EmptyTitle>
                   <EmptyDescription>
-                    {displayName} hasn&apos;t shared any articles. When they do,
+                    {displayName}{" "}hasn&apos;t shared any articles. When they do,
                     they&apos;ll land here in reverse-chronological order.
                   </EmptyDescription>
                 </EmptyHeader>
