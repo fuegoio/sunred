@@ -113,24 +113,11 @@ export function FeedDiscovery({
               </div>
             }
             metadata={
-              <>
-                {siteUrl && (
-                  <a
-                    href={siteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    <span className="truncate">{siteUrl}</span>
-                    <ExternalLink className="size-3 shrink-0" />
-                  </a>
-                )}
-                {preview.description && (
-                  <p className={cn(siteUrl && "mt-1", "line-clamp-2 text-sm text-muted-foreground")}>
-                    {preview.description}
-                  </p>
-                )}
-              </>
+              preview.description ? (
+                <p className="line-clamp-2 text-sm text-muted-foreground">
+                  {preview.description}
+                </p>
+              ) : undefined
             }
           />
         </div>
