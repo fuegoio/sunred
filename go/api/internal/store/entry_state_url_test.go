@@ -792,3 +792,56 @@ func TestGetEntryStatesByURLs_URLKeyIsInputURL(t *testing.T) {
 		t.Error("expected starred=true")
 	}
 }
+
+// TestStarReadStateUniformAcrossURLVariants is the motivating property for
+// URL normalization: two textually-different but canonically-equivalent
+// article URLs (tracking params, fragment, trailing slash, query order)
+// must share the same star/read state, so an article starred or marked
+// read via one source variant shows as starred/read via any other.
+func TestStarReadStateUniformAcrossURLVariants(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	userID := seedUser(t, s, "uniform-variants@example.com")
+
+	starVariant := "https://example.com/article?utm_source=feed#top"
+	readVariant := "https://example.com/article/#fbclid=abc"
+	lookupVariant := "https://example.com/article"
+
+	// Star via one variant and mark read via another.
+	if err := s.ToggleEntryStarredByURL(ctx, userID,
+		starVariant, "Title", "", "", "", "", "", nil, true,
+	); err != nil {
+		t.Fatalf("star by variant: %v", err)
+	}
+	if err := s.UpdateEntryStatusByURL(ctx, userID, readVariant, "read"); err != nil {
+		t.Fatalf("mark read by variant: %v", err)
+	}
+
+	// Look up state via a third, differently-spelled variant.
+	states, err := s.GetEntryStatesByURLs(ctx, userID, []string{lookupVariant})
+	if err != nil {
+		t.Fatalf("GetEntryStatesByURLs: %v", err)
+	}
+	st, ok := states[lookupVariant]
+	if !ok {
+		t.Fatalf("expected %q in map", lookupVariant)
+	}
+	if !st.Starred {
+		t.Error("expected starred=true across URL variants (normalization broken)")
+	}
+	if st.Status != "read" {
+		t.Errorf("status=%q, want 'read' across URL variants (normalization broken)", st.Status)
+	}
+
+	// Unstar via the lookup variant must clear the star (keyed by the
+	// normalized URL). entryStarExists queries raw SQL, so check the
+	// normalized key that is actually stored.
+	if err := s.ToggleEntryStarredByURL(ctx, userID,
+		lookupVariant, "Title", "", "", "", "", "", nil, false,
+	); err != nil {
+		t.Fatalf("unstar by variant: %v", err)
+	}
+	if entryStarExists(t, s, userID, "https://example.com/article") {
+		t.Error("expected unstar by one variant to clear the star set via another variant")
+	}
+}

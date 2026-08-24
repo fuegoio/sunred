@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log/slog"
 	"time"
+
+	"github.com/fuegoio/sunred/go/api/internal/urlnorm"
 )
 
 // --- Web sessions (cookie auth) ---
@@ -151,6 +153,7 @@ func (s *Store) UpsertFollowWithRkey(ctx context.Context, followerID, followeeID
 // rkey so a later unsubscribe can delete the record. The global feed is created
 // if missing; the subscription is created/updated for the user.
 func (s *Store) UpsertFeedSubscriptionWithRkey(ctx context.Context, userID int, feedURL, siteURL, title, rkey string) error {
+	feedURL = urlnorm.URL(feedURL)
 	feed, err := s.GetOrCreateFeed(ctx, feedURL, siteURL, title, "")
 	if err != nil {
 		return err
@@ -190,6 +193,8 @@ func (s *Store) UpsertShareWithRkey(ctx context.Context, userID int,
 	articleURL, title, description, feedURL, feedTitle, feedSiteURL, author string,
 	publishedAt *time.Time, rkey string,
 ) error {
+	articleURL = urlnorm.URL(articleURL)
+	feedURL = urlnorm.URL(feedURL)
 	entryID := s.ensureSharedEntry(ctx, articleURL, title, description, feedURL, feedTitle, feedSiteURL, author, publishedAt)
 	_, err := s.DB.ExecContext(ctx, `
 		INSERT INTO shared_articles
@@ -230,6 +235,8 @@ func (s *Store) UpsertStarWithRkey(ctx context.Context, userID int,
 	articleURL, title, description, feedURL, feedTitle, feedSiteURL, author string,
 	publishedAt *time.Time, rkey string,
 ) error {
+	articleURL = urlnorm.URL(articleURL)
+	feedURL = urlnorm.URL(feedURL)
 	entryID := s.ensureSharedEntry(ctx, articleURL, title, description, feedURL, feedTitle, feedSiteURL, author, publishedAt)
 	_, err := s.DB.ExecContext(ctx, `
 		INSERT INTO entry_stars
