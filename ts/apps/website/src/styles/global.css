@@ -3,58 +3,57 @@
 
 /*
  * Sunred marketing site — design tokens
- * Color tokens are shared from @workspace/ui (tokens.css) so every
- * Sunred surface uses the same palette. The brand orange
- * (--primary, oklch 0.80 0.19 39) is the sun. Marketing-specific
- * tokens (sky, glow, haze) layer on top for the dawn hero.
+ *
+ * The marketing surface is dark-first: a deep near-black tinted toward the
+ * sun's hue (the sky before dawn), with the brand orange (--primary, shared
+ * from @workspace/ui) as the single saturated accent. The sun is still the
+ * brand; here it reads as a warm glow rising out of the dark, not a cream
+ * newspaper. Type is Geist (sans + mono) — a modern developer-tool voice.
  */
 
 @theme {
-  /* Brand — aliases of the shared --primary token */
+  /* Brand — the sun. Aliases of the shared --primary token. */
   --color-sun: var(--primary);
-  --color-sun-glow: oklch(0.748 0.238 80);
-  --color-sun-deep: oklch(0.62 0.248 60);
+  --color-sun-glow: oklch(0.72 0.24 55);
+  --color-sun-deep: oklch(0.62 0.24 45);
 
-  /* Dawn sky (hero) — deep warm near-black, tinted toward the sun hue */
-  --color-sky-deep: oklch(0.12 0.018 55);
-  --color-sky-mid: oklch(0.16 0.028 55);
-  --color-sky-warm: oklch(0.22 0.045 60);
-  --color-sky-haze: oklch(0.32 0.07 65);
+  /* Dark surface ramp — near-black, tinted toward the sun hue (~45–55) */
+  --color-bg: oklch(0.165 0.008 50);
+  --color-bg-raised: oklch(0.205 0.009 50);
+  --color-bg-elevated: oklch(0.245 0.011 50);
+  --color-bg-sunken: oklch(0.135 0.007 50);
 
-  /* Light surface — aliases of shared tokens */
-  --color-paper: var(--background);
-  --color-ink: var(--foreground);
-  --color-rule: var(--border);
+  /* Ink — warm near-white, tuned for ≥4.5:1 on the dark bg */
+  --color-ink: oklch(0.97 0.004 50);
+  --color-ink-soft: oklch(0.74 0.012 50);
+  --color-ink-faint: oklch(0.62 0.014 50);
 
-  /* Fonts — same families as apps/web */
-  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
-  --font-serif: "Merriweather", Georgia, serif;
+  /* Hairlines — translucent white for depth without hard edges */
+  --color-rule: oklch(1 0 0 / 0.08);
+  --color-rule-strong: oklch(1 0 0 / 0.14);
+
+  /* Fonts — Geist (modern developer-tool voice) */
+  --font-sans: "Geist", system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
-  --font-display: var(--font-serif);
+  --font-display: var(--font-sans);
   --font-body: var(--font-sans);
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  /* Fonts — same families as apps/web */
-  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
-  --font-serif: "Merriweather", Georgia, serif;
+  /* Fonts — propagate to non-theme contexts */
+  --font-sans: "Geist", system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-serif: var(--font-sans);
 
-  /*
-   * Marketing override: darken muted-foreground for WCAG AA.
-   * Shared --muted-foreground (oklch 0.546) yields ~3.4:1 on --background.
-   * oklch(0.42 0.012 79) yields ~5.8:1, passing AA for body text.
-   */
-  --muted-foreground: oklch(0.42 0.012 79);
-
-  /* Marketing aliases — map to shared tokens from @workspace/ui */
+  /* Marketing aliases */
   --sun: var(--primary);
-  --ink: var(--foreground);
-  --ink-soft: var(--muted-foreground);
-  --paper: var(--background);
-  --rule: var(--border);
+  --bg: var(--color-bg);
+  --ink: var(--color-ink);
+  --ink-soft: var(--color-ink-soft);
+  --ink-faint: var(--color-ink-faint);
+  --rule: var(--color-rule);
 }
 
 * {
@@ -71,16 +70,26 @@ html {
 body {
   margin: 0;
   font-family: var(--font-body);
-  background-color: var(--paper);
-  color: var(--ink);
+  background-color: var(--color-bg);
+  color: var(--color-ink);
   font-size: 1.0625rem;
-  line-height: 1.6;
+  line-height: 1.65;
   overflow-x: hidden;
+  /* Faint sun glow fixed at the top of the page — atmosphere, not decoration */
+  background-image:
+    radial-gradient(
+      ellipse 80% 55% at 50% -8%,
+      oklch(0.74 0.2 45 / 0.10) 0%,
+      oklch(0.5 0.12 50 / 0.04) 38%,
+      transparent 70%
+    );
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
 ::selection {
-  background-color: color-mix(in oklab, var(--primary) 25%, transparent);
-  color: var(--ink);
+  background-color: color-mix(in oklab, var(--primary) 32%, transparent);
+  color: var(--color-ink);
 }
 
 a {
@@ -95,193 +104,71 @@ button {
 :focus-visible {
   outline: 2px solid var(--sun);
   outline-offset: 3px;
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
-/* ── Hero animation ──────────────────────────────────────────────
-   One orchestrated sequence on load:
-   1. Sky is dark; a faint haze sits low.
-   2. Sun rises from the left in one smooth continuous arc.
-   3. As the sun nears its resting position, the glow blooms and the sky
-      warms (the sky tint lifts).
-   4. "Sunred" wordmark fades + lifts in, followed by the tagline
-      and CTAs.
-   Elements start hidden (opacity:0) and animate to visible.
-   The reduced-motion media query at the bottom resets them to
-   opacity:1 immediately.
+/* ── Motion ─────────────────────────────────────────────────────
+   Refined entrance choreography for the hero. Elements start hidden
+   and reveal on load; the reduced-motion block at the bottom resets
+   them to visible instantly. Nothing gates content visibility on
+   scroll — every reveal fires on load so headless renderers and
+   background tabs still paint the page.
 */
 
-/*
- * Sun rises from the left in one smooth, continuous motion
- * along an arc, then stays static at center.
- */
-@keyframes sun-rise {
-  0% {
-    transform: translate(-520px, 200px);
-    opacity: 0;
-  }
-  15% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-}
-
-@keyframes glow-bloom {
-  0%,
-  30% {
-    opacity: 0;
-    transform: translate(-50%, -55%) scale(0.6);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -55%) scale(1);
-  }
-}
-
-@keyframes sky-warm {
-  0% {
-    opacity: 0;
-  }
-  60% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes wordmark-in {
-  0%,
-  55% {
-    opacity: 0;
-    transform: translateY(0.5rem);
-    filter: blur(6px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
-}
-
 @keyframes fade-up {
-  0%,
-  68% {
+  from {
     opacity: 0;
-    transform: translateY(0.75rem);
+    transform: translateY(0.6rem);
   }
-  100% {
+  to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
 @keyframes fade-in {
-  0%,
-  72% {
+  from {
     opacity: 0;
   }
-  100% {
+  to {
     opacity: 1;
   }
 }
 
-/* Staggered CTA row */
-@keyframes cta-in {
-  0%,
-  76% {
+@keyframes glow-bloom {
+  0% {
     opacity: 0;
-    transform: translateY(0.5rem);
+    transform: scale(0.85);
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1);
   }
 }
 
-.sun-wrap {
-  opacity: 0;
-  animation: sun-rise 2.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-.sun-glow {
-  opacity: 0;
-  animation: glow-bloom 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  animation-delay: 0.4s;
-}
-
-.sky-warm-layer {
-  opacity: 0;
-  animation: sky-warm 3.6s ease-out forwards;
-}
-
-.wordmark {
-  opacity: 0;
-  animation: wordmark-in 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  animation-delay: 1.4s;
-}
-
-.tagline {
-  opacity: 0;
-  animation: fade-up 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  animation-delay: 2s;
-}
-
-.cta-row > *:nth-child(1) {
-  opacity: 0;
-  animation: cta-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  animation-delay: 2.4s;
-}
-
-.cta-row > *:nth-child(2) {
-  opacity: 0;
-  animation: cta-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  animation-delay: 2.55s;
-}
-
-.scroll-cue {
-  opacity: 0;
-  animation: fade-in 1.5s ease-out forwards;
-  animation-delay: 3.2s;
-}
-
-/* The dawn haze drifts very slowly for atmosphere */
-@keyframes haze-drift {
+@keyframes mock-in {
   0%,
+  18% {
+    opacity: 0;
+    transform: translateY(1.2rem) scale(0.985);
+  }
   100% {
-    transform: translateX(-2%) translateY(0);
-  }
-  50% {
-    transform: translateX(2%) translateY(-1%);
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
-.haze-layer {
-  animation: haze-drift 24s ease-in-out infinite;
+.reveal {
+  opacity: 0;
+  animation: fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
-
-/* Sun subtle pulse after settling — the "living" star */
-@keyframes sun-pulse {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 60px color-mix(in oklab, var(--primary) 35%, transparent));
-  }
-  50% {
-    filter: drop-shadow(0 0 90px color-mix(in oklab, var(--color-sun-glow) 50%, transparent));
-  }
-}
-
-.sun-settled {
-  animation: sun-pulse 6s ease-in-out 3;
-  animation-delay: 3s;
+.reveal-fade {
+  opacity: 0;
+  animation: fade-in 1s ease-out forwards;
 }
 
 /* ── Reduced motion ──────────────────────────────────────────────
-   Replace the full sequence with a simple crossfade. Content is
-   visible immediately; no transform-based choreography.
+   Crossfade / instant. Content is visible immediately.
 */
 
 @media (prefers-reduced-motion: reduce) {
@@ -294,18 +181,10 @@ button {
     scroll-behavior: auto !important;
   }
 
-  .sun-wrap,
-  .sun-glow,
-  .sky-warm-layer,
-  .wordmark,
-  .tagline,
-  .cta-row > *,
-  .scroll-cue,
-  .sun-settled,
-  .haze-layer {
+  .reveal,
+  .reveal-fade {
     opacity: 1 !important;
     transform: none !important;
-    filter: none !important;
     animation: none !important;
   }
 }

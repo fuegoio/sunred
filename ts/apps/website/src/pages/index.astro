@@ -14,133 +14,198 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
   <a href="#positioning-heading" class="skip-link">Skip to content</a>
 
   <!-- ════════════════════════════════════════════════════════════════
-       NAV — floating over the hero, transparent on dawn
+       NAV — sticky, blurred, developer-tool chrome
   ═════════════════════════════════════════════════════════════════ -->
   <nav class="site-nav" aria-label="Primary">
-    <a class="nav-brand" href="/">
-      <Logo class="nav-mark" static />
-      <span>Sunred</span>
-    </a>
-    <div class="nav-links">
-      <a href="#features">Features</a>
-      <a href="#interfaces">Interfaces</a>
-      <a href="#faq">FAQ</a>
-      <a href="https://sunred.dev/docs">Docs</a>
-    </div>
-    <div class="nav-cta">
-      <a class="nav-link-login" href={loginUrl}>Login</a>
-      <a class="cta cta-primary cta-sm" href={selfHostUrl}>Self-host</a>
+    <div class="nav-inner">
+      <a class="nav-brand" href="/">
+        <Logo class="nav-mark" static />
+        <span>Sunred</span>
+        <span class="nav-version">v0.1</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#interfaces">Interfaces</a>
+        <a href="#faq">FAQ</a>
+        <a href="https://sunred.dev/docs">Docs</a>
+      </div>
+      <div class="nav-cta">
+        <a class="nav-link-login" href={loginUrl}>Login</a>
+        <a class="cta cta-primary cta-sm" href={selfHostUrl}>
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path>
+          </svg>
+          <span>Self-host</span>
+        </a>
+      </div>
     </div>
   </nav>
 
   <!-- ════════════════════════════════════════════════════════════════
-       HERO — the dawn
-       A deep warm sky. The sun (logo) rises from the left.
-       "Sunred" appears as the light blooms. Then the tagline and CTAs.
+       HERO
   ═════════════════════════════════════════════════════════════════ -->
   <section class="hero" aria-label="Hero">
-    <!-- Sky layers: base deep sky, warming layer (fades in as sun rises) -->
-    <div class="sky-base" aria-hidden="true"></div>
-    <div class="sky-warm-layer sky-warm" aria-hidden="true"></div>
+    <!-- Sun glow blooming behind the wordmark, top-center -->
+    <div class="hero-glow" aria-hidden="true"></div>
 
-    <!-- Drifting dawn haze low on the horizon -->
-    <div class="haze haze-layer" aria-hidden="true"></div>
+    <div class="hero-grid">
+      <!-- Left: copy -->
+      <div class="hero-copy">
+        <span class="badge reveal">
+          <span class="badge-dot"></span>
+          RSS 2.0 · Atom · JSON Feed
+        </span>
 
-    <!-- The sun's glow, blooming behind the logo -->
-    <div class="sun-glow" aria-hidden="true"></div>
+        <h1 class="hero-headline reveal">
+          Your feeds,<br />
+          <span class="hero-accent">your terms.</span>
+        </h1>
 
-    <!-- The sun itself -->
-    <div class="sun-wrap">
-      <Logo class="sun-logo-mark" />
-    </div>
+        <p class="hero-tagline reveal">
+          A modern, self-hostable RSS reader. Clean REST API, a calm reading
+          space, and a terminal that speaks the same language. One timeline,
+          no algorithm.
+        </p>
 
-    <!-- Wordmark + tagline + CTAs -->
-    <div class="hero-content">
-      <h1 class="wordmark">Sunred</h1>
-      <p class="tagline">
-        A modern, self-hostable RSS reader. Clean API, multiple
-        interfaces, one timeline.
-      </p>
+        <div class="cta-row reveal">
+          <a class="cta cta-primary" href={loginUrl}>
+            <span>Open the app</span>
+            <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </a>
+          <a class="cta cta-ghost" href={selfHostUrl}>Self-host</a>
+        </div>
 
-      <div class="cta-row">
-        <a class="cta cta-primary" href={loginUrl}>
-          <span>Login</span>
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path
-              d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5"
-              stroke="currentColor"
-              stroke-width="1.75"
-              stroke-linecap="round"
-              stroke-linejoin="round"></path>
-          </svg>
-        </a>
-        <a class="cta cta-secondary" href={selfHostUrl}>
-          Self-host
-        </a>
+        <!-- Install chip — terminal-native, copyable feel -->
+        <div class="install-chip reveal" role="group" aria-label="Install command">
+          <span class="install-prompt" aria-hidden="true">$</span>
+          <code class="install-cmd">docker run sunred/sunred</code>
+          <span class="install-copy" aria-hidden="true">copy</span>
+        </div>
+      </div>
+
+      <!-- Right: product mock — the reader, as it actually looks -->
+      <div class="hero-mock reveal" aria-hidden="true">
+        <div class="mock-window">
+          <div class="mock-titlebar">
+            <span class="mock-traffic"></span>
+            <span class="mock-traffic"></span>
+            <span class="mock-traffic"></span>
+            <span class="mock-path">sunred — Unread</span>
+            <span class="mock-search">⌘K</span>
+          </div>
+          <div class="mock-body">
+            <!-- Sidebar: feeds -->
+            <aside class="mock-sidebar">
+              <div class="mock-sb-head">Feeds</div>
+              <ul class="mock-feed-list">
+                <li class="mock-feed is-active"><span class="mock-feed-mark"></span>Technology<span class="mock-count">12</span></li>
+                <li class="mock-feed"><span class="mock-feed-mark"></span>Rust<span class="mock-count">4</span></li>
+                <li class="mock-feed"><span class="mock-feed-mark"></span>Planets<span class="mock-count">3</span></li>
+                <li class="mock-feed"><span class="mock-feed-mark"></span>Self-hosting<span class="mock-count">7</span></li>
+                <li class="mock-feed"><span class="mock-feed-mark"></span>Writing<span class="mock-count">2</span></li>
+              </ul>
+              <div class="mock-sb-foot">
+                <span class="mock-star" aria-hidden="true">★</span> Starred
+              </div>
+            </aside>
+            <!-- Timeline: entries -->
+            <div class="mock-timeline">
+              <div class="mock-entry is-selected">
+                <span class="mock-unread"></span>
+                <div class="mock-entry-meta">
+                  <span class="mock-entry-src">planet4.local</span>
+                  <span class="mock-entry-time">2h</span>
+                </div>
+                <div class="mock-entry-title">Why RSS still matters</div>
+                <div class="mock-entry-excerpt">
+                  The web used to come to you. Then it stopped. Here's why the
+                  oldest syndication format is quietly outliving the platforms…
+                </div>
+              </div>
+              <div class="mock-entry">
+                <span class="mock-unread"></span>
+                <div class="mock-entry-meta"><span class="mock-entry-src">rust-lang.org</span><span class="mock-entry-time">5h</span></div>
+                <div class="mock-entry-title">Rust 2026 roadmap</div>
+                <div class="mock-entry-excerpt">A look at the language team's direction for the next edition…</div>
+              </div>
+              <div class="mock-entry">
+                <span class="mock-unread"></span>
+                <div class="mock-entry-meta"><span class="mock-entry-src">selfhosted.show</span><span class="mock-entry-time">8h</span></div>
+                <div class="mock-entry-title">The end of Moore's law (again)</div>
+                <div class="mock-entry-excerpt">Density gains slow, and what that means for the home lab…</div>
+              </div>
+              <div class="mock-entry is-read">
+                <span class="mock-read-dot"></span>
+                <div class="mock-entry-meta"><span class="mock-entry-src">planet4.local</span><span class="mock-entry-time">1d</span></div>
+                <div class="mock-entry-title">A field guide to OPML</div>
+                <div class="mock-entry-excerpt">Exporting and importing your subscriptions, explained…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- soft shadow / glow under the window -->
+        <div class="mock-shadow" aria-hidden="true"></div>
       </div>
     </div>
 
-    <!-- Scroll cue -->
-    <div class="scroll-cue" aria-hidden="true">
-      <svg width="20" height="32" viewBox="0 0 20 32" fill="none">
-        <rect
-          x="0.5"
-          y="0.5"
-          width="19"
-          height="31"
-          rx="9.5"
-          stroke="currentColor"
-          stroke-opacity="0.4"></rect>
-        <circle cx="10" cy="9" r="2" fill="currentColor">
-          <animate
-            attributeName="cy"
-            values="9;20;9"
-            dur="2.4s"
-            repeatCount="indefinite"
-            calcMode="spline"
-            keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"
-            keyTimes="0;0.5;1"></animate>
-        </circle>
-      </svg>
+    <!-- trust strip -->
+    <div class="trust-strip reveal-fade">
+      <span class="trust-label">Open source</span>
+      <span class="trust-sep" aria-hidden="true">·</span>
+      <span class="trust-label">Self-hostable</span>
+      <span class="trust-sep" aria-hidden="true">·</span>
+      <span class="trust-label">No ads, no tracking, no algorithm</span>
     </div>
   </section>
 
   <!-- ════════════════════════════════════════════════════════════════
-       BELOW THE FOLD — reading-first positioning
-       Prose carries the message. A CLI sample shows the product.
+       MANIFESTO — reading-first positioning
   ═════════════════════════════════════════════════════════════════ -->
-  <section class="positioning" aria-labelledby="positioning-heading">
-    <div class="positioning-inner">
-      <p class="kicker">The reader</p>
-      <h2 id="positioning-heading" class="positioning-headline">
-        Your feeds, your terms.
+  <section class="manifesto" aria-labelledby="positioning-heading">
+    <div class="manifesto-inner">
+      <h2 id="positioning-heading" class="manifesto-headline">
+        RSS is alive. It just needed a reader that&nbsp;respects&nbsp;you.
       </h2>
 
-      <div class="positioning-body">
-        <p>
-          Sunred fetches RSS 2.0, Atom, and JSON Feed into a single
-          timeline you actually want to read. No ads, no tracking, no
-          algorithm deciding what reaches you. Just the sources you chose,
-          in a calm space built for reading.
-        </p>
-        <p>
-          It's self-hostable: run it on your own machine and own your data
-          end to end. Or use the hosted version and skip the setup. Either
-          way, the same clean REST API and the same interfaces (web,
-          terminal, and CLI) connect you to your feeds from wherever you
-          work.
-        </p>
+      <div class="manifesto-cols">
+        <div class="manifesto-body">
+          <p>
+            Sunred fetches RSS 2.0, Atom, and JSON Feed into a single timeline
+            you actually want to read. No ads, no tracking, no algorithm
+            deciding what reaches you. Just the sources you chose, in a calm
+            space built for reading.
+          </p>
+          <p>
+            It's self-hostable: run it on your own machine and own your data
+            end to end. Or use the hosted version and skip the setup. Either
+            way, the same clean REST API and the same interfaces — web,
+            terminal, and CLI — connect you to your feeds from wherever you
+            work.
+          </p>
+        </div>
+        <aside class="manifesto-pull">
+          <p class="pull-quote">"Your feeds, your terms."</p>
+          <p class="pull-attr">
+            The one line worth remembering. Everything else is in service of it.
+          </p>
+        </aside>
       </div>
 
-      <!-- A CLI sample shows the product, not a restatement of the prose -->
-      <div class="code-sample" role="region" aria-label="Sunred CLI sample">
+      <!-- CLI sample — the product, shown not described -->
+      <div class="code-sample reveal-fade" role="region" aria-label="Sunred CLI sample">
         <div class="code-tabbar" aria-hidden="true">
           <span class="code-dot"></span>
           <span class="code-dot"></span>
           <span class="code-dot"></span>
           <span class="code-label">terminal</span>
+          <span class="code-spacer"></span>
+          <span class="code-keys">bash</span>
         </div>
         <pre class="code-body"><code><span class="code-prompt">$</span> sunred feeds add https://example.com/feed.xml
+<span class="code-comment"># Added "Example Blog" to Technology</span>
+
 <span class="code-prompt">$</span> sunred list --unread
 <span class="code-comment"># 3 unread in Technology</span>
   planet4.local  Rust 2026 roadmap
@@ -153,121 +218,157 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
   </section>
 
   <!-- ════════════════════════════════════════════════════════════════
-       FEATURES — what you get, in plain terms
+       FEATURES — bento, varied, not an identical card grid
   ═════════════════════════════════════════════════════════════════ -->
   <section id="features" class="features" aria-labelledby="features-heading">
     <div class="section-inner">
-      <p class="kicker">What you get</p>
-      <h2 id="features-heading" class="section-headline">
-        Everything an RSS reader should be.
-      </h2>
-      <p class="section-lede">
-        No feature bloat. No tracking. Just the tools you need to subscribe,
-        read, and share.
-      </p>
+      <header class="section-head">
+        <span class="section-mark">/ features</span>
+        <h2 id="features-heading" class="section-headline">
+          Everything an RSS reader should be.
+        </h2>
+        <p class="section-lede">
+          No feature bloat. No tracking. Just the tools you need to subscribe,
+          read, and share.
+        </p>
+      </header>
 
-      <div class="features-grid">
-        <div class="feature-card">
+      <div class="bento">
+        <!-- tall feature: all formats (spans 2 rows) -->
+        <article class="bento-cell bento-tall">
           <div class="feature-icon" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" fill="currentColor" stroke="none" />
             </svg>
           </div>
           <h3>All feed formats</h3>
-          <p>RSS 2.0, Atom 1.0, and JSON Feed. Subscribe to anything with a feed URL — blogs, news, podcasts, anything.</p>
-        </div>
+          <p>RSS 2.0, Atom 1.0, and JSON Feed. Subscribe to anything with a feed URL — blogs, news, podcasts, anything that publishes a feed.</p>
+          <ul class="feature-tags">
+            <li>RSS 2.0</li><li>Atom 1.0</li><li>JSON Feed</li>
+          </ul>
+        </article>
 
-        <div class="feature-card">
+        <!-- wide feature: search -->
+        <article class="bento-cell bento-span4">
           <div class="feature-icon" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
             </svg>
           </div>
           <h3>Full-text search</h3>
-          <p>Search across every entry from every feed. Find that article you read last month in seconds.</p>
-        </div>
+          <p>Search across every entry from every feed. Find that article you read last month in seconds — the whole archive is indexed.</p>
+        </article>
 
-        <div class="feature-card">
+        <!-- small: starred -->
+        <article class="bento-cell">
           <div class="feature-icon" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
               <path d="M11.5 2 9.6 8.6 3 10.5l6.6 1.9L11.5 19l1.9-6.6 6.6-1.9-6.6-1.9L11.5 2Z" />
             </svg>
           </div>
           <h3>Star and save</h3>
-          <p>Mark entries as starred to build a permanent reading list. Unread, read, and removed statuses keep your timeline clean.</p>
-        </div>
+          <p>Mark entries as starred for a permanent reading list. Unread, read, and removed statuses keep your timeline clean.</p>
+        </article>
 
-        <div class="feature-card">
+        <!-- small: categories -->
+        <article class="bento-cell">
           <div class="feature-icon" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2v11Z" />
             </svg>
           </div>
           <h3>Categories</h3>
           <p>Organize feeds into folders. Browse by topic, collapse what you're behind on, keep your sidebar tidy.</p>
-        </div>
+        </article>
 
-        <div class="feature-card">
+        <!-- full-width: self-hostable -->
+        <article class="bento-cell bento-full">
           <div class="feature-icon" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="6" rx="1" /><rect x="3" y="14" width="18" height="6" rx="1" /><path d="M7 7h.01M7 17h.01" />
             </svg>
           </div>
           <h3>Self-hostable</h3>
-          <p>Run it on your own machine with Docker. Own your data end to end. Or use the hosted version and skip the setup.</p>
-        </div>
+          <p>Run it on your own machine with Docker. Own your data end to end. Or use the hosted version and skip the setup — same API, same interfaces either way.</p>
+        </article>
       </div>
     </div>
   </section>
 
   <!-- ════════════════════════════════════════════════════════════════
-       INTERFACES — same data, different surfaces (dark)
+       INTERFACES — same data, three surfaces
   ═════════════════════════════════════════════════════════════════ -->
   <section id="interfaces" class="interfaces" aria-labelledby="interfaces-heading">
     <div class="section-inner">
-      <p class="kicker kicker-light">Three ways in</p>
-      <h2 id="interfaces-heading" class="section-headline section-headline-light">
-        Read from wherever you work.
-      </h2>
-      <p class="section-lede section-lede-light">
-        The web app for browsing. The terminal UI for keyboard-driven reading.
-        The CLI for scripts and automation. All backed by the same REST API.
-      </p>
+      <header class="section-head">
+        <span class="section-mark">/ interfaces</span>
+        <h2 id="interfaces-heading" class="section-headline">
+          Read from wherever you work.
+        </h2>
+        <p class="section-lede">
+          The web app for browsing. The terminal UI for keyboard-driven
+          reading. The CLI for scripts and automation. All backed by the same
+          REST API.
+        </p>
+      </header>
 
       <div class="interfaces-grid">
-        <div class="interface-card">
+        <!-- Web -->
+        <article class="interface-card">
+          <div class="interface-mock mock-web" aria-hidden="true">
+            <div class="mock-mini-bar"><span class="mm-dot"></span><span class="mm-dot"></span><span class="mm-dot"></span></div>
+            <div class="mock-mini-body">
+              <div class="mock-mini-side">
+                <span class="mms"></span><span class="mms"></span><span class="mms"></span><span class="mms is-on"></span><span class="mms"></span>
+              </div>
+              <div class="mock-mini-main">
+                <span class="mmm mmm-title"></span>
+                <span class="mmm"></span>
+                <span class="mmm"></span>
+                <span class="mmm mmm-short"></span>
+              </div>
+            </div>
+          </div>
           <div class="interface-badge">Web</div>
           <h3>A calm reading space</h3>
           <p>A sidebar for navigation, a timeline for scanning, a reader for long-form. Keyboard shortcuts, optimistic starring, infinite scroll.</p>
-        </div>
-        <div class="interface-card">
+        </article>
+
+        <!-- TUI -->
+        <article class="interface-card">
+          <div class="interface-mock mock-tui" aria-hidden="true">
+            <pre class="tui-screen"><code><span class="tui-hl">▸ Technology</span>      <span class="tui-dim">12</span>
+  Rust 2026 roadmap    <span class="tui-dim">2h</span>
+  Why RSS still matter <span class="tui-dim">2h</span>
+  End of Moore's law  <span class="tui-dim">8h</span>
+<span class="tui-dim">▸ Self-hosting</span>     <span class="tui-dim">7</span>
+<span class="tui-dim">▸ Writing</span>           <span class="tui-dim">2</span>
+
+<span class="tui-dim">j/k move  g/G top/bot</span>
+<span class="tui-dim">o open    s star   ? help</span></code></pre>
+          </div>
           <div class="interface-badge">TUI</div>
           <h3>Terminal-native</h3>
           <p>A full terminal user interface with vim-style navigation. Read feeds without leaving your terminal session.</p>
-        </div>
-        <div class="interface-card">
+        </article>
+
+        <!-- CLI -->
+        <article class="interface-card">
+          <div class="interface-mock mock-cli" aria-hidden="true">
+            <pre class="tui-screen"><code><span class="code-prompt">$</span> sunred feeds add \
+    https://x.com/feed.xml
+<span class="tui-dim"># Added → Technology</span>
+
+<span class="code-prompt">$</span> sunred list --unread
+  planet4.local  Why RSS…
+  planet4.local  Rust 2026…
+
+<span class="code-prompt">$</span> sunred read 1</code></pre>
+          </div>
           <div class="interface-badge">CLI</div>
           <h3>Scriptable</h3>
           <p>Add feeds, list entries, mark as read — all from the command line. Pipe entries into your workflow.</p>
-        </div>
-      </div>
-
-      <div class="code-sample code-sample-wide" role="region" aria-label="Sunred CLI sample">
-        <div class="code-tabbar" aria-hidden="true">
-          <span class="code-dot"></span>
-          <span class="code-dot"></span>
-          <span class="code-dot"></span>
-          <span class="code-label">terminal</span>
-        </div>
-        <pre class="code-body"><code><span class="code-prompt">$</span> sunred feeds add https://example.com/feed.xml
-<span class="code-comment"># Added "Example Blog" to Technology</span>
-
-<span class="code-prompt">$</span> sunred list --unread
-  planet4.local  Rust 2026 roadmap
-  planet4.local  The end of Moore's law (again)
-  planet4.local  Why RSS still matters
-
-<span class="code-prompt">$</span> sunred read 1 --open</code></pre>
+        </article>
       </div>
     </div>
   </section>
@@ -277,49 +378,64 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
   ═════════════════════════════════════════════════════════════════ -->
   <section id="faq" class="faq" aria-labelledby="faq-heading">
     <div class="section-inner section-inner-narrow">
-      <p class="kicker">Questions</p>
-      <h2 id="faq-heading" class="section-headline">
-        Good to know.
-      </h2>
+      <header class="section-head">
+        <span class="section-mark">/ faq</span>
+        <h2 id="faq-heading" class="section-headline">Good to know.</h2>
+      </header>
 
       <div class="faq-list">
         <details class="faq-item">
-          <summary>What feed formats does Sunred support?</summary>
-          <p>RSS 2.0, Atom 1.0, and JSON Feed. If a site publishes a feed in any of these formats, you can subscribe to it.</p>
+          <summary>What feed formats does Sunred support?<span class="faq-toggle" aria-hidden="true"></span></summary>
+          <div class="faq-answer">
+            <p>RSS 2.0, Atom 1.0, and JSON Feed. If a site publishes a feed in any of these formats, you can subscribe to it.</p>
+          </div>
         </details>
         <details class="faq-item">
-          <summary>Do I need to host it myself?</summary>
-          <p>No. You can use the hosted version and skip the setup. But if you want full control over your data, Sunred is open source and runs anywhere with Docker — a single command gets you a server, database, and web frontend.</p>
+          <summary>Do I need to host it myself?<span class="faq-toggle" aria-hidden="true"></span></summary>
+          <div class="faq-answer">
+            <p>No. You can use the hosted version and skip the setup. But if you want full control over your data, Sunred is open source and runs anywhere with Docker — a single command gets you a server, database, and web frontend.</p>
+          </div>
         </details>
         <details class="faq-item">
-          <summary>Is there a mobile app?</summary>
-          <p>The web app is fully responsive and works great on mobile browsers. There's no native app — the web interface is the app. The REST API means anyone could build one, too.</p>
+          <summary>Is there a mobile app?<span class="faq-toggle" aria-hidden="true"></span></summary>
+          <div class="faq-answer">
+            <p>The web app is fully responsive and works great on mobile browsers. There's no native app — the web interface is the app. The REST API means anyone could build one, too.</p>
+          </div>
         </details>
         <details class="faq-item">
-          <summary>How does the terminal UI work?</summary>
-          <p>The TUI is a terminal user interface — a full-screen, keyboard-driven reader that runs in your terminal. It supports vim-style navigation and gives you the same timeline, feeds, and entries as the web app.</p>
+          <summary>How does the terminal UI work?<span class="faq-toggle" aria-hidden="true"></span></summary>
+          <div class="faq-answer">
+            <p>The TUI is a terminal user interface — a full-screen, keyboard-driven reader that runs in your terminal. It supports vim-style navigation and gives you the same timeline, feeds, and entries as the web app.</p>
+          </div>
         </details>
         <details class="faq-item">
-          <summary>Can I import my feeds from another reader?</summary>
-          <p>Yes. Sunred supports OPML import. Export your feeds from any RSS reader (Feedly, Inoreader, NetNewsWire, etc.) as an OPML file and import them directly.</p>
+          <summary>Can I import my feeds from another reader?<span class="faq-toggle" aria-hidden="true"></span></summary>
+          <div class="faq-answer">
+            <p>Yes. Sunred supports OPML import. Export your feeds from any RSS reader (Feedly, Inoreader, NetNewsWire, etc.) as an OPML file and import them directly.</p>
+          </div>
         </details>
         <details class="faq-item">
-          <summary>Is there tracking or advertising?</summary>
-          <p>No. Sunred has no ads, no tracking, no analytics, no algorithmic feed. You see the entries from the feeds you subscribed to, in the order they were published.</p>
+          <summary>Is there tracking or advertising?<span class="faq-toggle" aria-hidden="true"></span></summary>
+          <div class="faq-answer">
+            <p>No. Sunred has no ads, no tracking, no analytics, no algorithmic feed. You see the entries from the feeds you subscribed to, in the order they were published.</p>
+          </div>
         </details>
         <details class="faq-item">
-          <summary>What's the API like?</summary>
-          <p>A clean REST API with JSON responses. Authenticate with a bearer token, then list feeds, add subscriptions, search entries, and more. Full documentation is in the docs.</p>
+          <summary>What's the API like?<span class="faq-toggle" aria-hidden="true"></span></summary>
+          <div class="faq-answer">
+            <p>A clean REST API with JSON responses. Authenticate with a bearer token, then list feeds, add subscriptions, search entries, and more. Full documentation is in the docs.</p>
+          </div>
         </details>
       </div>
     </div>
   </section>
 
   <!-- ════════════════════════════════════════════════════════════════
-       CLOSING CTA — the last push (dark)
+       CLOSING CTA — the last push
   ═════════════════════════════════════════════════════════════════ -->
-  <section class="closing-cta" aria-label="Get started">
-    <div class="section-inner closing-inner">
+  <section class="closing" aria-label="Get started">
+    <div class="closing-glow" aria-hidden="true"></div>
+    <div class="closing-inner">
       <Logo class="closing-mark" static />
       <h2 class="closing-headline">Start reading.</h2>
       <p class="closing-lede">
@@ -329,11 +445,11 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
       <div class="cta-row">
         <a class="cta cta-primary" href={loginUrl}>
           <span>Open the app</span>
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
           </svg>
         </a>
-        <a class="cta cta-secondary" href={selfHostUrl}>Self-host</a>
+        <a class="cta cta-ghost" href={selfHostUrl}>Self-host</a>
       </div>
     </div>
   </section>
@@ -361,7 +477,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
   </footer>
 </Base>
 
-<style>
+<style is:global>
   /* ── Skip link ────────────────────────────────────────────────── */
 
   .skip-link {
@@ -377,397 +493,143 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     font-size: 0.875rem;
     transition: top 0.2s ease;
   }
-
   .skip-link:focus {
     top: 1rem;
   }
 
-  /* ── Hero ─────────────────────────────────────────────────────── */
+  /* ── Shared ─────────────────────────────────────────────────── */
 
-  .hero {
-    position: relative;
-    min-height: 100vh;
-    min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    isolation: isolate;
+  .section-inner {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0 clamp(1.25rem, 4vw, 2.5rem);
+  }
+  .section-inner-narrow {
+    max-width: 46rem;
   }
 
-  /* Base sky — deep warm near-black */
-  .sky-base {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    background:
-      radial-gradient(
-        ellipse 90% 70% at 50% 85%,
-        oklch(0.22 0.045 60) 0%,
-        oklch(0.16 0.028 55) 40%,
-        oklch(0.12 0.018 55) 100%
-      );
+  .section-head {
+    max-width: 44rem;
+    margin-bottom: clamp(2.5rem, 6vh, 4rem);
   }
 
-  /* Warming layer — fades in as the sun rises, tints the sky warmer */
-  .sky-warm {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background:
-      radial-gradient(
-        ellipse 60% 50% at 50% 60%,
-        oklch(0.3 0.08 65 / 0.35) 0%,
-        oklch(0.25 0.05 60 / 0.15) 35%,
-        transparent 70%
-      );
-    pointer-events: none;
+  .section-mark {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: color-mix(in oklab, var(--primary) 75%, var(--color-ink));
+    margin-bottom: 1.25rem;
+    letter-spacing: 0;
   }
 
-  /* Dawn haze — drifting low near the horizon */
-  .haze {
-    position: absolute;
-    bottom: -10%;
-    left: -10%;
-    right: -10%;
-    height: 45%;
-    z-index: 2;
-    background:
-      radial-gradient(
-        ellipse 80% 100% at 50% 100%,
-        oklch(0.32 0.07 65 / 0.18) 0%,
-        oklch(0.28 0.05 60 / 0.08) 40%,
-        transparent 75%
-      );
-    filter: blur(20px);
-    pointer-events: none;
-  }
-
-  /* The glow behind the sun */
-  .sun-glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -55%);
-    width: clamp(280px, 50vw, 560px);
-    height: clamp(280px, 50vw, 560px);
-    z-index: 3;
-    border-radius: 50%;
-    background:
-      radial-gradient(
-        circle at center,
-        color-mix(in oklab, var(--color-sun-glow) 45%, transparent) 0%,
-        color-mix(in oklab, var(--primary) 25%, transparent) 30%,
-        color-mix(in oklab, var(--color-sun-deep) 10%, transparent) 55%,
-        transparent 70%
-      );
-    filter: blur(8px);
-    pointer-events: none;
-  }
-
-  /* The sun logo */
-  .sun-wrap {
-    position: relative;
-    z-index: 4;
-    width: clamp(120px, 18vw, 200px);
-    height: clamp(120px, 18vw, 200px);
-    margin-bottom: clamp(2rem, 5vh, 3.5rem);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .sun-logo-mark {
-    width: 100%;
-    height: 100%;
-    filter: drop-shadow(0 0 50px color-mix(in oklab, var(--primary) 40%, transparent));
-  }
-
-  /* Content — wordmark, tagline, CTAs */
-  .hero-content {
-    position: relative;
-    z-index: 5;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 0 1.5rem;
-    max-width: 42rem;
-  }
-
-  .wordmark {
+  .section-headline {
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: clamp(3.5rem, 13vw, 7rem);
-    line-height: 1;
-    letter-spacing: -0.045em;
-    color: oklch(0.97 0.015 79);
-    margin: 0;
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    margin: 0 0 1.25rem;
     text-wrap: balance;
+    color: var(--color-ink);
   }
 
-  .tagline {
-    margin: 1.5rem 0 0;
-    font-size: clamp(1.0625rem, 2.5vw, 1.375rem);
-    line-height: 1.55;
-    color: oklch(0.82 0.025 79);
-    max-width: 32rem;
-    font-weight: 400;
+  .section-lede {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    max-width: 38rem;
+    margin: 0;
+    color: var(--color-ink-soft);
     text-wrap: pretty;
   }
 
-  /* CTAs */
+  /* ── Buttons ────────────────────────────────────────────────── */
+
   .cta-row {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
-    gap: 0.875rem;
-    margin-top: 2.5rem;
+    gap: 0.75rem;
+    margin-top: 2rem;
   }
 
   .cta {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.8rem 1.5rem;
+    padding: 0.8rem 1.4rem;
     border-radius: 0.625rem;
     font-family: var(--font-body);
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.9375rem;
     line-height: 1;
+    min-height: 46px;
     transition:
       transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
       background-color 0.2s ease,
-      border-color 0.2s ease;
-    min-height: 48px;
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
   .cta-primary {
     background-color: var(--primary);
     color: var(--primary-foreground);
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 0.2) inset,
+      0 8px 24px -8px color-mix(in oklab, var(--primary) 60%, transparent);
   }
-
   .cta-primary:hover {
-    background-color: var(--color-sun-glow);
+    background-color: color-mix(in oklab, var(--primary) 92%, white);
     transform: translateY(-1px);
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 0.25) inset,
+      0 12px 30px -8px color-mix(in oklab, var(--primary) 70%, transparent);
   }
-
   .cta-primary:active {
     transform: translateY(0);
   }
 
-  .cta-secondary {
+  .cta-ghost {
     background-color: transparent;
-    color: oklch(0.92 0.015 79);
-    border: 1px solid oklch(0.6 0.02 79 / 0.35);
+    color: var(--color-ink);
+    border: 1px solid var(--color-rule-strong);
   }
-
-  .cta-secondary:hover {
-    border-color: oklch(0.7 0.03 79 / 0.6);
-    background-color: oklch(0.3 0.01 79 / 0.3);
+  .cta-ghost:hover {
+    border-color: oklch(1 0 0 / 0.28);
+    background-color: oklch(1 0 0 / 0.04);
     transform: translateY(-1px);
   }
-
-  .cta-secondary:active {
+  .cta-ghost:active {
     transform: translateY(0);
   }
 
-  /* Scroll cue */
-  .scroll-cue {
-    position: absolute;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 5;
-    color: oklch(0.7 0.02 79);
-    opacity: 0.6;
-  }
-
-  /* ── Positioning section ───────────────────────────────────────── */
-
-  .positioning {
-    background-color: var(--paper);
-    color: var(--ink);
-    padding: clamp(5rem, 12vh, 9rem) 1.5rem;
-  }
-
-  .positioning-inner {
-    max-width: 44rem;
-    margin: 0 auto;
-  }
-
-  .kicker {
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: 0.875rem;
-    color: color-mix(in oklab, var(--primary) 85%, var(--foreground));
-    margin: 0 0 1rem;
-    letter-spacing: 0.02em;
-  }
-
-  .positioning-headline {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(2.25rem, 6vw, 3.75rem);
-    line-height: 1.05;
-    letter-spacing: -0.035em;
-    margin: 0 0 2.5rem;
-    text-wrap: balance;
-  }
-
-  .positioning-body {
-    font-size: 1.125rem;
-    line-height: 1.7;
-    max-width: 38rem;
-  }
-
-  .positioning-body p {
-    margin: 0;
-  }
-
-  .positioning-body p + p {
-    margin-top: 1.25rem;
-  }
-
-  /* ── Code sample ─────────────────────────────────────────────── */
-
-  .code-sample {
-    margin-top: clamp(3.5rem, 8vh, 5rem);
-    border-radius: 0.75rem;
-    overflow: hidden;
-    border: 1px solid var(--rule);
-    background-color: oklch(0.18 0.006 79);
-  }
-
-  .code-tabbar {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid oklch(0.28 0.006 79);
-  }
-
-  .code-dot {
-    width: 0.75rem;
-    height: 0.75rem;
-    border-radius: 50%;
-    background-color: oklch(0.3 0.006 79);
-  }
-
-  .code-dot:nth-child(1) {
-    background-color: oklch(0.6 0.1 25);
-  }
-
-  .code-dot:nth-child(2) {
-    background-color: oklch(0.62 0.14 85);
-  }
-
-  .code-dot:nth-child(3) {
-    background-color: oklch(0.62 0.12 145);
-  }
-
-  .code-label {
-    margin-left: 0.5rem;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: oklch(0.6 0.006 79);
-  }
-
-  .code-body {
-    margin: 0;
-    padding: 1.25rem 1.5rem;
-    font-family: var(--font-mono);
+  .cta-sm {
+    padding: 0.55rem 1rem;
     font-size: 0.8125rem;
-    line-height: 1.7;
-    color: oklch(0.85 0.006 79);
-    overflow-x: auto;
-  }
-
-  .code-prompt {
-    color: oklch(0.62 0.18 78.8);
-    font-weight: 600;
-  }
-
-  .code-comment {
-    color: oklch(0.5 0.006 79);
-  }
-
-  /* ── Footer ──────────────────────────────────────────────────── */
-
-  .site-footer {
-    background-color: var(--muted);
-    border-top: 1px solid var(--rule);
-    padding: 3rem 1.5rem;
-  }
-
-  .footer-inner {
-    max-width: 44rem;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.25rem;
-    text-align: center;
-  }
-
-  .footer-brand {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1.125rem;
-    color: var(--ink);
-  }
-
-  .footer-mark {
-    width: 1.5rem;
-    height: 1.5rem;
-    flex-shrink: 0;
-  }
-
-  .footer-mark :global(svg) {
-    width: 100%;
-    height: 100%;
-  }
-
-  .footer-nav {
-    display: flex;
-    gap: 1.75rem;
-    font-size: 0.9375rem;
-    font-weight: 500;
-  }
-
-  .footer-nav a {
-    color: var(--ink-soft);
-    transition: color 0.15s ease;
-  }
-
-  .footer-nav a:hover {
-    color: var(--ink);
-  }
-
-  .footer-note {
-    margin: 0;
-    font-size: 0.875rem;
-    color: var(--ink-soft);
-    max-width: 30rem;
+    min-height: 36px;
+    gap: 0.4rem;
   }
 
   /* ── Nav ─────────────────────────────────────────────────────── */
 
   .site-nav {
-    position: absolute;
+    position: sticky;
     top: 0;
-    left: 0;
-    right: 0;
     z-index: 50;
+    background-color: color-mix(in oklab, var(--color-bg) 78%, transparent);
+    backdrop-filter: saturate(160%) blur(14px);
+    -webkit-backdrop-filter: saturate(160%) blur(14px);
+    border-bottom: 1px solid var(--color-rule);
+  }
+
+  .nav-inner {
+    max-width: 72rem;
+    margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem clamp(1.5rem, 5vw, 3rem);
+    gap: 1rem;
+    padding: 0.85rem clamp(1.25rem, 4vw, 2.5rem);
   }
 
   .nav-brand {
@@ -776,19 +638,25 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     gap: 0.5rem;
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: 1.125rem;
-    color: oklch(0.97 0.015 79);
+    font-size: 1.0625rem;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
   }
-
   .nav-mark {
     width: 1.5rem;
     height: 1.5rem;
     flex-shrink: 0;
   }
 
-  .nav-mark :global(svg) {
-    width: 100%;
-    height: 100%;
+  .nav-version {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--color-ink-faint);
+    padding: 0.1rem 0.4rem;
+    border: 1px solid var(--color-rule);
+    border-radius: 0.3rem;
+    margin-left: 0.15rem;
   }
 
   .nav-links {
@@ -797,291 +665,863 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     font-size: 0.9375rem;
     font-weight: 500;
   }
-
   .nav-links a {
-    color: oklch(0.82 0.015 79);
+    color: var(--color-ink-soft);
     transition: color 0.15s ease;
   }
-
   .nav-links a:hover {
-    color: oklch(0.97 0.015 79);
+    color: var(--color-ink);
   }
 
   .nav-cta {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.85rem;
   }
-
   .nav-link-login {
-    color: oklch(0.82 0.015 79);
+    color: var(--color-ink-soft);
     font-size: 0.9375rem;
     font-weight: 500;
     transition: color 0.15s ease;
   }
-
   .nav-link-login:hover {
-    color: oklch(0.97 0.015 79);
+    color: var(--color-ink);
   }
 
-  .cta-sm {
-    padding: 0.55rem 1.1rem;
-    font-size: 0.875rem;
-    min-height: 40px;
+  /* ── Hero ─────────────────────────────────────────────────────── */
+
+  .hero {
+    position: relative;
+    padding: clamp(3rem, 8vh, 5.5rem) clamp(1.25rem, 4vw, 2.5rem) clamp(3.5rem, 9vh, 6rem);
+    overflow: hidden;
+    isolation: isolate;
   }
 
-  /* ── Shared section styles ────────────────────────────────────── */
+  .hero-glow {
+    position: absolute;
+    top: -18%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(900px, 95vw);
+    height: 620px;
+    z-index: -1;
+    border-radius: 50%;
+    background:
+      radial-gradient(
+        circle at center,
+        oklch(0.74 0.2 45 / 0.16) 0%,
+        oklch(0.6 0.16 50 / 0.07) 35%,
+        transparent 68%
+      );
+    filter: blur(8px);
+    animation: glow-bloom 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
 
-  .section-inner {
-    max-width: 56rem;
+  .hero-grid {
+    max-width: 72rem;
     margin: 0 auto;
-    padding: 0 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2.5rem, 6vw, 4rem);
+    align-items: center;
   }
 
-  .section-inner-narrow {
-    max-width: 44rem;
+  .hero-copy {
+    max-width: 34rem;
   }
 
-  .section-headline {
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-ink-soft);
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--color-rule);
+    border-radius: 999px;
+    background-color: color-mix(in oklab, var(--color-bg-raised) 60%, transparent);
+    margin-bottom: 1.75rem;
+  }
+  .badge-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 22%, transparent);
+  }
+
+  .hero-headline {
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: clamp(2rem, 5.5vw, 3.25rem);
-    line-height: 1.08;
-    letter-spacing: -0.03em;
-    margin: 0 0 1.5rem;
+    font-size: clamp(2.75rem, 8vw, 5.25rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    margin: 0;
+    color: var(--color-ink);
     text-wrap: balance;
   }
+  .hero-accent {
+    color: color-mix(in oklab, var(--primary) 92%, var(--color-ink));
+  }
 
-  .section-lede {
+  .hero-tagline {
+    margin: 1.5rem 0 0;
+    font-size: clamp(1.0625rem, 2.4vw, 1.25rem);
+    line-height: 1.6;
+    color: var(--color-ink-soft);
+    max-width: 32rem;
+    font-weight: 400;
+    text-wrap: pretty;
+  }
+
+  .install-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 1.75rem;
+    padding: 0.55rem 0.85rem;
+    border-radius: 0.55rem;
+    border: 1px solid var(--color-rule);
+    background-color: var(--color-bg-sunken);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  .install-prompt {
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .install-cmd {
+    color: var(--color-ink-soft);
+  }
+  .install-copy {
+    margin-left: 0.5rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 0.3rem;
+    border: 1px solid var(--color-rule);
+    font-size: 0.6875rem;
+    color: var(--color-ink-faint);
+    text-transform: lowercase;
+  }
+
+  /* reveal stagger (hero) — children are badge, headline, tagline, cta-row, install */
+  .hero-copy .reveal:nth-child(1) {
+    animation-delay: 0.05s;
+  }
+  .hero-copy .reveal:nth-child(2) {
+    animation-delay: 0.14s;
+  }
+  .hero-copy .reveal:nth-child(3) {
+    animation-delay: 0.22s;
+  }
+  .hero-copy .reveal:nth-child(4) {
+    animation-delay: 0.30s;
+  }
+  .hero-copy .reveal:nth-child(5) {
+    animation-delay: 0.40s;
+  }
+
+  /* ── Product mock (hero) ─────────────────────────────────────── */
+
+  .hero-mock {
+    position: relative;
+    animation: mock-in 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: 0.25s;
+    opacity: 0;
+  }
+
+  .mock-window {
+    position: relative;
+    z-index: 2;
+    border-radius: 0.875rem;
+    overflow: hidden;
+    border: 1px solid var(--color-rule-strong);
+    background-color: var(--color-bg-raised);
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 0.06) inset,
+      0 30px 80px -30px oklch(0 0 0 / 0.7);
+  }
+
+  .mock-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--color-rule);
+    background-color: color-mix(in oklab, var(--color-bg-raised) 85%, var(--color-bg-sunken));
+  }
+  .mock-traffic {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background-color: oklch(1 0 0 / 0.13);
+  }
+  .mock-traffic:nth-child(1) {
+    background-color: oklch(0.7 0.14 30);
+  }
+  .mock-traffic:nth-child(2) {
+    background-color: oklch(0.72 0.15 75);
+  }
+  .mock-traffic:nth-child(3) {
+    background-color: oklch(0.68 0.16 145);
+  }
+  .mock-path {
+    margin-left: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-ink-soft);
+  }
+  .mock-search {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-ink-faint);
+    padding: 0.15rem 0.45rem;
+    border: 1px solid var(--color-rule);
+    border-radius: 0.3rem;
+  }
+
+  .mock-body {
+    display: grid;
+    grid-template-columns: 9.5rem 1fr;
+    min-height: 22rem;
+  }
+
+  .mock-sidebar {
+    border-right: 1px solid var(--color-rule);
+    background-color: var(--color-bg-sunken);
+    padding: 0.85rem 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .mock-sb-head {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-ink-faint);
+    padding: 0 0.4rem 0.5rem;
+  }
+  .mock-feed-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+  .mock-feed {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: 0.45rem;
+    font-size: 0.8125rem;
+    color: var(--color-ink-soft);
+  }
+  .mock-feed-mark {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 2px;
+    background-color: oklch(1 0 0 / 0.14);
+    flex-shrink: 0;
+  }
+  .mock-feed.is-active {
+    background-color: color-mix(in oklab, var(--primary) 16%, transparent);
+    color: var(--color-ink);
+  }
+  .mock-feed.is-active .mock-feed-mark {
+    background-color: var(--primary);
+  }
+  .mock-count {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-ink-faint);
+  }
+  .mock-sb-foot {
+    margin-top: auto;
+    padding: 0.6rem 0.5rem 0;
+    border-top: 1px solid var(--color-rule);
+    font-size: 0.8125rem;
+    color: var(--color-ink-soft);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .mock-star {
+    color: var(--primary);
+  }
+
+  .mock-timeline {
+    padding: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .mock-entry {
+    position: relative;
+    padding: 0.7rem 0.85rem 0.7rem 1.6rem;
+    border-radius: 0.55rem;
+    border: 1px solid transparent;
+  }
+  .mock-entry:hover {
+    background-color: oklch(1 0 0 / 0.025);
+  }
+  .mock-entry.is-selected {
+    background-color: color-mix(in oklab, var(--color-bg-elevated) 70%, transparent);
+    border-color: var(--color-rule);
+  }
+  .mock-unread {
+    position: absolute;
+    left: 0.55rem;
+    top: 1rem;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background-color: var(--primary);
+  }
+  .mock-read-dot {
+    position: absolute;
+    left: 0.55rem;
+    top: 1rem;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background-color: oklch(1 0 0 / 0.18);
+  }
+  .mock-entry-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-ink-faint);
+    margin-bottom: 0.25rem;
+  }
+  .mock-entry-src {
+    color: color-mix(in oklab, var(--primary) 80%, var(--color-ink-soft));
+  }
+  .mock-entry-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-ink);
+    margin-bottom: 0.2rem;
+  }
+  .mock-entry.is-read .mock-entry-title {
+    color: var(--color-ink-soft);
+    font-weight: 500;
+  }
+  .mock-entry-excerpt {
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--color-ink-soft);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .mock-shadow {
+    position: absolute;
+    inset: 10% 0 -20% 0;
+    z-index: -1;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 40%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 70%);
+    filter: blur(40px);
+    pointer-events: none;
+  }
+
+  /* ── Trust strip ─────────────────────────────────────────────── */
+
+  .trust-strip {
+    max-width: 72rem;
+    margin: clamp(3rem, 8vh, 5rem) auto 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--color-ink-faint);
+  }
+  .trust-sep {
+    opacity: 0.5;
+  }
+
+  /* ── Manifesto ───────────────────────────────────────────────── */
+
+  .manifesto {
+    padding: clamp(5rem, 12vh, 8rem) clamp(1.25rem, 4vw, 2.5rem);
+    border-top: 1px solid var(--color-rule);
+  }
+  .manifesto-inner {
+    max-width: 72rem;
+    margin: 0 auto;
+  }
+  .manifesto-headline {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.875rem, 4.5vw, 3rem);
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    max-width: 22ch;
+    margin: 0 0 clamp(2.5rem, 6vh, 3.5rem);
+    text-wrap: balance;
+    color: var(--color-ink);
+  }
+  .manifesto-cols {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: start;
+  }
+  .manifesto-body {
     font-size: 1.125rem;
-    line-height: 1.65;
-    max-width: 38rem;
-    margin: 0 0 0;
-    color: var(--ink-soft);
+    line-height: 1.75;
+    max-width: 40rem;
+  }
+  .manifesto-body p {
+    margin: 0;
+    color: var(--color-ink-soft);
+  }
+  .manifesto-body p + p {
+    margin-top: 1.25rem;
+  }
+  .manifesto-pull {
+    border-left: 1px solid var(--color-rule-strong);
+    padding-left: 1.5rem;
+    max-width: 22rem;
+  }
+  .pull-quote {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.5rem;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+    color: color-mix(in oklab, var(--primary) 88%, var(--color-ink));
+  }
+  .pull-attr {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--color-ink-faint);
   }
 
-  .section-headline-light {
-    color: oklch(0.97 0.015 79);
+  /* ── Code sample ─────────────────────────────────────────────── */
+
+  .code-sample {
+    margin-top: clamp(2.5rem, 6vh, 3.5rem);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    border: 1px solid var(--color-rule-strong);
+    background-color: var(--color-bg-sunken);
+  }
+  .code-tabbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.9rem;
+    border-bottom: 1px solid var(--color-rule);
+  }
+  .code-dot {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background-color: oklch(1 0 0 / 0.13);
+  }
+  .code-dot:nth-child(1) {
+    background-color: oklch(0.7 0.14 30);
+  }
+  .code-dot:nth-child(2) {
+    background-color: oklch(0.72 0.15 75);
+  }
+  .code-dot:nth-child(3) {
+    background-color: oklch(0.68 0.16 145);
+  }
+  .code-label {
+    margin-left: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--color-ink-faint);
+  }
+  .code-spacer {
+    flex: 1;
+  }
+  .code-keys {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--color-ink-faint);
+    padding: 0.12rem 0.4rem;
+    border: 1px solid var(--color-rule);
+    border-radius: 0.3rem;
+  }
+  .code-body {
+    margin: 0;
+    padding: 1.15rem 1.35rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.75;
+    color: oklch(0.84 0.01 50);
+    overflow-x: auto;
+  }
+  .code-prompt {
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .code-comment {
+    color: oklch(0.6 0.012 50);
   }
 
-  .section-lede-light {
-    color: oklch(0.78 0.015 79);
-  }
-
-  .kicker-light {
-    color: color-mix(in oklab, var(--primary) 85%, oklch(0.9 0.01 79));
-  }
-
-  /* ── Features ─────────────────────────────────────────────────── */
+  /* ── Features (bento) ───────────────────────────────────────── */
 
   .features {
-    background-color: var(--paper);
-    color: var(--ink);
     padding: clamp(4.5rem, 10vh, 7rem) 0;
+    border-top: 1px solid var(--color-rule);
   }
 
-  .features-grid {
+  .bento {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-    gap: 1.5rem;
-    margin-top: clamp(3rem, 6vh, 4rem);
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.9rem;
   }
-
-  .feature-card {
-    padding: 2rem 1.75rem;
-    border: 1px solid var(--rule);
+  .bento-cell {
+    grid-column: span 2;
+    padding: 1.75rem 1.6rem;
+    border: 1px solid var(--color-rule);
     border-radius: 0.75rem;
-    background-color: color-mix(in oklab, var(--paper) 50%, white);
-    transition: border-color 0.2s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    background-color: color-mix(in oklab, var(--color-bg-raised) 80%, transparent);
+    transition:
+      border-color 0.2s ease,
+      transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.2s ease;
   }
-
-  .feature-card:hover {
-    border-color: color-mix(in oklab, var(--primary) 30%, var(--rule));
+  .bento-cell:hover {
+    border-color: color-mix(in oklab, var(--primary) 30%, var(--color-rule-strong));
     transform: translateY(-2px);
+    background-color: color-mix(in oklab, var(--color-bg-raised) 95%, transparent);
+  }
+  .bento-wide {
+    grid-column: span 3;
+  }
+  .bento-span4 {
+    grid-column: span 4;
+  }
+  .bento-full {
+    grid-column: span 6;
+  }
+  .bento-tall {
+    grid-row: span 2;
+    display: flex;
+    flex-direction: column;
   }
 
   .feature-icon {
-    width: 3rem;
-    height: 3rem;
+    width: 2.5rem;
+    height: 2.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0.625rem;
-    background-color: color-mix(in oklab, var(--primary) 12%, var(--paper));
-    color: var(--primary);
-    margin-bottom: 1.25rem;
+    border-radius: 0.6rem;
+    background-color: color-mix(in oklab, var(--primary) 14%, transparent);
+    color: color-mix(in oklab, var(--primary) 85%, var(--color-ink));
+    margin-bottom: 1.1rem;
+    border: 1px solid color-mix(in oklab, var(--primary) 18%, transparent);
   }
-
-  .feature-card h3 {
+  .bento-cell h3 {
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: 1.1875rem;
-    margin: 0 0 0.625rem;
-    color: var(--ink);
+    font-size: 1.0625rem;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.5rem;
+    color: var(--color-ink);
   }
-
-  .feature-card p {
+  .bento-cell p {
     margin: 0;
     font-size: 0.9375rem;
     line-height: 1.6;
-    color: var(--ink-soft);
+    color: var(--color-ink-soft);
+  }
+  .feature-tags {
+    list-style: none;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .feature-tags li {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--color-rule);
+    border-radius: 0.3rem;
+    color: var(--color-ink-soft);
   }
 
-  /* ── Interfaces (dark) ────────────────────────────────────────── */
+  /* ── Interfaces ─────────────────────────────────────────────── */
 
   .interfaces {
-    background-color: oklch(0.16 0.012 60);
-    color: oklch(0.92 0.01 79);
     padding: clamp(4.5rem, 10vh, 7rem) 0;
+    border-top: 1px solid var(--color-rule);
   }
-
   .interfaces-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-    gap: 1.5rem;
-    margin-top: clamp(3rem, 6vh, 4rem);
-    margin-bottom: clamp(3rem, 6vh, 4rem);
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
   }
-
   .interface-card {
-    padding: 2rem 1.75rem;
-    border: 1px solid oklch(0.26 0.008 79);
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-rule);
     border-radius: 0.75rem;
-    background-color: oklch(0.2 0.008 60);
-    transition: border-color 0.2s ease;
+    background-color: color-mix(in oklab, var(--color-bg-raised) 70%, transparent);
+    overflow: hidden;
+    transition: border-color 0.2s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .interface-card:hover {
+    border-color: color-mix(in oklab, var(--primary) 28%, var(--color-rule-strong));
+    transform: translateY(-2px);
   }
 
-  .interface-card:hover {
-    border-color: oklch(0.36 0.01 79);
+  .interface-mock {
+    height: 11rem;
+    border-bottom: 1px solid var(--color-rule);
+    background-color: var(--color-bg-sunken);
+    overflow: hidden;
+  }
+
+  /* web mini mock */
+  .mock-mini-bar {
+    display: flex;
+    gap: 0.3rem;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--color-rule);
+  }
+  .mm-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background-color: oklch(1 0 0 / 0.14);
+  }
+  .mock-mini-body {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr;
+    height: calc(100% - 1.6rem);
+    padding: 0.6rem;
+    gap: 0.5rem;
+  }
+  .mock-mini-side {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding-top: 0.2rem;
+  }
+  .mms {
+    height: 0.5rem;
+    border-radius: 0.25rem;
+    background-color: oklch(1 0 0 / 0.08);
+  }
+  .mms.is-on {
+    background-color: color-mix(in oklab, var(--primary) 60%, transparent);
+  }
+  .mock-mini-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .mmm {
+    height: 0.5rem;
+    border-radius: 0.25rem;
+    background-color: oklch(1 0 0 / 0.08);
+  }
+  .mmm-title {
+    height: 0.7rem;
+    width: 70%;
+    background-color: oklch(1 0 0 / 0.16);
+  }
+  .mmm-short {
+    width: 40%;
+  }
+
+  /* tui / cli mocks */
+  .tui-screen {
+    margin: 0;
+    height: 100%;
+    padding: 0.85rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    line-height: 1.55;
+    color: oklch(0.8 0.01 50);
+    overflow: hidden;
+    white-space: pre;
+  }
+  .tui-hl {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+  .tui-dim {
+    color: oklch(0.6 0.012 50);
+  }
+  .mock-tui .tui-screen,
+  .mock-cli .tui-screen {
+    background-color: var(--color-bg-sunken);
   }
 
   .interface-badge {
     display: inline-block;
+    align-self: flex-start;
+    margin: 1.4rem 1.6rem 0;
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    padding: 0.3rem 0.625rem;
-    border-radius: 0.375rem;
-    background-color: color-mix(in oklab, var(--primary) 20%, transparent);
-    color: color-mix(in oklab, var(--primary) 85%, oklch(0.9 0.01 79));
-    margin-bottom: 1rem;
+    padding: 0.25rem 0.55rem;
+    border-radius: 0.35rem;
+    background-color: color-mix(in oklab, var(--primary) 16%, transparent);
+    color: color-mix(in oklab, var(--primary) 82%, var(--color-ink));
+    border: 1px solid color-mix(in oklab, var(--primary) 20%, transparent);
   }
-
   .interface-card h3 {
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: 1.1875rem;
-    margin: 0 0 0.625rem;
-    color: oklch(0.95 0.01 79);
+    font-size: 1.0625rem;
+    letter-spacing: -0.01em;
+    margin: 0.75rem 1.6rem 0.5rem;
+    color: var(--color-ink);
   }
-
   .interface-card p {
-    margin: 0;
+    margin: 0 1.6rem 1.6rem;
     font-size: 0.9375rem;
     line-height: 1.6;
-    color: oklch(0.72 0.008 79);
-  }
-
-  .code-sample-wide {
-    max-width: 40rem;
-    margin: 0 auto;
+    color: var(--color-ink-soft);
   }
 
   /* ── FAQ ──────────────────────────────────────────────────────── */
 
   .faq {
-    background-color: var(--muted);
-    border-top: 1px solid var(--rule);
-    border-bottom: 1px solid var(--rule);
     padding: clamp(4.5rem, 10vh, 7rem) 0;
+    border-top: 1px solid var(--color-rule);
   }
-
   .faq-list {
-    margin-top: clamp(2.5rem, 5vh, 3.5rem);
     display: flex;
     flex-direction: column;
     gap: 0;
   }
-
   .faq-item {
-    border-bottom: 1px solid var(--rule);
-    padding: 0;
+    border-bottom: 1px solid var(--color-rule);
   }
-
   .faq-item:first-child {
-    border-top: 1px solid var(--rule);
+    border-top: 1px solid var(--color-rule);
   }
-
   .faq-item summary {
     font-family: var(--font-body);
-    font-weight: 600;
-    font-size: 1rem;
-    padding: 1.25rem 0;
+    font-weight: 500;
+    font-size: 1.0625rem;
+    padding: 1.35rem 0;
     cursor: pointer;
     list-style: none;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    color: var(--ink);
+    gap: 1rem;
+    color: var(--color-ink);
     transition: color 0.15s ease;
   }
-
   .faq-item summary::-webkit-details-marker {
     display: none;
   }
-
-  .faq-item summary::after {
-    content: "+";
-    font-size: 1.25rem;
-    font-weight: 400;
-    color: var(--ink-soft);
+  .faq-toggle {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    position: relative;
+    color: var(--color-ink-faint);
+  }
+  .faq-toggle::before,
+  .faq-toggle::after {
+    content: "";
+    position: absolute;
+    background-color: currentColor;
+    border-radius: 1px;
     transition: transform 0.2s ease;
   }
-
-  .faq-item[open] summary::after {
-    transform: rotate(45deg);
+  .faq-toggle::before {
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    transform: translateY(-50%);
   }
-
+  .faq-toggle::after {
+    left: 50%;
+    top: 0;
+    width: 1.5px;
+    height: 100%;
+    transform: translateX(-50%);
+  }
+  .faq-item[open] .faq-toggle::after {
+    transform: translateX(-50%) scaleY(0);
+  }
   .faq-item summary:hover {
-    color: var(--primary);
+    color: color-mix(in oklab, var(--primary) 80%, var(--color-ink));
   }
-
-  .faq-item p {
-    margin: 0 0 1.25rem;
+  .faq-answer {
+    padding-bottom: 1.35rem;
+  }
+  .faq-answer p {
+    margin: 0;
     font-size: 0.9375rem;
     line-height: 1.65;
-    color: var(--ink-soft);
+    color: var(--color-ink-soft);
     max-width: 36rem;
   }
 
-  /* ── Closing CTA (dark) ───────────────────────────────────────── */
+  /* ── Closing CTA ─────────────────────────────────────────────── */
 
-  .closing-cta {
-    background-color: oklch(0.16 0.012 60);
-    color: oklch(0.92 0.01 79);
-    padding: clamp(5rem, 12vh, 8rem) 0;
+  .closing {
+    position: relative;
+    padding: clamp(6rem, 16vh, 10rem) 1.5rem;
     text-align: center;
+    overflow: hidden;
+    isolation: isolate;
+    border-top: 1px solid var(--color-rule);
   }
-
+  .closing-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(760px, 90vw);
+    height: 460px;
+    z-index: -1;
+    border-radius: 50%;
+    background:
+      radial-gradient(
+        circle at center,
+        oklch(0.74 0.2 45 / 0.14) 0%,
+        oklch(0.6 0.16 50 / 0.06) 40%,
+        transparent 68%
+      );
+    filter: blur(10px);
+  }
   .closing-inner {
     display: flex;
     flex-direction: column;
     align-items: center;
+    max-width: 40rem;
+    margin: 0 auto;
   }
-
   .closing-mark {
-    width: 3.5rem;
-    height: 3.5rem;
-    margin-bottom: 1.75rem;
+    width: 3.25rem;
+    height: 3.25rem;
+    margin-bottom: 1.5rem;
   }
-
-  .closing-mark :global(svg) {
-    width: 100%;
-    height: 100%;
-  }
-
   .closing-headline {
     font-family: var(--font-display);
     font-weight: 600;
@@ -1089,22 +1529,113 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     line-height: 1.05;
     letter-spacing: -0.035em;
     margin: 0;
-    color: oklch(0.97 0.015 79);
+    color: var(--color-ink);
     text-wrap: balance;
   }
-
   .closing-lede {
     font-size: 1.125rem;
     line-height: 1.55;
-    color: oklch(0.78 0.015 79);
+    color: var(--color-ink-soft);
     max-width: 28rem;
-    margin: 1.25rem 0 2.5rem;
+    margin: 1.25rem 0 0;
+  }
+  .closing .cta-row {
+    justify-content: center;
   }
 
-  /* ── Responsive tweaks ────────────────────────────────────────── */
+  /* ── Footer ──────────────────────────────────────────────────── */
+
+  .site-footer {
+    border-top: 1px solid var(--color-rule);
+    padding: 3rem 1.5rem 3.5rem;
+  }
+  .footer-inner {
+    max-width: 72rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    text-align: center;
+  }
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.0625rem;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
+  }
+  .footer-mark {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+  }
+  .footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+  .footer-nav a {
+    color: var(--color-ink-soft);
+    transition: color 0.15s ease;
+  }
+  .footer-nav a:hover {
+    color: var(--color-ink);
+  }
+  .footer-note {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--color-ink-faint);
+    max-width: 30rem;
+  }
+
+  /* ── Responsive ───────────────────────────────────────────────── */
+
+  @media (min-width: 760px) {
+    .manifesto-cols {
+      grid-template-columns: 1.6fr 1fr;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .hero-grid {
+      grid-template-columns: 1fr 1.05fr;
+    }
+    .hero-copy {
+      max-width: none;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .bento {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .bento-cell,
+    .bento-wide,
+    .bento-span4,
+    .bento-full {
+      grid-column: span 2;
+    }
+    .bento-tall {
+      grid-row: span 1;
+    }
+    .interfaces-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 
   @media (max-width: 768px) {
     .nav-links {
+      display: none;
+    }
+    .nav-version {
       display: none;
     }
   }
@@ -1114,18 +1645,27 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
       flex-direction: column;
       width: 100%;
     }
-
-    .cta {
+    .hero .cta {
       width: 100%;
       justify-content: center;
     }
-
-    .scroll-cue {
-      display: none;
-    }
-
     .nav-link-login {
       display: none;
+    }
+    .bento {
+      grid-template-columns: 1fr;
+    }
+    .bento-cell,
+    .bento-wide,
+    .bento-span4,
+    .bento-full {
+      grid-column: span 1;
+    }
+    .manifesto-pull {
+      border-left: none;
+      border-top: 1px solid var(--color-rule-strong);
+      padding-left: 0;
+      padding-top: 1.5rem;
     }
   }
 </style>
