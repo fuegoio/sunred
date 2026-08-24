@@ -151,6 +151,13 @@ function ProfileMasthead({
     <PageHeader
       className="static"
       title={displayName}
+      icon={
+        <UserAvatar
+          displayName={hasDisplayName ? displayName : undefined}
+          handle={handle}
+          className="size-12 shrink-0 text-lg font-semibold"
+        />
+      }
       actions={
         <>
           {!isOwnProfile && (
@@ -160,11 +167,6 @@ function ProfileMasthead({
               onToggle={onFollowToggle}
             />
           )}
-          <UserAvatar
-            displayName={hasDisplayName ? displayName : undefined}
-            handle={handle}
-            className="size-12 shrink-0 text-lg font-semibold"
-          />
         </>
       }
       metadata={
@@ -197,7 +199,8 @@ function MastheadSkeleton() {
     <PageHeader
       className="static"
       title={<Skeleton className="h-5 w-32" />}
-      actions={<Skeleton className="size-12 shrink-0 rounded-full" />}
+      icon={<Skeleton className="size-12 shrink-0 rounded-full" />}
+      actions={null}
       metadata={
         <div className="flex flex-col gap-1.5">
           <Skeleton className="h-3.5 w-24" />
