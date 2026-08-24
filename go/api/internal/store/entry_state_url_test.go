@@ -648,3 +648,133 @@ func TestUpdateEntryStatus_ExistingEntryID(t *testing.T) {
 		t.Errorf("status=%q, want 'read'", status)
 	}
 }
+
+// --- GetEntryStatesByURLs (preview state lookup) ---
+
+func TestGetEntryStatesByURLs_AllAbsent(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	userID := seedUser(t, s, "states-absent@example.com")
+
+	urls := []string{
+		"https://example.com/no-state-1",
+		"https://example.com/no-state-2",
+	}
+	states, err := s.GetEntryStatesByURLs(ctx, userID, urls)
+	if err != nil {
+		t.Fatalf("GetEntryStatesByURLs: %v", err)
+	}
+	if len(states) != 2 {
+		t.Fatalf("expected 2 entries in map, got %d", len(states))
+	}
+	for _, url := range urls {
+		st, ok := states[url]
+		if !ok {
+			t.Errorf("expected URL %q to be in map", url)
+			continue
+		}
+		if st.Status != "unread" {
+			t.Errorf("status=%q, want 'unread' (absent = unread)", st.Status)
+		}
+		if st.Starred {
+			t.Error("expected starred=false (absent = unstarred)")
+		}
+	}
+}
+
+func TestGetEntryStatesByURLs_WithReadAndStarred(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	userID := seedUser(t, s, "states-mixed@example.com")
+
+	readURL := "https://example.com/read-article"
+	starredURL := "https://example.com/starred-article"
+	bothURL := "https://example.com/both-article"
+	noneURL := "https://example.com/none-article"
+
+	// Mark one read by URL.
+	if err := s.UpdateEntryStatusByURL(ctx, userID, readURL, "read"); err != nil {
+		t.Fatalf("mark read: %v", err)
+	}
+	// Star one by URL.
+	if err := s.ToggleEntryStarredByURL(ctx, userID,
+		starredURL, "Starred", "", "https://feed.example.com/rss", "Feed", "", "", nil, true,
+	); err != nil {
+		t.Fatalf("star: %v", err)
+	}
+	// Both read and starred.
+	if err := s.UpdateEntryStatusByURL(ctx, userID, bothURL, "read"); err != nil {
+		t.Fatalf("mark both read: %v", err)
+	}
+	if err := s.ToggleEntryStarredByURL(ctx, userID,
+		bothURL, "Both", "", "https://feed.example.com/rss", "Feed", "", "", nil, true,
+	); err != nil {
+		t.Fatalf("star both: %v", err)
+	}
+
+	urls := []string{readURL, starredURL, bothURL, noneURL}
+	states, err := s.GetEntryStatesByURLs(ctx, userID, urls)
+	if err != nil {
+		t.Fatalf("GetEntryStatesByURLs: %v", err)
+	}
+	if len(states) != 4 {
+		t.Fatalf("expected 4 entries in map, got %d", len(states))
+	}
+
+	if st := states[readURL]; st.Status != "read" || st.Starred {
+		t.Errorf("readURL: status=%q starred=%v, want 'read' false", st.Status, st.Starred)
+	}
+	if st := states[starredURL]; st.Status != "unread" || !st.Starred {
+		t.Errorf("starredURL: status=%q starred=%v, want 'unread' true", st.Status, st.Starred)
+	}
+	if st := states[bothURL]; st.Status != "read" || !st.Starred {
+		t.Errorf("bothURL: status=%q starred=%v, want 'read' true", st.Status, st.Starred)
+	}
+	if st := states[noneURL]; st.Status != "unread" || st.Starred {
+		t.Errorf("noneURL: status=%q starred=%v, want 'unread' false", st.Status, st.Starred)
+	}
+}
+
+func TestGetEntryStatesByURLs_EmptyInput(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	userID := seedUser(t, s, "states-empty@example.com")
+
+	states, err := s.GetEntryStatesByURLs(ctx, userID, nil)
+	if err != nil {
+		t.Fatalf("GetEntryStatesByURLs: %v", err)
+	}
+	if len(states) != 0 {
+		t.Errorf("expected empty map, got %d entries", len(states))
+	}
+}
+
+func TestGetEntryStatesByURLs_URLKeyIsInputURL(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	userID := seedUser(t, s, "states-key@example.com")
+	articleURL := "https://example.com/key-test"
+
+	// Star an article by URL (no materialized entry).
+	if err := s.ToggleEntryStarredByURL(ctx, userID,
+		articleURL, "Title", "", "", "", "", "", nil, true,
+	); err != nil {
+		t.Fatalf("star: %v", err)
+	}
+
+	// Lookup must return the state keyed by the input URL, not by the
+	// (possibly NULL) joined column. This is the regression test for the
+	// bug where the query selected rs.article_url instead of u.article_url.
+	states, err := s.GetEntryStatesByURLs(ctx, userID, []string{articleURL})
+	if err != nil {
+		t.Fatalf("GetEntryStatesByURLs: %v", err)
+	}
+
+	st, ok := states[articleURL]
+	if !ok {
+		t.Fatalf("expected URL %q to be in map (bug: query selected rs.article_url instead of u.article_url)", articleURL)
+	}
+	if !st.Starred {
+		t.Error("expected starred=true")
+	}
+}

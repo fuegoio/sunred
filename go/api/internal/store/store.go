@@ -504,7 +504,7 @@ func (s *Store) GetEntryStatesByURLs(ctx context.Context, userID int, urls []str
 		return map[string]EntryStateByURL{}, nil
 	}
 	rows, err := s.DB.QueryContext(ctx, `
-		SELECT rs.article_url, COALESCE(rs.status, 'unread'), (es.article_url IS NOT NULL)
+		SELECT u.article_url, COALESCE(rs.status, 'unread'), (es.article_url IS NOT NULL)
 		FROM (SELECT unnest($2::text[]) AS article_url) u
 		LEFT JOIN entry_read_status rs ON rs.user_id = $1 AND rs.article_url = u.article_url
 		LEFT JOIN entry_stars es ON es.user_id = $1 AND es.article_url = u.article_url`,
