@@ -89,11 +89,12 @@ export function EntryCard({
   // Link target for the feed title: subscribed feeds go to their canonical
   // feed page; feeds the viewer doesn't subscribe to (shares from followed
   // users) go to the discovery view, which previews them and offers a
-  // one-click subscribe.
+  // one-click subscribe. The global feed ID is passed so the discovery view
+  // can show the subscriber count.
   const feedHref = feed
     ? `/feeds/${feed.id}`
     : entry.feed?.feed_url
-      ? `/feeds/preview?url=${encodeURIComponent(entry.feed.feed_url)}`
+      ? `/feeds?url=${encodeURIComponent(entry.feed.feed_url)}${entry.feed?.id ? `&id=${entry.feed.id}` : ""}`
       : null;
   const sharerName = entry.shared_by_name?.trim()
     ? entry.shared_by_name

@@ -1,26 +1,47 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { ExternalLink, Rss, ChevronRight } from "lucide-react";
 import { FeedIcon } from "@/components/feed-icon";
 import { SubscribeButton } from "@/components/subscribe-button";
+import { SubscribersDialog } from "@/components/subscribers-dialog";
 import { PageHeader } from "@/components/page-header";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
 import { buttonVariants } from "@workspace/ui/components/button";
 import { cn } from "@workspace/ui/lib/utils";
+import { getClient, feedSubscribers, unwrap } from "@/lib/sunred";
 import { formatRelative, htmlSnippet } from "@/lib/format";
-import type { PreviewFeedBody } from "@/lib/types";
+import type { PreviewFeedBody, FeedSubscribersResponse } from "@/lib/types";
 
 /**
  * Discovery view for a feed the viewer is not subscribed to. Mirrors the
  * feed detail page's layout (max-w-3xl, PageHeader, ScrollArea) so the two
  * surfaces read as the same chrome — mutualized via the shared
- * `SubscribeButton` in the header actions slot. The body lists the feed's
- * recent articles as external links; subscribing (header button) creates the
+ * `SubscribeButton` in the header actions slot. When a global `feedId` is
+ * available (passed from entry cards and profile links), the subscriber
+ * count is fetched and shown via the same `SubscribersDialog` as the feed
+ * page, in the same toolbar position. The body lists the feed's recent
+ * articles as external links; subscribing (header button) creates the
  * subscription and navigates to the canonical feed page.
  */
-export function FeedDiscovery({ preview }: { preview: PreviewFeedBody }) {
+export function FeedDiscovery({
+  preview,
+  feedId,
+}: {
+  preview: PreviewFeedBody;
+  feedId?: number;
+}) {
   const items = preview.items ?? [];
   const siteUrl = preview.site_url || undefined;
+
+  // Subscriber count is only available when the global feed ID is known
+  // (the feed exists in the database because someone subscribes to it).
+  const { data: subscribers } = useQuery<FeedSubscribersResponse>({
+    queryKey: ["feed-subscribers", feedId],
+    queryFn: async () =>
+      unwrap(feedSubscribers({ client: await getClient(), path: { feedId: feedId! } })),
+    enabled: feedId !== undefined,
+  });
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -91,6 +112,15 @@ export function FeedDiscovery({ preview }: { preview: PreviewFeedBody }) {
                 <span className="ml-1.5 text-muted-foreground/70">({items.length})</span>
               )}
             </h2>
+            {subscribers !== undefined && (
+              <div className="ml-auto">
+                <SubscribersDialog
+                  count={subscribers.count}
+                  globalCount={subscribers.global_count}
+                  subscribers={subscribers.subscribers ?? []}
+                />
+              </div>
+            )}
           </div>
           {items.length === 0 ? (
             <p className="px-4 py-6 text-sm text-muted-foreground">
