@@ -101,9 +101,9 @@ func stripAnsiChars(s string) string {
 	return out.String()
 }
 
-// TestPreviewViewRendering proves the discovery preview view renders the feed
-// header (title + subscriber counts) and preview items with read/star state.
-func TestPreviewViewRendering(t *testing.T) {
+// TestFeedGetViewRendering proves the feed get view renders the feed
+// header (title + subscriber counts) and feed-get items with read/star state.
+func TestFeedGetViewRendering(t *testing.T) {
 	m := NewModel(nil)
 	m2, _ := m.Update(tea.WindowSizeMsg{Width: 120, Height: 40})
 	m = m2.(Model)
@@ -114,7 +114,7 @@ func TestPreviewViewRendering(t *testing.T) {
 		{Title: "First article", Url: "https://example.com/1", PublishedAt: mustParseTime(t, "2025-01-02T00:00:00Z")},
 		{Title: "Read and starred", Url: "https://example.com/2", PublishedAt: mustParseTime(t, "2025-01-03T00:00:00Z"), Starred: &starred, Status: &read},
 	}
-	m.preview = &sunred.PreviewFeedBody{
+	m.feedGet = &sunred.PreviewFeedBody{
 		Title:       "Demo Feed",
 		SiteUrl:     "https://example.com",
 		FeedUrl:     "https://example.com/feed.xml",
@@ -129,23 +129,23 @@ func TestPreviewViewRendering(t *testing.T) {
 	plain := stripAnsiChars(joined)
 
 	if !strings.Contains(plain, "Demo Feed") {
-		t.Errorf("preview view missing feed title; got:\n%s", plain)
+		t.Errorf("feed get view missing feed title; got:\n%s", plain)
 	}
 	if !strings.Contains(plain, "3 subscribers") || !strings.Contains(plain, "42 global") {
-		t.Errorf("preview view missing subscriber counts; got:\n%s", plain)
+		t.Errorf("feed get view missing subscriber counts; got:\n%s", plain)
 	}
 	if !strings.Contains(plain, "First article") || !strings.Contains(plain, "Read and starred") {
-		t.Errorf("preview view missing items; got:\n%s", plain)
+		t.Errorf("feed get view missing items; got:\n%s", plain)
 	}
 	if !strings.Contains(plain, "esc back") {
-		t.Errorf("preview view missing help text; got:\n%s", plain)
+		t.Errorf("feed get view missing help text; got:\n%s", plain)
 	}
 
-	// Cursor navigation clamps within the preview item list.
-	m.previewCursor = 5
-	m.clampPreviewOffset()
-	if m.previewCursor != 5 { // cursor is allowed beyond the end; offset clamps
-		t.Errorf("previewCursor changed unexpectedly: %d", m.previewCursor)
+	// Cursor navigation clamps within the feed-get item list.
+	m.feedGetCursor = 5
+	m.clampFeedGetOffset()
+	if m.feedGetCursor != 5 { // cursor is allowed beyond the end; offset clamps
+		t.Errorf("feedGetCursor changed unexpectedly: %d", m.feedGetCursor)
 	}
 }
 

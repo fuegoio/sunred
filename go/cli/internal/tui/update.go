@@ -52,7 +52,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.entries = msg.entries
 		m.entriesCursor = 0
 		m.entriesOffset = 0
-		m.preview = nil
+		m.feedGet = nil
 		m.err = ""
 		return m, nil
 
@@ -117,17 +117,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
-	case previewFeedMsg:
+	case feedGetMsg:
 		m.loading = false
 		m.enteringURL = false
 		if msg.err != nil {
 			m.err = msg.err.Error()
-			m.preview = nil
+			m.feedGet = nil
 			return m, nil
 		}
-		m.preview = msg.preview
-		m.previewCursor = 0
-		m.previewOffset = 0
+		m.feedGet = msg.feedGet
+		m.feedGetCursor = 0
+		m.feedGetOffset = 0
 		m.err = ""
 		m.focus = focusEntries
 		return m, nil
@@ -138,11 +138,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		m.err = ""
-		if m.preview != nil && m.preview.Items != nil {
-			for i := range *m.preview.Items {
-				if (*m.preview.Items)[i].Url == msg.articleURL {
+		if m.feedGet != nil && m.feedGet.Items != nil {
+			for i := range *m.feedGet.Items {
+				if (*m.feedGet.Items)[i].Url == msg.articleURL {
 					s := string(msg.status)
-					(*m.preview.Items)[i].Status = &s
+					(*m.feedGet.Items)[i].Status = &s
 				}
 			}
 		}
@@ -154,11 +154,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		m.err = ""
-		if m.preview != nil && m.preview.Items != nil {
-			for i := range *m.preview.Items {
-				if (*m.preview.Items)[i].Url == msg.articleURL {
+		if m.feedGet != nil && m.feedGet.Items != nil {
+			for i := range *m.feedGet.Items {
+				if (*m.feedGet.Items)[i].Url == msg.articleURL {
 					b := msg.starred
-					(*m.preview.Items)[i].Starred = &b
+					(*m.feedGet.Items)[i].Starred = &b
 				}
 			}
 		}
@@ -173,7 +173,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // handleKey dispatches key events to the focused panel.
 func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	// URL input mode (preview discovery) intercepts everything except ctrl+c.
+	// URL input mode (feed get) intercepts everything except ctrl+c.
 	if m.enteringURL {
 		if msg.String() == "ctrl+c" {
 			return m, tea.Quit
@@ -200,7 +200,7 @@ func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.focus = focusEntries
 		return m, nil
 	case "p":
-		// Enter preview/discovery URL input.
+		// Enter feed get URL input.
 		m.enteringURL = true
 		m.urlInput = ""
 		m.focus = focusEntries
@@ -210,9 +210,9 @@ func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Batch(loadFeeds(m.client), loadFolders(m.client))
 	}
 
-	// Preview view keys are handled by the entries panel handler.
-	if m.preview != nil && m.focus == focusEntries {
-		return m.handlePreviewKey(msg)
+	// Feed get view keys are handled by the entries panel handler.
+	if m.feedGet != nil && m.focus == focusEntries {
+		return m.handleFeedGetKey(msg)
 	}
 
 	if m.focus == focusSidebar {
@@ -235,8 +235,8 @@ func (m Model) handleURLKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		m.loading = true
-		m.preview = nil
-		return m, previewFeed(m.client, url)
+		m.feedGet = nil
+		return m, getFeed(m.client, url)
 	case "backspace", "ctrl+h":
 		runes := []rune(m.urlInput)
 		if len(runes) > 0 {
@@ -260,7 +260,7 @@ func (m Model) handleSearchKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if len(m.items) > 0 {
 			m.loading = true
 			m.entries = nil
-			m.preview = nil
+			m.feedGet = nil
 			return m, m.loadSelection(m.items[m.sidebarCursor])
 		}
 		return m, nil
@@ -270,7 +270,7 @@ func (m Model) handleSearchKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.focus = focusEntries
 		m.entriesCursor = 0
 		m.entriesOffset = 0
-		m.preview = nil
+		m.feedGet = nil
 		if m.searchQuery == "" {
 			// Empty query: restore current sidebar selection.
 			m.loading = true
@@ -333,7 +333,7 @@ func (m Model) handleSidebarKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.loading = true
 		m.entries = nil
 		m.searchQuery = ""
-		m.preview = nil
+		m.feedGet = nil
 		return m, m.loadSelection(m.items[m.sidebarCursor])
 	}
 	// If the cursor moved, refresh the entry panel for the new selection.
@@ -341,7 +341,7 @@ func (m Model) handleSidebarKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.loading = true
 		m.entries = nil
 		m.searchQuery = ""
-		m.preview = nil
+		m.feedGet = nil
 		return m, m.loadSelection(m.items[m.sidebarCursor])
 	}
 	return m, nil
@@ -427,32 +427,32 @@ func (m Model) handleEntriesKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// handlePreviewKey handles keys while the discovery preview view is shown.
-func (m Model) handlePreviewKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+// handleFeedGetKey handles keys while the feed get view is shown.
+func (m Model) handleFeedGetKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "up", "k":
-		if m.previewCursor > 0 {
-			m.previewCursor--
+		if m.feedGetCursor > 0 {
+			m.feedGetCursor--
 		}
 	case "down", "j":
-		if m.preview != nil && m.preview.Items != nil && m.previewCursor < len(*m.preview.Items)-1 {
-			m.previewCursor++
+		if m.feedGet != nil && m.feedGet.Items != nil && m.feedGetCursor < len(*m.feedGet.Items)-1 {
+			m.feedGetCursor++
 		}
 	case "g":
-		m.previewCursor = 0
+		m.feedGetCursor = 0
 	case "G":
-		if m.preview != nil && m.preview.Items != nil {
-			m.previewCursor = max(0, len(*m.preview.Items)-1)
+		if m.feedGet != nil && m.feedGet.Items != nil {
+			m.feedGetCursor = max(0, len(*m.feedGet.Items)-1)
 		}
 	case "ctrl+d":
-		ps := m.previewPageSize()
-		m.previewCursor = min(m.previewCursor+ps/2, m.previewItemCount()-1)
+		ps := m.feedGetPageSize()
+		m.feedGetCursor = min(m.feedGetCursor+ps/2, m.feedGetItemCount()-1)
 	case "ctrl+u":
-		ps := m.previewPageSize()
-		m.previewCursor = max(m.previewCursor-ps/2, 0)
+		ps := m.feedGetPageSize()
+		m.feedGetCursor = max(m.feedGetCursor-ps/2, 0)
 	case "enter", "o":
-		// Open in browser and mark as read (by URL — preview items have no id).
-		item, ok := m.selectedPreviewItem()
+		// Open in browser and mark as read (by URL — feed-get items have no entry id).
+		item, ok := m.selectedFeedGetItem()
 		if !ok {
 			return m, nil
 		}
@@ -462,11 +462,11 @@ func (m Model) handlePreviewKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if !read {
 			cmds = append(cmds, setEntryStatusByUrl(m.client, item.Url, status))
 		}
-		m.clampPreviewOffset()
+		m.clampFeedGetOffset()
 		return m, tea.Batch(cmds...)
 	case "u":
 		// Toggle read / unread by URL.
-		item, ok := m.selectedPreviewItem()
+		item, ok := m.selectedFeedGetItem()
 		if !ok {
 			return m, nil
 		}
@@ -478,15 +478,15 @@ func (m Model) handlePreviewKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, setEntryStatusByUrl(m.client, item.Url, status)
 	case "s":
 		// Toggle star by URL.
-		item, ok := m.selectedPreviewItem()
+		item, ok := m.selectedFeedGetItem()
 		if !ok {
 			return m, nil
 		}
 		starred := item.Starred != nil && *item.Starred
-		return m, toggleStarByUrl(m.client, item, m.preview, !starred)
+		return m, toggleStarByUrl(m.client, item, m.feedGet, !starred)
 	case "esc", "h", "left":
-		// Leave preview: restore the current sidebar selection.
-		m.preview = nil
+		// Leave feed get: restore the current sidebar selection.
+		m.feedGet = nil
 		m.focus = focusSidebar
 		if len(m.items) > 0 {
 			m.loading = true
@@ -497,7 +497,7 @@ func (m Model) handlePreviewKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "q":
 		return m, tea.Quit
 	}
-	m.clampPreviewOffset()
+	m.clampFeedGetOffset()
 	return m, nil
 }
 
@@ -580,7 +580,7 @@ func (m Model) renderSidebarLines() []string {
 		addLine("")
 	}
 
-	// Preview URL input box (discovery).
+	// Feed get URL input box.
 	if m.enteringURL {
 		prompt := searchInputStyle.Render("p ")
 		cursor := searchCursorStyle.Render("▌")
@@ -595,7 +595,7 @@ func (m Model) renderSidebarLines() []string {
 
 	feedsLabelShown := false
 	for i, item := range m.items {
-		// When in search/preview-input mode (active or committed), skip nav items.
+		// When in search/get-input mode (active or committed), skip nav items.
 		if (m.searching || m.searchQuery != "" || m.enteringURL) && (item.kind == sidebarAll || item.kind == sidebarUnread || item.kind == sidebarStarred) {
 			continue
 		}
@@ -698,11 +698,11 @@ func (m Model) renderMainLines() []string {
 	var content string
 	switch {
 	case m.enteringURL:
-		content = dimStyle.Render("  Enter a feed URL to preview, then press enter…")
-	case m.loading && m.preview == nil:
+		content = dimStyle.Render("  Enter a feed URL to get, then press enter…")
+	case m.loading && m.feedGet == nil:
 		content = dimStyle.Render("  Loading…")
-	case m.preview != nil:
-		content = m.renderPreview(mainWidth)
+	case m.feedGet != nil:
+		content = m.renderFeedGet(mainWidth)
 	default:
 		content = m.renderEntryList(mainWidth)
 	}
@@ -859,11 +859,11 @@ func (m Model) renderEntryList(width int) string {
 	case m.searching:
 		helpText = "type to search · esc cancel · enter confirm · / from anywhere"
 	case m.focus == focusSidebar:
-		helpText = "j/k navigate · l open · / search · p preview · q quit"
+		helpText = "j/k navigate · l open · / search · p get feed · q quit"
 	case onFeed:
-		helpText = "j/k · enter/o open · u read/unread · s star · R refresh · M mark read · p preview · / search · h sidebar · q quit"
+		helpText = "j/k · enter/o open · u read/unread · s star · R refresh · M mark read · p get feed · / search · h sidebar · q quit"
 	default:
-		helpText = "j/k · ^d/^u · g/G · enter/o open · u read/unread · s star · p preview · / search · h sidebar · q quit"
+		helpText = "j/k · ^d/^u · g/G · enter/o open · u read/unread · s star · p get feed · / search · h sidebar · q quit"
 	}
 	sb.WriteString("\n" + helpStyle.Render(helpText))
 
@@ -921,31 +921,31 @@ func (m *Model) clampEntriesOffset() {
 	}
 }
 
-// ---- preview / discovery ----------------------------------------------------
+// ---- feed get ----------------------------------------------------
 
-// previewItemCount returns the number of items in the current preview.
-func (m Model) previewItemCount() int {
-	if m.preview == nil || m.preview.Items == nil {
+// feedGetItemCount returns the number of items in the current feed get.
+func (m Model) feedGetItemCount() int {
+	if m.feedGet == nil || m.feedGet.Items == nil {
 		return 0
 	}
-	return len(*m.preview.Items)
+	return len(*m.feedGet.Items)
 }
 
-// selectedPreviewItem returns the preview item under the cursor, if any.
-func (m Model) selectedPreviewItem() (sunred.PreviewFeedItem, bool) {
-	if m.preview == nil || m.preview.Items == nil {
+// selectedFeedGetItem returns the feed-get item under the cursor, if any.
+func (m Model) selectedFeedGetItem() (sunred.PreviewFeedItem, bool) {
+	if m.feedGet == nil || m.feedGet.Items == nil {
 		return sunred.PreviewFeedItem{}, false
 	}
-	items := *m.preview.Items
-	if m.previewCursor < 0 || m.previewCursor >= len(items) {
+	items := *m.feedGet.Items
+	if m.feedGetCursor < 0 || m.feedGetCursor >= len(items) {
 		return sunred.PreviewFeedItem{}, false
 	}
-	return items[m.previewCursor], true
+	return items[m.feedGetCursor], true
 }
 
-// previewPageSize returns how many preview rows fit in the main panel.
+// feedGetPageSize returns how many feed-get rows fit in the main panel.
 // Layout: 3 header + 1 separator + N items + 1 blank + 1 help.
-func (m Model) previewPageSize() int {
+func (m Model) feedGetPageSize() int {
 	n := m.height - 6
 	if n < 1 {
 		n = 1
@@ -953,33 +953,33 @@ func (m Model) previewPageSize() int {
 	return n
 }
 
-// clampPreviewOffset adjusts previewOffset so that previewCursor stays visible.
-func (m *Model) clampPreviewOffset() {
-	pageSize := m.previewPageSize()
-	if m.previewCursor < m.previewOffset {
-		m.previewOffset = m.previewCursor
+// clampFeedGetOffset adjusts feedGetOffset so that feedGetCursor stays visible.
+func (m *Model) clampFeedGetOffset() {
+	pageSize := m.feedGetPageSize()
+	if m.feedGetCursor < m.feedGetOffset {
+		m.feedGetOffset = m.feedGetCursor
 	}
-	if m.previewCursor >= m.previewOffset+pageSize {
-		m.previewOffset = m.previewCursor - pageSize + 1
+	if m.feedGetCursor >= m.feedGetOffset+pageSize {
+		m.feedGetOffset = m.feedGetCursor - pageSize + 1
 	}
-	if m.previewOffset < 0 {
-		m.previewOffset = 0
+	if m.feedGetOffset < 0 {
+		m.feedGetOffset = 0
 	}
 }
 
-// renderPreview renders the discovery preview view: a feed header (title,
-// description/site URL, subscriber counts) followed by the preview items.
-func (m Model) renderPreview(width int) string {
+// renderFeedGet renders the feed get view: a feed header (title,
+// description/site URL, subscriber counts) followed by the feed-get items.
+func (m Model) renderFeedGet(width int) string {
 	var sb strings.Builder
-	p := m.preview
+	p := m.feedGet
 
-	title := "Preview"
+	title := "Feed"
 	if p != nil {
 		title = p.Title
 	}
 	headerLine := headerStyle.Render(truncate(title, width-2))
 	if p != nil && p.Items != nil && len(*p.Items) > 0 {
-		headerLine += " " + dimStyle.Render(formatPos(m.previewCursor+1, len(*p.Items)))
+		headerLine += " " + dimStyle.Render(formatPos(m.feedGetCursor+1, len(*p.Items)))
 	}
 	sb.WriteString(headerLine + "\n")
 
@@ -1003,7 +1003,7 @@ func (m Model) renderPreview(width int) string {
 	sb.WriteString(strings.Repeat("─", width) + "\n")
 
 	if p == nil || p.Items == nil || len(*p.Items) == 0 {
-		sb.WriteString("\n" + dimStyle.Render("  No preview items.") + "\n")
+		sb.WriteString("\n" + dimStyle.Render("  No items.") + "\n")
 	} else {
 		isFocus := m.focus == focusEntries
 
@@ -1015,8 +1015,8 @@ func (m Model) renderPreview(width int) string {
 			titleWidth = 10
 		}
 
-		pageSize := m.previewPageSize()
-		start := m.previewOffset
+		pageSize := m.feedGetPageSize()
+		start := m.feedGetOffset
 		end := start + pageSize
 		if end > len(*p.Items) {
 			end = len(*p.Items)
@@ -1024,7 +1024,7 @@ func (m Model) renderPreview(width int) string {
 
 		for idx := start; idx < end; idx++ {
 			it := (*p.Items)[idx]
-			isSelected := idx == m.previewCursor
+			isSelected := idx == m.feedGetCursor
 
 			read := it.Status != nil && *it.Status == "read"
 			starred := it.Starred != nil && *it.Starred

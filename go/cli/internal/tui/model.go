@@ -73,10 +73,10 @@ type Model struct {
 	subsFeedID  int64 // feed ID the cache entry below belongs to (0 = none)
 	subsLast    *sunred.FeedSubscribersResponse
 
-	// preview / discovery view
-	preview       *sunred.PreviewFeedBody
-	previewCursor int
-	previewOffset int
+	// feed get view (fetch a feed by URL, subscribed or not)
+	feedGet       *sunred.PreviewFeedBody
+	feedGetCursor int
+	feedGetOffset int
 	enteringURL   bool
 	urlInput      string
 }
@@ -199,19 +199,19 @@ type feedMarkedReadMsg struct {
 	err    error
 }
 
-type previewFeedMsg struct {
-	preview *sunred.PreviewFeedBody
+type feedGetMsg struct {
+	feedGet *sunred.PreviewFeedBody
 	err     error
 }
 
-// byUrlStatusMsg reports the result of a by-URL status update on a preview item.
+// byUrlStatusMsg reports the result of a by-URL status update on a feed-get item.
 type byUrlStatusMsg struct {
 	articleURL string
 	status     sunred.UpdateEntryStatusByUrlRequestStatus
 	err        error
 }
 
-// byUrlStarMsg reports the result of a by-URL star toggle on a preview item.
+// byUrlStarMsg reports the result of a by-URL star toggle on a feed-get item.
 type byUrlStarMsg struct {
 	articleURL string
 	starred    bool
@@ -327,22 +327,22 @@ func markFeedRead(client *sunred.ClientWithResponses, feedID int64) tea.Cmd {
 	}
 }
 
-func previewFeed(client *sunred.ClientWithResponses, feedURL string) tea.Cmd {
+func getFeed(client *sunred.ClientWithResponses, feedURL string) tea.Cmd {
 	return func() tea.Msg {
 		resp, err := client.PreviewFeedWithResponse(context.Background(), sunred.PreviewFeedJSONRequestBody{
 			FeedUrl: feedURL,
 		})
 		if err != nil {
-			return previewFeedMsg{err: err}
+			return feedGetMsg{err: err}
 		}
 		if resp.JSON200 == nil {
-			return previewFeedMsg{err: fmt.Errorf("API error (status %d)", resp.StatusCode())}
+			return feedGetMsg{err: fmt.Errorf("API error (status %d)", resp.StatusCode())}
 		}
-		return previewFeedMsg{preview: resp.JSON200}
+		return feedGetMsg{feedGet: resp.JSON200}
 	}
 }
 
-// setEntryStatusByUrl marks a preview article read/unread by URL.
+// setEntryStatusByUrl marks a feed-get article read/unread by URL.
 func setEntryStatusByUrl(client *sunred.ClientWithResponses, articleURL string, status sunred.UpdateEntryStatusByUrlRequestStatus) tea.Cmd {
 	return func() tea.Msg {
 		_, err := client.UpdateEntryStatusByUrlWithResponse(context.Background(), sunred.UpdateEntryStatusByUrlRequest{
@@ -353,8 +353,8 @@ func setEntryStatusByUrl(client *sunred.ClientWithResponses, articleURL string, 
 	}
 }
 
-// toggleStarByUrl toggles a preview article's star by URL. The preview item
-// supplies the metadata the server needs to record the article.
+// toggleStarByUrl toggles a feed-get article's star by URL. The item supplies
+// the metadata the server needs to record the article.
 func toggleStarByUrl(client *sunred.ClientWithResponses, item sunred.PreviewFeedItem, feed *sunred.PreviewFeedBody, starred bool) tea.Cmd {
 	return func() tea.Msg {
 		body := sunred.ToggleEntryStarredByUrlRequest{
