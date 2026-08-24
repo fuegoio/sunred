@@ -49,6 +49,7 @@ export function FeedDiscovery({ preview }: { preview: PreviewFeedBody }) {
     title: preview.title,
     site_url: preview.site_url,
     feed_url: preview.feed_url,
+    description: preview.description,
   } as unknown as Feed;
 
   const entries = items.map((item, i) => toEntry(item, i, feed));
