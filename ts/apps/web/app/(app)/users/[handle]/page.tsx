@@ -99,17 +99,18 @@ function FollowButton({
       variant={isFollowing ? "outline" : "default"}
       size="sm"
       onClick={handleClick}
-      className="gap-1.5"
+      aria-label={isFollowing ? "Unfollow" : "Follow"}
+      className="gap-1.5 px-2 sm:px-3"
     >
       {isFollowing ? (
         <>
           <UserCheck className="size-3.5" />
-          Following
+          <span className="hidden sm:inline">Following</span>
         </>
       ) : (
         <>
           <UserPlus className="size-3.5" />
-          Follow
+          <span className="hidden sm:inline">Follow</span>
         </>
       )}
     </Button>
@@ -151,30 +152,30 @@ function ProfileMasthead({
 
   return (
     <div className="border-b border-border bg-background px-4 py-3 lg:pl-[48px]">
-      <div className="flex items-start gap-3">
-        {/* Mobile sidebar toggle — replaces the separate top bar, same as PageHeader */}
-        {shell && (
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Toggle sidebar"
-            onClick={shell.openSidebar}
-            className="-ml-2 mt-0.5 shrink-0 lg:hidden"
-          >
-            <MenuIcon className="size-4" />
-          </Button>
-        )}
+      {/* Mobile sidebar toggle — same pattern as PageHeader */}
+      {shell && (
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Toggle sidebar"
+          onClick={shell.openSidebar}
+          className="-ml-2 shrink-0 lg:hidden"
+        >
+          <MenuIcon className="size-4" />
+        </Button>
+      )}
 
+      <div className="flex items-start gap-3">
         <UserAvatar
           displayName={hasDisplayName ? displayName : undefined}
           handle={handle}
-          className="size-12 text-lg font-semibold"
+          className="size-12 shrink-0 text-lg font-semibold"
         />
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-2 sm:gap-3">
             <div className="min-w-0">
-              <h1 className="truncate font-serif text-lg font-bold tracking-wider">
+              <h1 className="truncate font-serif text-base font-bold tracking-wider sm:text-lg">
                 {displayName}
               </h1>
               {hasDisplayName && (
@@ -217,21 +218,21 @@ function MastheadSkeleton() {
   const shell = useShell();
   return (
     <div className="border-b border-border bg-background px-4 py-3 lg:pl-[48px]">
+      {shell && (
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Toggle sidebar"
+          onClick={shell.openSidebar}
+          className="-ml-2 shrink-0 lg:hidden"
+        >
+          <MenuIcon className="size-4" />
+        </Button>
+      )}
       <div className="flex items-start gap-3">
-        {shell && (
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Toggle sidebar"
-            onClick={shell.openSidebar}
-            className="-ml-2 mt-0.5 shrink-0 lg:hidden"
-          >
-            <MenuIcon className="size-4" />
-          </Button>
-        )}
         <Skeleton className="size-12 shrink-0 rounded-full" />
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-2">
             <div className="flex flex-col gap-1.5">
               <Skeleton className="h-5 w-32" />
               <Skeleton className="h-3.5 w-24" />
@@ -485,7 +486,7 @@ export default function UserProfilePage({
                               </p>
                             )}
                           </div>
-                          <ChevronRight className="size-4 shrink-0 self-center text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                          <ChevronRight className="size-4 shrink-0 self-center text-muted-foreground opacity-30 transition-opacity group-hover:opacity-100" />
                         </Link>
                       </li>
                     );
