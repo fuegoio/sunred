@@ -2,7 +2,7 @@
 
 import { client } from './client.gen';
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client/index';
-import type { ArticleShareCountData, ArticleShareCountErrors, ArticleShareCountResponses, AtprotoStatusData, AtprotoStatusErrors, AtprotoStatusResponses, CreateFeedData, CreateFeedErrors, CreateFeedResponses, CreateFolderData, CreateFolderErrors, CreateFolderResponses, CreateTokenData, CreateTokenErrors, CreateTokenResponses, DeleteFeedData, DeleteFeedErrors, DeleteFeedResponses, DeleteFolderData, DeleteFolderErrors, DeleteFolderResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteTokenData, DeleteTokenErrors, DeleteTokenResponses, DeviceCodeData, DeviceCodeErrors, DeviceCodeResponses, DeviceConfirmData, DeviceConfirmErrors, DeviceConfirmResponses, DeviceStatusData, DeviceStatusErrors, DeviceStatusResponses, DeviceTokenData, DeviceTokenErrors, DeviceTokenResponses, ExportOpmlData, ExportOpmlErrors, ExportOpmlResponses, FeedSubscribersData, FeedSubscribersErrors, FeedSubscribersResponses, FollowUserData, FollowUserErrors, FollowUserResponses, GetEntryData, GetEntryErrors, GetEntryResponses, GetFeedData, GetFeedErrors, GetFeedResponses, GetMeData, GetMeErrors, GetMeResponses, GetUserProfileData, GetUserProfileErrors, GetUserProfileResponses, HealthData, HealthErrors, HealthResponses, ImportOpmlData, ImportOpmlErrors, ImportOpmlResponses, ListEntriesData, ListEntriesErrors, ListEntriesResponses, ListFeedsData, ListFeedsErrors, ListFeedsResponses, ListFoldersData, ListFoldersErrors, ListFoldersResponses, ListFollowersData, ListFollowersErrors, ListFollowersResponses, ListFollowingData, ListFollowingErrors, ListFollowingResponses, ListTokensData, ListTokensErrors, ListTokensResponses, ListUserFollowingData, ListUserFollowingErrors, ListUserFollowingResponses, MarkFeedReadData, MarkFeedReadErrors, MarkFeedReadResponses, MySharedArticlesData, MySharedArticlesErrors, MySharedArticlesResponses, PreviewFeedData, PreviewFeedErrors, PreviewFeedResponses, RefreshFeedData, RefreshFeedErrors, RefreshFeedResponses, SearchUsersData, SearchUsersErrors, SearchUsersResponses, ShareArticleData, ShareArticleErrors, ShareArticleResponses, SocialTimelineData, SocialTimelineErrors, SocialTimelineResponses, ToggleEntryStarredData, ToggleEntryStarredErrors, ToggleEntryStarredResponses, UnfollowUserData, UnfollowUserErrors, UnfollowUserResponses, UnshareArticleData, UnshareArticleErrors, UnshareArticleResponses, UpdateEntriesData, UpdateEntriesErrors, UpdateEntriesResponses, UpdateFeedData, UpdateFeedErrors, UpdateFeedResponses, UpdateFolderData, UpdateFolderErrors, UpdateFolderResponses, UpdateHandleData, UpdateHandleErrors, UpdateHandleResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses } from './types.gen';
+import type { ArticleShareCountData, ArticleShareCountErrors, ArticleShareCountResponses, AtprotoStatusData, AtprotoStatusErrors, AtprotoStatusResponses, CreateFeedData, CreateFeedErrors, CreateFeedResponses, CreateFolderData, CreateFolderErrors, CreateFolderResponses, CreateTokenData, CreateTokenErrors, CreateTokenResponses, DeleteFeedData, DeleteFeedErrors, DeleteFeedResponses, DeleteFolderData, DeleteFolderErrors, DeleteFolderResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteTokenData, DeleteTokenErrors, DeleteTokenResponses, DeviceCodeData, DeviceCodeErrors, DeviceCodeResponses, DeviceConfirmData, DeviceConfirmErrors, DeviceConfirmResponses, DeviceStatusData, DeviceStatusErrors, DeviceStatusResponses, DeviceTokenData, DeviceTokenErrors, DeviceTokenResponses, ExportOpmlData, ExportOpmlErrors, ExportOpmlResponses, FeedSubscribersData, FeedSubscribersErrors, FeedSubscribersResponses, FollowUserData, FollowUserErrors, FollowUserResponses, GetEntryData, GetEntryErrors, GetEntryResponses, GetFeedData, GetFeedErrors, GetFeedResponses, GetMeData, GetMeErrors, GetMeResponses, GetUserProfileData, GetUserProfileErrors, GetUserProfileResponses, HealthData, HealthErrors, HealthResponses, ImportOpmlData, ImportOpmlErrors, ImportOpmlResponses, ListEntriesData, ListEntriesErrors, ListEntriesResponses, ListFeedsData, ListFeedsErrors, ListFeedsResponses, ListFoldersData, ListFoldersErrors, ListFoldersResponses, ListFollowersData, ListFollowersErrors, ListFollowersResponses, ListFollowingData, ListFollowingErrors, ListFollowingResponses, ListTokensData, ListTokensErrors, ListTokensResponses, ListUserFollowingData, ListUserFollowingErrors, ListUserFollowingResponses, MarkFeedReadData, MarkFeedReadErrors, MarkFeedReadResponses, MySharedArticlesData, MySharedArticlesErrors, MySharedArticlesResponses, PreviewFeedData, PreviewFeedErrors, PreviewFeedResponses, RefreshFeedData, RefreshFeedErrors, RefreshFeedResponses, SearchUsersData, SearchUsersErrors, SearchUsersResponses, ShareArticleData, ShareArticleErrors, ShareArticleResponses, SocialTimelineData, SocialTimelineErrors, SocialTimelineResponses, ToggleEntryStarredByUrlData, ToggleEntryStarredByUrlErrors, ToggleEntryStarredByUrlResponses, ToggleEntryStarredData, ToggleEntryStarredErrors, ToggleEntryStarredResponses, UnfollowUserData, UnfollowUserErrors, UnfollowUserResponses, UnshareArticleData, UnshareArticleErrors, UnshareArticleResponses, UpdateEntriesData, UpdateEntriesErrors, UpdateEntriesResponses, UpdateEntryStatusByUrlData, UpdateEntryStatusByUrlErrors, UpdateEntryStatusByUrlResponses, UpdateFeedData, UpdateFeedErrors, UpdateFeedResponses, UpdateFolderData, UpdateFolderErrors, UpdateFolderResponses, UpdateHandleData, UpdateHandleErrors, UpdateHandleResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -151,6 +151,30 @@ export const listEntries = <ThrowOnError extends boolean = false>(options?: Opti
  */
 export const updateEntries = <ThrowOnError extends boolean = false>(options: Options<UpdateEntriesData, ThrowOnError>): RequestResult<UpdateEntriesResponses, UpdateEntriesErrors, ThrowOnError> => (options.client ?? client).put<UpdateEntriesResponses, UpdateEntriesErrors, ThrowOnError>({
     url: '/v1/entries',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Update an article's read status by URL (no entry ID required)
+ */
+export const updateEntryStatusByUrl = <ThrowOnError extends boolean = false>(options: Options<UpdateEntryStatusByUrlData, ThrowOnError>): RequestResult<UpdateEntryStatusByUrlResponses, UpdateEntryStatusByUrlErrors, ThrowOnError> => (options.client ?? client).put<UpdateEntryStatusByUrlResponses, UpdateEntryStatusByUrlErrors, ThrowOnError>({
+    url: '/v1/entries/by-url',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Toggle starred on an article by URL (no entry ID required)
+ */
+export const toggleEntryStarredByUrl = <ThrowOnError extends boolean = false>(options: Options<ToggleEntryStarredByUrlData, ThrowOnError>): RequestResult<ToggleEntryStarredByUrlResponses, ToggleEntryStarredByUrlErrors, ThrowOnError> => (options.client ?? client).put<ToggleEntryStarredByUrlResponses, ToggleEntryStarredByUrlErrors, ThrowOnError>({
+    url: '/v1/entries/by-url/starred',
     ...options,
     headers: {
         'Content-Type': 'application/json',

@@ -534,6 +534,55 @@ func (s *Store) ToggleEntryStarred(ctx context.Context, id int64, userID int, st
 	return err
 }
 
+// ToggleEntryStarredByURL stars or unstars an article by URL, without requiring
+// a materialized entry. On star, the article metadata is stored directly; if the
+// entry already exists, entry_id is linked. On unstar, the star row is deleted
+// by (user_id, article_url). Used by the URL-based star endpoint for preview
+// and shared articles that may not have a local entry yet.
+func (s *Store) ToggleEntryStarredByURL(ctx context.Context, userID int,
+	articleURL, title, description, feedURL, feedTitle, feedSiteURL, author string,
+	publishedAt *time.Time, starred bool,
+) error {
+	if starred {
+		entryID := s.ensureSharedEntry(ctx, articleURL, title, description, feedURL, feedTitle, feedSiteURL, author, publishedAt)
+		_, err := s.DB.ExecContext(ctx,
+			`INSERT INTO entry_stars
+			   (user_id, article_url, entry_id, title, description,
+			    feed_url, feed_title, feed_site_url, author, published_at, starred_at)
+			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+			 ON CONFLICT (user_id, article_url) DO UPDATE
+			   SET title        = EXCLUDED.title,
+			       description  = EXCLUDED.description,
+			       feed_url     = EXCLUDED.feed_url,
+			       feed_title   = EXCLUDED.feed_title,
+			       feed_site_url= EXCLUDED.feed_site_url,
+			       author       = EXCLUDED.author,
+			       published_at = EXCLUDED.published_at,
+			       entry_id     = COALESCE(entry_stars.entry_id, EXCLUDED.entry_id),
+			       starred_at   = NOW()`,
+			userID, articleURL, sql.NullInt64{Int64: entryID, Valid: entryID > 0},
+			title, description, feedURL, feedTitle, feedSiteURL, author, publishedAt, time.Now())
+		return err
+	}
+	_, err := s.DB.ExecContext(ctx,
+		`DELETE FROM entry_stars WHERE user_id = $1 AND article_url = $2`,
+		userID, articleURL)
+	return err
+}
+
+// UpdateEntryStatusByURL sets the read status of an article by URL, without
+// requiring a materialized entry. If the entry exists, entry_id is linked;
+// otherwise the status row is created with a null entry_id. Used by the
+// URL-based read endpoint for preview and shared articles.
+func (s *Store) UpdateEntryStatusByURL(ctx context.Context, userID int, articleURL, status string) error {
+	_, err := s.DB.ExecContext(ctx,
+		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
+		 SELECT $1, $2, (SELECT e.id FROM entries e WHERE e.url = $2), $3, NOW()
+		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = EXCLUDED.status, changed_at = NOW()`,
+		userID, articleURL, status)
+	return err
+}
+
 // MarkFeedEntriesRead marks all unread entries in the given feed as read for
 // the user (upserts entry_read_status to 'read').
 func (s *Store) MarkFeedEntriesRead(ctx context.Context, feedID, userID int) error {

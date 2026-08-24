@@ -748,6 +748,75 @@ func (a *API) registerEntryRoutes() {
 		go a.ATProtoSyncStar(userID, entry, input.Body.Starred, rkey)
 		return nil, nil
 	})
+
+	huma.Register(a.huma, huma.Operation{
+		OperationID: "toggle-entry-starred-by-url",
+		Method:      http.MethodPut,
+		Path:        "/v1/entries/by-url/starred",
+		Summary:     "Toggle starred on an article by URL (no entry ID required)",
+		Tags:        []string{"entries"},
+	}, func(ctx context.Context, input *struct {
+		Body struct {
+			ArticleURL  string     `json:"article_url" minLength:"1" maxLength:"2048"`
+			Title       string     `json:"title" maxLength:"1024"`
+			Description string     `json:"description,omitempty" maxLength:"1000"`
+			FeedURL     string     `json:"feed_url,omitempty" maxLength:"2048"`
+			FeedTitle   string     `json:"feed_title,omitempty" maxLength:"512"`
+			FeedSiteURL string     `json:"feed_site_url,omitempty" maxLength:"2048"`
+			Author      string     `json:"author,omitempty" maxLength:"255"`
+			PublishedAt *time.Time `json:"published_at,omitempty"`
+			Starred     bool       `json:"starred"`
+		}
+	}) (*struct{}, error) {
+		userID := auth.UserIDFromCtx(ctx)
+		rkey, _ := a.store.GetStarATProtoRkey(ctx, userID, input.Body.ArticleURL)
+		if err := a.store.ToggleEntryStarredByURL(ctx, userID,
+			input.Body.ArticleURL, input.Body.Title, input.Body.Description,
+			input.Body.FeedURL, input.Body.FeedTitle, input.Body.FeedSiteURL,
+			input.Body.Author, input.Body.PublishedAt, input.Body.Starred,
+		); err != nil {
+			return nil, huma.Error500InternalServerError(err.Error())
+		}
+		// Build a minimal Entry for ATProtoSyncStar (it only needs URL, title,
+		// description, author, published_at, and feed metadata).
+		entry := &store.Entry{
+			URL:         input.Body.ArticleURL,
+			Title:       input.Body.Title,
+			Description: input.Body.Description,
+			Author:      input.Body.Author,
+		}
+		if input.Body.PublishedAt != nil {
+			entry.PublishedAt = *input.Body.PublishedAt
+		}
+		if input.Body.FeedURL != "" {
+			entry.Feed = &store.Feed{
+				FeedURL: input.Body.FeedURL,
+				Title:   input.Body.FeedTitle,
+				SiteURL: input.Body.FeedSiteURL,
+			}
+		}
+		go a.ATProtoSyncStar(userID, entry, input.Body.Starred, rkey)
+		return nil, nil
+	})
+
+	huma.Register(a.huma, huma.Operation{
+		OperationID: "update-entry-status-by-url",
+		Method:      http.MethodPut,
+		Path:        "/v1/entries/by-url",
+		Summary:     "Update an article's read status by URL (no entry ID required)",
+		Tags:        []string{"entries"},
+	}, func(ctx context.Context, input *struct {
+		Body struct {
+			ArticleURL string `json:"article_url" minLength:"1" maxLength:"2048"`
+			Status     string `json:"status" enum:"unread,read,removed"`
+		}
+	}) (*struct{}, error) {
+		userID := auth.UserIDFromCtx(ctx)
+		if err := a.store.UpdateEntryStatusByURL(ctx, userID, input.Body.ArticleURL, input.Body.Status); err != nil {
+			return nil, huma.Error500InternalServerError(err.Error())
+		}
+		return nil, nil
+	})
 }
 
 // --- API Tokens ---

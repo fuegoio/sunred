@@ -1120,6 +1120,63 @@ export const SharedArticleSchema = {
     type: 'object'
 } as const;
 
+export const Toggle_entry_starred_by_urlRequestSchema = {
+    additionalProperties: false,
+    properties: {
+        $schema: {
+            description: 'A URL to the JSON Schema for this object.',
+            examples: [
+                'https://example.com/schemas/Toggle-entry-starred-by-urlRequest.json'
+            ],
+            format: 'uri',
+            readOnly: true,
+            type: 'string'
+        },
+        article_url: {
+            maxLength: 2048,
+            minLength: 1,
+            type: 'string'
+        },
+        author: {
+            maxLength: 255,
+            type: 'string'
+        },
+        description: {
+            maxLength: 1000,
+            type: 'string'
+        },
+        feed_site_url: {
+            maxLength: 2048,
+            type: 'string'
+        },
+        feed_title: {
+            maxLength: 512,
+            type: 'string'
+        },
+        feed_url: {
+            maxLength: 2048,
+            type: 'string'
+        },
+        published_at: {
+            format: 'date-time',
+            type: 'string'
+        },
+        starred: {
+            type: 'boolean'
+        },
+        title: {
+            maxLength: 1024,
+            type: 'string'
+        }
+    },
+    required: [
+        'article_url',
+        'title',
+        'starred'
+    ],
+    type: 'object'
+} as const;
+
 export const Toggle_entry_starredRequestSchema = {
     additionalProperties: false,
     properties: {
@@ -1211,6 +1268,39 @@ export const Update_entriesRequestSchema = {
     },
     required: [
         'entry_ids',
+        'status'
+    ],
+    type: 'object'
+} as const;
+
+export const Update_entry_status_by_urlRequestSchema = {
+    additionalProperties: false,
+    properties: {
+        $schema: {
+            description: 'A URL to the JSON Schema for this object.',
+            examples: [
+                'https://example.com/schemas/Update-entry-status-by-urlRequest.json'
+            ],
+            format: 'uri',
+            readOnly: true,
+            type: 'string'
+        },
+        article_url: {
+            maxLength: 2048,
+            minLength: 1,
+            type: 'string'
+        },
+        status: {
+            enum: [
+                'unread',
+                'read',
+                'removed'
+            ],
+            type: 'string'
+        }
+    },
+    required: [
+        'article_url',
         'status'
     ],
     type: 'object'
@@ -2203,6 +2293,54 @@ export const SharedArticleWritableSchema = {
     type: 'object'
 } as const;
 
+export const Toggle_entry_starred_by_urlRequestWritableSchema = {
+    additionalProperties: false,
+    properties: {
+        article_url: {
+            maxLength: 2048,
+            minLength: 1,
+            type: 'string'
+        },
+        author: {
+            maxLength: 255,
+            type: 'string'
+        },
+        description: {
+            maxLength: 1000,
+            type: 'string'
+        },
+        feed_site_url: {
+            maxLength: 2048,
+            type: 'string'
+        },
+        feed_title: {
+            maxLength: 512,
+            type: 'string'
+        },
+        feed_url: {
+            maxLength: 2048,
+            type: 'string'
+        },
+        published_at: {
+            format: 'date-time',
+            type: 'string'
+        },
+        starred: {
+            type: 'boolean'
+        },
+        title: {
+            maxLength: 1024,
+            type: 'string'
+        }
+    },
+    required: [
+        'article_url',
+        'title',
+        'starred'
+    ],
+    type: 'object'
+} as const;
+
 export const Toggle_entry_starredRequestWritableSchema = {
     additionalProperties: false,
     properties: {
@@ -2267,6 +2405,30 @@ export const Update_entriesRequestWritableSchema = {
     },
     required: [
         'entry_ids',
+        'status'
+    ],
+    type: 'object'
+} as const;
+
+export const Update_entry_status_by_urlRequestWritableSchema = {
+    additionalProperties: false,
+    properties: {
+        article_url: {
+            maxLength: 2048,
+            minLength: 1,
+            type: 'string'
+        },
+        status: {
+            enum: [
+                'unread',
+                'read',
+                'removed'
+            ],
+            type: 'string'
+        }
+    },
+    required: [
+        'article_url',
         'status'
     ],
     type: 'object'

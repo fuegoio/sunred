@@ -10,7 +10,7 @@ import { StarToggle } from "@/components/star-toggle";
 import { ShareToggle } from "@/components/share-toggle";
 import { FeedIcon } from "@/components/feed-icon";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getClient, updateEntries } from "@/lib/sunred";
+import { getClient, updateEntries, updateEntryStatusByUrl } from "@/lib/sunred";
 import { getApiErrorMessage } from "@/lib/errors";
 import { formatRelative, htmlSnippet } from "@/lib/format";
 import { cn } from "@workspace/ui/lib/utils";
@@ -61,10 +61,11 @@ export function EntryCard({
   /** ID of the SharedArticle row if this entry is already shared; null otherwise. */
   shareId?: number | null;
   /**
-   * Preview mode for discovery: the row renders as a plain external link
-   * with no read/unread dot, no share/star/comments actions, and no
-   * mark-as-read on click. Used by the feed discovery view to show a
-   * preview feed's recent articles with the same layout as real entries.
+   * Preview mode for discovery: the row renders as a link with read/unread
+   * dot, share, and star actions using URL-based endpoints (no entry ID
+   * required). Comments are hidden since preview items don't carry a
+   * comments URL. Used by the feed discovery view to show a preview feed's
+   * recent articles with the same layout and actions as real entries.
    */
   preview?: boolean;
 }) {
@@ -111,6 +112,19 @@ export function EntryCard({
       setReadOptimistic(next === "read");
       setPending(true);
     });
+    if (preview) {
+      void (async () => {
+        const { error } = await updateEntryStatusByUrl({
+          client: await getClient(),
+          body: { article_url: entry.url, status: next },
+        });
+        if (error) {
+          toast.error(getApiErrorMessage(error, "Could not update entry"));
+          return;
+        }
+      })().finally(() => setPending(false));
+      return;
+    }
     // Patch the cache in place so the base value matches the optimistic
     // state. Without this, invalidating would revert useOptimistic to the
     // stale server value mid-refetch and the dot would flash back to its
@@ -135,8 +149,20 @@ export function EntryCard({
       e.preventDefault();
       return;
     }
-    if (preview || !unread) return;
+    if (!unread) return;
     startTransition(() => setReadOptimistic(true));
+    if (preview) {
+      void (async () => {
+        const { error } = await updateEntryStatusByUrl({
+          client: await getClient(),
+          body: { article_url: entry.url, status: "read" },
+        });
+        if (error) {
+          toast.error(getApiErrorMessage(error, "Could not mark as read"));
+        }
+      })();
+      return;
+    }
     void (async () => {
       const { error } = await updateEntries({
         client: await getClient(),
@@ -171,7 +197,25 @@ export function EntryCard({
       className="group flex gap-3 px-4 py-3 hover:bg-muted/50"
     >
       {preview ? (
-        <span className="size-5 shrink-0" aria-hidden />
+        <button
+          type="button"
+          onClick={toggleRead}
+          disabled={pending}
+          aria-label={unread ? "Mark as read" : "Mark as unread"}
+          aria-pressed={unread}
+          className="flex size-5 shrink-0 items-start justify-center pt-1"
+        >
+          <motion.span
+            animate={{
+              scale: unread ? 1 : 0.75,
+              opacity: unread ? 1 : 0,
+              backgroundColor: unread ? "var(--color-primary)" : "var(--color-muted-foreground)",
+            }}
+            variants={unread ? undefined : { "row-hover": { scale: 1, opacity: 0.4 } }}
+            transition={{ duration: 0.15, ease: EASE }}
+            className="size-2 rounded-full"
+          />
+        </button>
       ) : (
         <button
           type="button"
@@ -238,7 +282,7 @@ export function EntryCard({
         <h3
           className={cn(
             "mt-1 line-clamp-2 text-sm",
-            unread && !preview ? "font-semibold text-foreground" : "font-medium text-foreground/80",
+            unread ? "font-semibold text-foreground" : "font-medium text-foreground/80",
           )}
         >
           {entry.title || "Untitled"}
@@ -246,31 +290,35 @@ export function EntryCard({
         <p
           className={cn(
             "mt-1 line-clamp-4 min-h-[5rem] text-sm sm:line-clamp-2 sm:min-h-[2.5rem]",
-            unread && !preview ? "text-muted-foreground" : "text-muted-foreground/80",
+            unread ? "text-muted-foreground" : "text-muted-foreground/80",
           )}
         >
           {snippet}
         </p>
       </div>
-      {!preview && (
-        <div className="flex shrink-0 items-start gap-0.5" onClick={(e) => e.stopPropagation()}>
-          {entry.comments_url && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                window.open(entry.comments_url!, "_blank", "noopener,noreferrer");
-              }}
-              aria-label="View comments"
-              className="flex size-8 items-center justify-center rounded-4xl text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              <MessageSquare className="size-3.5" />
-            </button>
-          )}
-          <ShareToggle entry={entry} feed={feed} shareId={shareId} size="icon-sm" />
-          <StarToggle entryId={entry.id} starred={entry.starred} size="icon-sm" />
-        </div>
-      )}
+      <div className="flex shrink-0 items-start gap-0.5" onClick={(e) => e.stopPropagation()}>
+        {!preview && entry.comments_url && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              window.open(entry.comments_url!, "_blank", "noopener,noreferrer");
+            }}
+            aria-label="View comments"
+            className="flex size-8 items-center justify-center rounded-4xl text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <MessageSquare className="size-3.5" />
+          </button>
+        )}
+        <ShareToggle entry={entry} feed={feed} shareId={shareId} size="icon-sm" />
+        <StarToggle
+          entryId={entry.id}
+          starred={entry.starred}
+          entry={entry}
+          feed={feed}
+          size="icon-sm"
+        />
+      </div>
     </motion.a>
   );
 
