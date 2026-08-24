@@ -1,8 +1,9 @@
 "use client";
 
 import { use } from "react";
+import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Users, UserCheck, UserPlus, Menu as MenuIcon, ExternalLink, Rss } from "lucide-react";
+import { Users, UserCheck, UserPlus, Menu as MenuIcon, ChevronRight, Rss } from "lucide-react";
 import { Avatar } from "@base-ui/react/avatar";
 import { toast } from "sonner";
 import { SharedArticleCard } from "@/components/shared-article-card";
@@ -419,10 +420,8 @@ export default function UserProfilePage({
                 <ul className="divide-y divide-border">
                   {userFeeds.map((feed) => (
                     <li key={feed.id}>
-                      <a
-                        href={feed.site_url || feed.feed_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <Link
+                        href={`/feeds/preview?url=${encodeURIComponent(feed.feed_url)}`}
                         className={cn(
                           "group flex items-center gap-3 px-4 py-3",
                           "hover:bg-muted/50 transition-colors",
@@ -435,8 +434,8 @@ export default function UserProfilePage({
                         <span className="flex-1 truncate text-sm">
                           {feed.title || feed.feed_url}
                         </span>
-                        <ExternalLink className="size-3.5 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100" />
-                      </a>
+                        <ChevronRight className="size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                      </Link>
                     </li>
                   ))}
                 </ul>
