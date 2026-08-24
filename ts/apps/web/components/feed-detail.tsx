@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   ExternalLink,
-  Trash2,
   CheckCheck,
   Loader2,
   RefreshCw,
@@ -15,8 +13,8 @@ import {
 import { FeedRenameDialog } from "@/components/feed-rename-dialog";
 import { FolderPickerPopover } from "@/components/folder-picker-popover";
 import { SubscribersDialog } from "@/components/subscribers-dialog";
+import { SubscribeButton } from "@/components/subscribe-button";
 import { Button, buttonVariants } from "@workspace/ui/components/button";
-import { ConfirmDialog } from "@/components/confirm-dialog";
 import { FeedIcon } from "@/components/feed-icon";
 import { PageHeader } from "@/components/page-header";
 import { EntryTimeline } from "@/components/entry-timeline";
@@ -24,7 +22,6 @@ import { ScrollArea } from "@workspace/ui/components/scroll-area";
 import {
   getClient,
   markFeedRead,
-  deleteFeed,
   refreshFeed,
   updateFeed,
   listFolders,
@@ -41,10 +38,8 @@ import type { Feed, Folder, FeedSubscribersResponse } from "@/lib/types";
  * before this component renders; the refresh button here is for on-demand use.
  */
 export function FeedDetail({ feed, initialFolders }: { feed: Feed; initialFolders?: Folder[] }) {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const [marking, setMarking] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [movingFolder, setMovingFolder] = useState(false);
 
@@ -95,26 +90,6 @@ export function FeedDetail({ feed, initialFolders }: { feed: Feed; initialFolder
     }
   }
 
-  async function handleDelete() {
-    setDeleting(true);
-    try {
-      const { error } = await deleteFeed({
-        client: await getClient(),
-        path: { feedId: feed.id },
-      });
-      if (error) throw error;
-      await queryClient.invalidateQueries({ queryKey: ["feeds"] });
-      await queryClient.invalidateQueries({ queryKey: ["entries"] });
-      toast.success(`Unsubscribed from "${feed.title}"`);
-      router.push("/");
-      router.refresh();
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, "Could not delete feed"));
-    } finally {
-      setDeleting(false);
-    }
-  }
-
   async function handleMoveFolder(folderId: number | undefined) {
     setMovingFolder(true);
     try {
@@ -145,16 +120,11 @@ export function FeedDetail({ feed, initialFolders }: { feed: Feed; initialFolder
             actions={
               <div className="flex items-center gap-1">
                 <FeedRenameDialog feed={feed} />
-                <ConfirmDialog
-                  trigger={
-                    <Button variant="ghost" size="icon-sm" disabled={deleting} className="text-muted-foreground hover:text-destructive" aria-label="Unsubscribe from feed">
-                      {deleting ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
-                    </Button>
-                  }
-                  title="Unsubscribe from feed?"
-                  description={`This removes "${feed.title}" and all its entries. This cannot be undone.`}
-                  confirmLabel="Unsubscribe"
-                  onConfirm={handleDelete}
+                <SubscribeButton
+                  subscribed
+                  feedId={feed.id}
+                  feedUrl={feed.feed_url}
+                  feedTitle={feed.title}
                 />
                 {feed.site_url && (
                   <a

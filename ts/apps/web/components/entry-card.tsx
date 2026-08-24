@@ -86,6 +86,15 @@ export function EntryCard({
   // global feed for shares from unsubscribed feeds.
   const feedTitle = feed?.title || entry.feed?.title || "Unknown feed";
   const feedSiteUrl = feed?.site_url || entry.feed?.site_url;
+  // Link target for the feed title: subscribed feeds go to their canonical
+  // feed page; feeds the viewer doesn't subscribe to (shares from followed
+  // users) go to the discovery view, which previews them and offers a
+  // one-click subscribe.
+  const feedHref = feed
+    ? `/feeds/${feed.id}`
+    : entry.feed?.feed_url
+      ? `/feeds/preview?url=${encodeURIComponent(entry.feed.feed_url)}`
+      : null;
   const sharerName = entry.shared_by_name?.trim()
     ? entry.shared_by_name
     : entry.shared_by
@@ -204,7 +213,17 @@ export function EntryCard({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <FeedIcon siteUrl={feedSiteUrl} className="size-3.5 rounded-sm" />
-          <span className="truncate">{feedTitle}</span>
+          {feedHref ? (
+            <Link
+              href={feedHref}
+              onClick={(e) => e.stopPropagation()}
+              className="truncate text-muted-foreground transition-colors hover:text-foreground hover:underline"
+            >
+              {feedTitle}
+            </Link>
+          ) : (
+            <span className="truncate">{feedTitle}</span>
+          )}
           {sharerName && entry.shared_by && (
             <>
               <span aria-hidden>·</span>
