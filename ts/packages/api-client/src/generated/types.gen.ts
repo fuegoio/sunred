@@ -294,6 +294,8 @@ export type PreviewFeedItem = {
     content: string;
     description?: string;
     published_at: string;
+    starred?: boolean;
+    status?: string;
     tags?: Array<string> | null;
     title: string;
     url: string;

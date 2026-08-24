@@ -925,6 +925,12 @@ export const PreviewFeedItemSchema = {
             format: 'date-time',
             type: 'string'
         },
+        starred: {
+            type: 'boolean'
+        },
+        status: {
+            type: 'string'
+        },
         tags: {
             items: {
                 type: 'string'
