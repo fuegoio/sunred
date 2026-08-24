@@ -284,7 +284,7 @@ export function EntryCard({
         <h3
           className={cn(
             "mt-1 line-clamp-2 text-sm",
-            unread ? "font-semibold text-foreground" : "font-medium text-foreground/80",
+            unread && !preview ? "font-semibold text-foreground" : "font-medium text-foreground/80",
           )}
         >
           {entry.title || "Untitled"}
@@ -292,7 +292,7 @@ export function EntryCard({
         <p
           className={cn(
             "mt-1 line-clamp-4 min-h-[5rem] text-sm sm:line-clamp-2 sm:min-h-[2.5rem]",
-            unread ? "text-muted-foreground" : "text-muted-foreground/80",
+            unread && !preview ? "text-muted-foreground" : "text-muted-foreground/80",
           )}
         >
           {snippet}
