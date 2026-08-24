@@ -58,8 +58,8 @@ func URL(s string) string {
 	// Lowercase the host and drop default ports.
 	host := strings.ToLower(u.Hostname())
 	if port := u.Port(); port != "" {
-		if !((u.Scheme == "https" && port == "443") ||
-			(u.Scheme == "http" && port == "80")) {
+		if (u.Scheme == "https" && port != "443") ||
+			(u.Scheme == "http" && port != "80") {
 			host = host + ":" + port
 		}
 	}
