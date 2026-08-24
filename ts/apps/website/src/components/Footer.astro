@@ -1,0 +1,27 @@
+---
+import Logo from "./Logo.astro"
+
+const loginUrl = "/login"
+const selfHostUrl = "https://github.com/fuegoio/sunred"
+---
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <Logo class="footer-mark" static />
+      <span>Sunred</span>
+    </div>
+    <nav class="footer-nav" aria-label="Footer">
+      <a href={loginUrl}>Login</a>
+      <a href="/social">Social</a>
+      <a href="/features">Features</a>
+      <a href="/self-host">Self-host</a>
+      <a href="/faq">FAQ</a>
+      <a href="https://sunred.dev/docs">Docs</a>
+      <a href={selfHostUrl}>GitHub</a>
+    </nav>
+    <p class="footer-note">
+      Open source. Self-hostable. Federated. Built for people who still read.
+    </p>
+  </div>
+</footer>

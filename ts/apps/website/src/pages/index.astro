@@ -1,59 +1,28 @@
 ---
 import Base from "../layouts/Base.astro"
+import Nav from "../components/Nav.astro"
+import Footer from "../components/Footer.astro"
 import Logo from "../components/Logo.astro"
 
-// CTA targets. The marketing site is served at the same origin as the app
-// (sunred.app) for logged-out visitors, so "Login" is a same-origin link to
-// the app's /login route (the web proxy routes it to the Next app). After
-// signing in, the proxy serves the app at "/".
 const loginUrl = "/login"
 const selfHostUrl = "https://github.com/fuegoio/sunred"
 ---
 
 <Base>
   <a href="#positioning-heading" class="skip-link">Skip to content</a>
-
-  <!-- ════════════════════════════════════════════════════════════════
-       NAV — sticky, blurred, developer-tool chrome
-  ═════════════════════════════════════════════════════════════════ -->
-  <nav class="site-nav" aria-label="Primary">
-    <div class="nav-inner">
-      <a class="nav-brand" href="/">
-        <Logo class="nav-mark" static />
-        <span>Sunred</span>
-        <span class="nav-version">v0.1</span>
-      </a>
-      <div class="nav-links">
-        <a href="#features">Features</a>
-        <a href="#interfaces">Interfaces</a>
-        <a href="#faq">FAQ</a>
-        <a href="https://sunred.dev/docs">Docs</a>
-      </div>
-      <div class="nav-cta">
-        <a class="nav-link-login" href={loginUrl}>Login</a>
-        <a class="cta cta-primary cta-sm" href={selfHostUrl}>
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path>
-          </svg>
-          <span>Self-host</span>
-        </a>
-      </div>
-    </div>
-  </nav>
+  <Nav />
 
   <!-- ════════════════════════════════════════════════════════════════
        HERO
   ═════════════════════════════════════════════════════════════════ -->
   <section class="hero" aria-label="Hero">
-    <!-- Sun glow blooming behind the wordmark, top-center -->
     <div class="hero-glow" aria-hidden="true"></div>
 
     <div class="hero-grid">
-      <!-- Left: copy -->
       <div class="hero-copy">
-        <span class="badge reveal">
-          <span class="badge-dot"></span>
-          RSS 2.0 · Atom · JSON Feed
+        <span class="tag reveal">
+          <span class="tag-dot"></span>
+          RSS 2.0 · Atom · JSON Feed · Federated
         </span>
 
         <h1 class="hero-headline reveal">
@@ -62,22 +31,21 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
         </h1>
 
         <p class="hero-tagline reveal">
-          A modern, self-hostable RSS reader. Clean REST API, a calm reading
-          space, and a terminal that speaks the same language. One timeline,
-          no algorithm.
+          A modern, self-hostable RSS reader with a social graph on the
+          AT Protocol. Follow people, share articles, and read what your
+          trusted circle is reading. One timeline, no algorithm.
         </p>
 
         <div class="cta-row reveal">
           <a class="cta cta-primary" href={loginUrl}>
             <span>Open the app</span>
-            <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <svg class="cta-arrow" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
             </svg>
           </a>
           <a class="cta cta-ghost" href={selfHostUrl}>Self-host</a>
         </div>
 
-        <!-- Install chip — terminal-native, copyable feel -->
         <div class="install-chip reveal" role="group" aria-label="Install command">
           <span class="install-prompt" aria-hidden="true">$</span>
           <code class="install-cmd">docker run sunred/sunred</code>
@@ -85,7 +53,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
         </div>
       </div>
 
-      <!-- Right: product mock — the reader, as it actually looks -->
+      <!-- Product mock — the reader, with a shared entry -->
       <div class="hero-mock reveal" aria-hidden="true">
         <div class="mock-window">
           <div class="mock-titlebar">
@@ -96,7 +64,6 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
             <span class="mock-search">⌘K</span>
           </div>
           <div class="mock-body">
-            <!-- Sidebar: feeds -->
             <aside class="mock-sidebar">
               <div class="mock-sb-head">Feeds</div>
               <ul class="mock-feed-list">
@@ -104,19 +71,23 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
                 <li class="mock-feed"><span class="mock-feed-mark"></span>Rust<span class="mock-count">4</span></li>
                 <li class="mock-feed"><span class="mock-feed-mark"></span>Planets<span class="mock-count">3</span></li>
                 <li class="mock-feed"><span class="mock-feed-mark"></span>Self-hosting<span class="mock-count">7</span></li>
-                <li class="mock-feed"><span class="mock-feed-mark"></span>Writing<span class="mock-count">2</span></li>
+              </ul>
+              <div class="mock-sb-head mock-sb-follows">Follows</div>
+              <ul class="mock-feed-list">
+                <li class="mock-feed"><span class="mock-avatar"></span>@elena<span class="mock-count">3</span></li>
+                <li class="mock-feed"><span class="mock-avatar"></span>@kael<span class="mock-count">1</span></li>
               </ul>
               <div class="mock-sb-foot">
-                <span class="mock-star" aria-hidden="true">★</span> Starred
+                <span class="mock-star">★</span> Starred
               </div>
             </aside>
-            <!-- Timeline: entries -->
             <div class="mock-timeline">
-              <div class="mock-entry is-selected">
+              <!-- shared entry: from a followed user -->
+              <div class="mock-entry is-selected is-shared">
                 <span class="mock-unread"></span>
-                <div class="mock-entry-meta">
-                  <span class="mock-entry-src">planet4.local</span>
-                  <span class="mock-entry-time">2h</span>
+                <div class="mock-shared-by">
+                  <span class="mock-shared-avatar"></span>
+                  shared by <span class="mock-shared-handle">@elena</span>
                 </div>
                 <div class="mock-entry-title">Why RSS still matters</div>
                 <div class="mock-entry-excerpt">
@@ -145,23 +116,23 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
             </div>
           </div>
         </div>
-        <!-- soft shadow / glow under the window -->
         <div class="mock-shadow" aria-hidden="true"></div>
       </div>
     </div>
 
-    <!-- trust strip -->
     <div class="trust-strip reveal-fade">
-      <span class="trust-label">Open source</span>
-      <span class="trust-sep" aria-hidden="true">·</span>
-      <span class="trust-label">Self-hostable</span>
-      <span class="trust-sep" aria-hidden="true">·</span>
-      <span class="trust-label">No ads, no tracking, no algorithm</span>
+      <span>Open source</span>
+      <span class="trust-sep">·</span>
+      <span>Self-hostable</span>
+      <span class="trust-sep">·</span>
+      <span>Federated on AT Protocol</span>
+      <span class="trust-sep">·</span>
+      <span>No ads, no tracking, no algorithm</span>
     </div>
   </section>
 
   <!-- ════════════════════════════════════════════════════════════════
-       MANIFESTO — reading-first positioning
+       MANIFESTO
   ═════════════════════════════════════════════════════════════════ -->
   <section class="manifesto" aria-labelledby="positioning-heading">
     <div class="manifesto-inner">
@@ -178,11 +149,10 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
             space built for reading.
           </p>
           <p>
-            It's self-hostable: run it on your own machine and own your data
-            end to end. Or use the hosted version and skip the setup. Either
-            way, the same clean REST API and the same interfaces — web,
-            terminal, and CLI — connect you to your feeds from wherever you
-            work.
+            And now it's social: follow people, share articles, and discover
+            feeds through the people you trust. Your social graph runs on the
+            AT Protocol — the same one Bluesky uses — so it travels with you
+            across instances. <a href="/social">Learn how it works →</a>
           </p>
         </div>
         <aside class="manifesto-pull">
@@ -193,12 +163,9 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
         </aside>
       </div>
 
-      <!-- CLI sample — the product, shown not described -->
       <div class="code-sample reveal-fade" role="region" aria-label="Sunred CLI sample">
         <div class="code-tabbar" aria-hidden="true">
-          <span class="code-dot"></span>
-          <span class="code-dot"></span>
-          <span class="code-dot"></span>
+          <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
           <span class="code-label">terminal</span>
           <span class="code-spacer"></span>
           <span class="code-keys">bash</span>
@@ -206,19 +173,77 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
         <pre class="code-body"><code><span class="code-prompt">$</span> sunred feeds add https://example.com/feed.xml
 <span class="code-comment"># Added "Example Blog" to Technology</span>
 
-<span class="code-prompt">$</span> sunred list --unread
-<span class="code-comment"># 3 unread in Technology</span>
-  planet4.local  Rust 2026 roadmap
-  planet4.local  The end of Moore's law (again)
-  planet4.local  Why RSS still matters
+<span class="code-prompt">$</span> sunred follow @elena
+<span class="code-comment"># Now following elena — backfilling 3 shares</span>
 
-<span class="code-prompt">$</span> sunred read 1 --open</code></pre>
+<span class="code-prompt">$</span> sunred list --unread
+  planet4.local  Rust 2026 roadmap
+  @elena         Why RSS still matters
+  planet4.local  The end of Moore's law (again)</code></pre>
       </div>
     </div>
   </section>
 
   <!-- ════════════════════════════════════════════════════════════════
-       FEATURES — bento, varied, not an identical card grid
+       SOCIAL — the new layer
+  ═════════════════════════════════════════════════════════════════ -->
+  <section class="social-preview" aria-labelledby="social-heading">
+    <div class="section-inner">
+      <header class="section-head">
+        <span class="section-mark">/ social</span>
+        <h2 id="social-heading" class="section-headline">
+          Reading is better with people you trust.
+        </h2>
+        <p class="section-lede">
+          Follow people and see the articles they share in your timeline.
+          Your graph is federated on the AT Protocol — it travels with you
+          when you move instances.
+        </p>
+      </header>
+
+      <div class="social-cards">
+        <article class="feature-cell social-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <h3>Follow people</h3>
+          <p>Find people by handle or name — across instances, not just yours. New follows are backfilled into your timeline.</p>
+        </article>
+        <article class="feature-cell social-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="m16 6-4-4-4 4" /><path d="M12 2v13" />
+            </svg>
+          </div>
+          <h3>Share articles</h3>
+          <p>One click on any entry to share it. Your followers see it in their timeline with your name attached. No reposts, no engagement metrics.</p>
+        </article>
+        <article class="feature-cell social-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="5" /><path d="M20 21a8 8 0 0 0-16 0" />
+            </svg>
+          </div>
+          <h3>Public profiles</h3>
+          <p>Every user gets a public page with their shared articles, public feeds, and follower counts — local and federated.</p>
+        </article>
+      </div>
+
+      <div class="social-cta">
+        <a class="cta cta-ghost" href="/social">
+          Explore the social layer
+          <svg class="cta-arrow" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       FEATURES — bento
   ═════════════════════════════════════════════════════════════════ -->
   <section id="features" class="features" aria-labelledby="features-heading">
     <div class="section-inner">
@@ -229,27 +254,25 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
         </h2>
         <p class="section-lede">
           No feature bloat. No tracking. Just the tools you need to subscribe,
-          read, and share.
+          read, share, and self-host.
         </p>
       </header>
 
       <div class="bento">
-        <!-- tall feature: all formats (spans 2 rows) -->
-        <article class="bento-cell bento-tall">
+        <article class="feature-cell bento-tall">
           <div class="feature-icon" aria-hidden="true">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" fill="currentColor" stroke="none" />
             </svg>
           </div>
           <h3>All feed formats</h3>
-          <p>RSS 2.0, Atom 1.0, and JSON Feed. Subscribe to anything with a feed URL — blogs, news, podcasts, anything that publishes a feed.</p>
+          <p>RSS 2.0, Atom 1.0, and JSON Feed. Subscribe to anything with a feed URL — blogs, news, podcasts.</p>
           <ul class="feature-tags">
             <li>RSS 2.0</li><li>Atom 1.0</li><li>JSON Feed</li>
           </ul>
         </article>
 
-        <!-- wide feature: search -->
-        <article class="bento-cell bento-span4">
+        <article class="feature-cell bento-span4">
           <div class="feature-icon" aria-hidden="true">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
@@ -259,8 +282,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
           <p>Search across every entry from every feed. Find that article you read last month in seconds — the whole archive is indexed.</p>
         </article>
 
-        <!-- small: starred -->
-        <article class="bento-cell">
+        <article class="feature-cell">
           <div class="feature-icon" aria-hidden="true">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
               <path d="M11.5 2 9.6 8.6 3 10.5l6.6 1.9L11.5 19l1.9-6.6 6.6-1.9-6.6-1.9L11.5 2Z" />
@@ -270,8 +292,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
           <p>Mark entries as starred for a permanent reading list. Unread, read, and removed statuses keep your timeline clean.</p>
         </article>
 
-        <!-- small: categories -->
-        <article class="bento-cell">
+        <article class="feature-cell">
           <div class="feature-icon" aria-hidden="true">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2v11Z" />
@@ -281,8 +302,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
           <p>Organize feeds into folders. Browse by topic, collapse what you're behind on, keep your sidebar tidy.</p>
         </article>
 
-        <!-- full-width: self-hostable -->
-        <article class="bento-cell bento-full">
+        <article class="feature-cell bento-full">
           <div class="feature-icon" aria-hidden="true">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="6" rx="1" /><rect x="3" y="14" width="18" height="6" rx="1" /><path d="M7 7h.01M7 17h.01" />
@@ -292,11 +312,20 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
           <p>Run it on your own machine with Docker. Own your data end to end. Or use the hosted version and skip the setup — same API, same interfaces either way.</p>
         </article>
       </div>
+
+      <div class="features-more">
+        <a class="link-arrow" href="/features">
+          See all features
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </a>
+      </div>
     </div>
   </section>
 
   <!-- ════════════════════════════════════════════════════════════════
-       INTERFACES — same data, three surfaces
+       INTERFACES
   ═════════════════════════════════════════════════════════════════ -->
   <section id="interfaces" class="interfaces" aria-labelledby="interfaces-heading">
     <div class="section-inner">
@@ -313,7 +342,6 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
       </header>
 
       <div class="interfaces-grid">
-        <!-- Web -->
         <article class="interface-card">
           <div class="interface-mock mock-web" aria-hidden="true">
             <div class="mock-mini-bar"><span class="mm-dot"></span><span class="mm-dot"></span><span class="mm-dot"></span></div>
@@ -334,49 +362,43 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
           <p>A sidebar for navigation, a timeline for scanning, a reader for long-form. Keyboard shortcuts, optimistic starring, infinite scroll.</p>
         </article>
 
-        <!-- TUI -->
         <article class="interface-card">
           <div class="interface-mock mock-tui" aria-hidden="true">
             <pre class="tui-screen"><code><span class="tui-hl">▸ Technology</span>      <span class="tui-dim">12</span>
   Rust 2026 roadmap    <span class="tui-dim">2h</span>
-  Why RSS still matter <span class="tui-dim">2h</span>
-  End of Moore's law  <span class="tui-dim">8h</span>
+  @elena Why RSS…     <span class="tui-dim">2h</span>
 <span class="tui-dim">▸ Self-hosting</span>     <span class="tui-dim">7</span>
-<span class="tui-dim">▸ Writing</span>           <span class="tui-dim">2</span>
 
 <span class="tui-dim">j/k move  g/G top/bot</span>
-<span class="tui-dim">o open    s star   ? help</span></code></pre>
+<span class="tui-dim">o open    s share  ? help</span></code></pre>
           </div>
           <div class="interface-badge">TUI</div>
           <h3>Terminal-native</h3>
-          <p>A full terminal user interface with vim-style navigation. Read feeds without leaving your terminal session.</p>
+          <p>A full terminal user interface with vim-style navigation. Read and share feeds without leaving your terminal session.</p>
         </article>
 
-        <!-- CLI -->
         <article class="interface-card">
           <div class="interface-mock mock-cli" aria-hidden="true">
-            <pre class="tui-screen"><code><span class="code-prompt">$</span> sunred feeds add \
-    https://x.com/feed.xml
-<span class="tui-dim"># Added → Technology</span>
+            <pre class="tui-screen"><code><span class="code-prompt">$</span> sunred follow @elena
+<span class="tui-dim"># backfilling 3 shares</span>
 
-<span class="code-prompt">$</span> sunred list --unread
-  planet4.local  Why RSS…
-  planet4.local  Rust 2026…
+<span class="code-prompt">$</span> sunred share 1
+<span class="tui-dim"># shared to 14 followers</span>
 
-<span class="code-prompt">$</span> sunred read 1</code></pre>
+<span class="code-prompt">$</span> sunred list --unread</code></pre>
           </div>
           <div class="interface-badge">CLI</div>
           <h3>Scriptable</h3>
-          <p>Add feeds, list entries, mark as read — all from the command line. Pipe entries into your workflow.</p>
+          <p>Follow, share, list entries, mark as read — all from the command line. Pipe entries into your workflow.</p>
         </article>
       </div>
     </div>
   </section>
 
   <!-- ════════════════════════════════════════════════════════════════
-       FAQ
+       FAQ (short — full page at /faq)
   ═════════════════════════════════════════════════════════════════ -->
-  <section id="faq" class="faq" aria-labelledby="faq-heading">
+  <section class="faq" aria-labelledby="faq-heading">
     <div class="section-inner section-inner-narrow">
       <header class="section-head">
         <span class="section-mark">/ faq</span>
@@ -385,53 +407,38 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
 
       <div class="faq-list">
         <details class="faq-item">
-          <summary>What feed formats does Sunred support?<span class="faq-toggle" aria-hidden="true"></span></summary>
+          <summary>Is the social graph really federated?<span class="faq-toggle" aria-hidden="true"></span></summary>
           <div class="faq-answer">
-            <p>RSS 2.0, Atom 1.0, and JSON Feed. If a site publishes a feed in any of these formats, you can subscribe to it.</p>
+            <p>Yes. Follows and shares are AT Protocol records on your own PDS. When you sign into another Sunred instance, your follows and shares come with you — no export/import step. See <a href="/social">the social page</a> for how it works.</p>
           </div>
         </details>
         <details class="faq-item">
-          <summary>Do I need to host it myself?<span class="faq-toggle" aria-hidden="true"></span></summary>
+          <summary>Do I need a Bluesky account?<span class="faq-toggle" aria-hidden="true"></span></summary>
           <div class="faq-answer">
-            <p>No. You can use the hosted version and skip the setup. But if you want full control over your data, Sunred is open source and runs anywhere with Docker — a single command gets you a server, database, and web frontend.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>Is there a mobile app?<span class="faq-toggle" aria-hidden="true"></span></summary>
-          <div class="faq-answer">
-            <p>The web app is fully responsive and works great on mobile browsers. There's no native app — the web interface is the app. The REST API means anyone could build one, too.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>How does the terminal UI work?<span class="faq-toggle" aria-hidden="true"></span></summary>
-          <div class="faq-answer">
-            <p>The TUI is a terminal user interface — a full-screen, keyboard-driven reader that runs in your terminal. It supports vim-style navigation and gives you the same timeline, feeds, and entries as the web app.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>Can I import my feeds from another reader?<span class="faq-toggle" aria-hidden="true"></span></summary>
-          <div class="faq-answer">
-            <p>Yes. Sunred supports OPML import. Export your feeds from any RSS reader (Feedly, Inoreader, NetNewsWire, etc.) as an OPML file and import them directly.</p>
+            <p>No. Sunred uses the AT Protocol for identity and federation, which is the same protocol Bluesky uses. Your Sunred account is its own AT Proto identity. If you already have a Bluesky account, the protocols are compatible but the accounts are separate.</p>
           </div>
         </details>
         <details class="faq-item">
           <summary>Is there tracking or advertising?<span class="faq-toggle" aria-hidden="true"></span></summary>
           <div class="faq-answer">
-            <p>No. Sunred has no ads, no tracking, no analytics, no algorithmic feed. You see the entries from the feeds you subscribed to, in the order they were published.</p>
+            <p>No. Sunred has no ads, no tracking, no analytics, no algorithmic feed. You see the entries from the feeds you subscribed to and the articles shared by people you follow, in the order they were published.</p>
           </div>
         </details>
-        <details class="faq-item">
-          <summary>What's the API like?<span class="faq-toggle" aria-hidden="true"></span></summary>
-          <div class="faq-answer">
-            <p>A clean REST API with JSON responses. Authenticate with a bearer token, then list feeds, add subscriptions, search entries, and more. Full documentation is in the docs.</p>
-          </div>
-        </details>
+      </div>
+
+      <div class="faq-more">
+        <a class="link-arrow" href="/faq">
+          All questions
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </a>
       </div>
     </div>
   </section>
 
   <!-- ════════════════════════════════════════════════════════════════
-       CLOSING CTA — the last push
+       CLOSING CTA
   ═════════════════════════════════════════════════════════════════ -->
   <section class="closing" aria-label="Get started">
     <div class="closing-glow" aria-hidden="true"></div>
@@ -445,7 +452,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
       <div class="cta-row">
         <a class="cta cta-primary" href={loginUrl}>
           <span>Open the app</span>
-          <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <svg class="cta-arrow" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
           </svg>
         </a>
@@ -454,234 +461,10 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     </div>
   </section>
 
-  <!-- ════════════════════════════════════════════════════════════════
-       FOOTER
-  ═════════════════════════════════════════════════════════════════ -->
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <div class="footer-brand">
-        <Logo class="footer-mark" static />
-        <span>Sunred</span>
-      </div>
-      <nav class="footer-nav" aria-label="Footer">
-        <a href={loginUrl}>Login</a>
-        <a href={selfHostUrl}>Self-host</a>
-        <a href="https://sunred.dev/docs">Docs</a>
-        <a href="#features">Features</a>
-        <a href="#faq">FAQ</a>
-      </nav>
-      <p class="footer-note">
-        Open source. Self-hostable. Built for people who still read.
-      </p>
-    </div>
-  </footer>
+  <Footer />
 </Base>
 
 <style is:global>
-  /* ── Skip link ────────────────────────────────────────────────── */
-
-  .skip-link {
-    position: absolute;
-    top: -100%;
-    left: 1rem;
-    z-index: 100;
-    padding: 0.625rem 1.25rem;
-    background-color: var(--primary);
-    color: var(--primary-foreground);
-    border-radius: 0.5rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    transition: top 0.2s ease;
-  }
-  .skip-link:focus {
-    top: 1rem;
-  }
-
-  /* ── Shared ─────────────────────────────────────────────────── */
-
-  .section-inner {
-    max-width: 72rem;
-    margin: 0 auto;
-    padding: 0 clamp(1.25rem, 4vw, 2.5rem);
-  }
-  .section-inner-narrow {
-    max-width: 46rem;
-  }
-
-  .section-head {
-    max-width: 44rem;
-    margin-bottom: clamp(2.5rem, 6vh, 4rem);
-  }
-
-  .section-mark {
-    display: inline-block;
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: color-mix(in oklab, var(--primary) 75%, var(--color-ink));
-    margin-bottom: 1.25rem;
-    letter-spacing: 0;
-  }
-
-  .section-headline {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(2rem, 5vw, 3.25rem);
-    line-height: 1.08;
-    letter-spacing: -0.035em;
-    margin: 0 0 1.25rem;
-    text-wrap: balance;
-    color: var(--color-ink);
-  }
-
-  .section-lede {
-    font-size: 1.125rem;
-    line-height: 1.6;
-    max-width: 38rem;
-    margin: 0;
-    color: var(--color-ink-soft);
-    text-wrap: pretty;
-  }
-
-  /* ── Buttons ────────────────────────────────────────────────── */
-
-  .cta-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
-    margin-top: 2rem;
-  }
-
-  .cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.8rem 1.4rem;
-    border-radius: 0.625rem;
-    font-family: var(--font-body);
-    font-weight: 600;
-    font-size: 0.9375rem;
-    line-height: 1;
-    min-height: 46px;
-    transition:
-      transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-      background-color 0.2s ease,
-      border-color 0.2s ease,
-      box-shadow 0.2s ease;
-  }
-
-  .cta-primary {
-    background-color: var(--primary);
-    color: var(--primary-foreground);
-  }
-  .cta-primary:hover {
-    background-color: color-mix(in oklab, var(--primary) 92%, white);
-    transform: translateY(-1px);
-  }
-  .cta-primary:active {
-    transform: translateY(0);
-  }
-
-  .cta-ghost {
-    background-color: transparent;
-    color: var(--color-ink);
-    border: 1px solid var(--color-rule-strong);
-  }
-  .cta-ghost:hover {
-    border-color: oklch(1 0 0 / 0.28);
-    background-color: oklch(1 0 0 / 0.04);
-    transform: translateY(-1px);
-  }
-  .cta-ghost:active {
-    transform: translateY(0);
-  }
-
-  .cta-sm {
-    padding: 0.55rem 1rem;
-    font-size: 0.8125rem;
-    min-height: 36px;
-    gap: 0.4rem;
-  }
-
-  /* ── Nav ─────────────────────────────────────────────────────── */
-
-  .site-nav {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background-color: color-mix(in oklab, var(--color-bg) 78%, transparent);
-    backdrop-filter: saturate(160%) blur(14px);
-    -webkit-backdrop-filter: saturate(160%) blur(14px);
-    border-bottom: 1px solid var(--color-rule);
-  }
-
-  .nav-inner {
-    max-width: 72rem;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.85rem clamp(1.25rem, 4vw, 2.5rem);
-  }
-
-  .nav-brand {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1.0625rem;
-    letter-spacing: -0.02em;
-    color: var(--color-ink);
-  }
-  .nav-mark {
-    width: 1.5rem;
-    height: 1.5rem;
-    flex-shrink: 0;
-  }
-
-  .nav-version {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    color: var(--color-ink-faint);
-    padding: 0.1rem 0.4rem;
-    border: 1px solid var(--color-rule);
-    border-radius: 0.3rem;
-    margin-left: 0.15rem;
-  }
-
-  .nav-links {
-    display: flex;
-    gap: 1.75rem;
-    font-size: 0.9375rem;
-    font-weight: 500;
-  }
-  .nav-links a {
-    color: var(--color-ink-soft);
-    transition: color 0.15s ease;
-  }
-  .nav-links a:hover {
-    color: var(--color-ink);
-  }
-
-  .nav-cta {
-    display: flex;
-    align-items: center;
-    gap: 0.85rem;
-  }
-  .nav-link-login {
-    color: var(--color-ink-soft);
-    font-size: 0.9375rem;
-    font-weight: 500;
-    transition: color 0.15s ease;
-  }
-  .nav-link-login:hover {
-    color: var(--color-ink);
-  }
-
   /* ── Hero ─────────────────────────────────────────────────────── */
 
   .hero {
@@ -700,13 +483,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     height: 620px;
     z-index: -1;
     border-radius: 50%;
-    background:
-      radial-gradient(
-        circle at center,
-        oklch(0.74 0.2 45 / 0.16) 0%,
-        oklch(0.6 0.16 50 / 0.07) 35%,
-        transparent 68%
-      );
+    background: radial-gradient(circle at center, oklch(0.74 0.2 45 / 0.16) 0%, oklch(0.6 0.16 50 / 0.07) 35%, transparent 68%);
     filter: blur(8px);
     animation: glow-bloom 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
@@ -719,31 +496,8 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     gap: clamp(2.5rem, 6vw, 4rem);
     align-items: center;
   }
-
   .hero-copy {
     max-width: 34rem;
-  }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--color-ink-soft);
-    padding: 0.35rem 0.7rem;
-    border: 1px solid var(--color-rule);
-    border-radius: 999px;
-    background-color: color-mix(in oklab, var(--color-bg-raised) 60%, transparent);
-    margin-bottom: 1.75rem;
-  }
-  .badge-dot {
-    width: 0.45rem;
-    height: 0.45rem;
-    border-radius: 50%;
-    background-color: var(--primary);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 22%, transparent);
   }
 
   .hero-headline {
@@ -752,14 +506,13 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     font-size: clamp(2.75rem, 8vw, 5.25rem);
     line-height: 1;
     letter-spacing: -0.04em;
-    margin: 0;
+    margin: 0 0 0;
     color: var(--color-ink);
     text-wrap: balance;
   }
   .hero-accent {
     color: color-mix(in oklab, var(--primary) 92%, var(--color-ink));
   }
-
   .hero-tagline {
     margin: 1.5rem 0 0;
     font-size: clamp(1.0625rem, 2.4vw, 1.25rem);
@@ -796,25 +549,13 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     border: 1px solid var(--color-rule);
     font-size: 0.6875rem;
     color: var(--color-ink-faint);
-    text-transform: lowercase;
   }
 
-  /* reveal stagger (hero) — children are badge, headline, tagline, cta-row, install */
-  .hero-copy .reveal:nth-child(1) {
-    animation-delay: 0.05s;
-  }
-  .hero-copy .reveal:nth-child(2) {
-    animation-delay: 0.14s;
-  }
-  .hero-copy .reveal:nth-child(3) {
-    animation-delay: 0.22s;
-  }
-  .hero-copy .reveal:nth-child(4) {
-    animation-delay: 0.30s;
-  }
-  .hero-copy .reveal:nth-child(5) {
-    animation-delay: 0.40s;
-  }
+  .hero-copy .reveal:nth-child(1) { animation-delay: 0.05s; }
+  .hero-copy .reveal:nth-child(2) { animation-delay: 0.14s; }
+  .hero-copy .reveal:nth-child(3) { animation-delay: 0.22s; }
+  .hero-copy .reveal:nth-child(4) { animation-delay: 0.30s; }
+  .hero-copy .reveal:nth-child(5) { animation-delay: 0.40s; }
 
   /* ── Product mock (hero) ─────────────────────────────────────── */
 
@@ -824,64 +565,11 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     animation-delay: 0.25s;
     opacity: 0;
   }
-
-  .mock-window {
-    position: relative;
-    z-index: 2;
-    border-radius: 0.875rem;
-    overflow: hidden;
-    border: 1px solid var(--color-rule-strong);
-    background-color: var(--color-bg-raised);
-    box-shadow:
-      0 1px 0 oklch(1 0 0 / 0.06) inset,
-      0 30px 80px -30px oklch(0 0 0 / 0.7);
-  }
-
-  .mock-titlebar {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.7rem 0.9rem;
-    border-bottom: 1px solid var(--color-rule);
-    background-color: color-mix(in oklab, var(--color-bg-raised) 85%, var(--color-bg-sunken));
-  }
-  .mock-traffic {
-    width: 0.7rem;
-    height: 0.7rem;
-    border-radius: 50%;
-    background-color: oklch(1 0 0 / 0.13);
-  }
-  .mock-traffic:nth-child(1) {
-    background-color: oklch(0.7 0.14 30);
-  }
-  .mock-traffic:nth-child(2) {
-    background-color: oklch(0.72 0.15 75);
-  }
-  .mock-traffic:nth-child(3) {
-    background-color: oklch(0.68 0.16 145);
-  }
-  .mock-path {
-    margin-left: 0.6rem;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--color-ink-soft);
-  }
-  .mock-search {
-    margin-left: auto;
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    color: var(--color-ink-faint);
-    padding: 0.15rem 0.45rem;
-    border: 1px solid var(--color-rule);
-    border-radius: 0.3rem;
-  }
-
   .mock-body {
     display: grid;
     grid-template-columns: 9.5rem 1fr;
     min-height: 22rem;
   }
-
   .mock-sidebar {
     border-right: 1px solid var(--color-rule);
     background-color: var(--color-bg-sunken);
@@ -897,6 +585,11 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     letter-spacing: 0.08em;
     color: var(--color-ink-faint);
     padding: 0 0.4rem 0.5rem;
+  }
+  .mock-sb-follows {
+    margin-top: 0.6rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--color-rule);
   }
   .mock-feed-list {
     list-style: none;
@@ -922,6 +615,13 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     background-color: oklch(1 0 0 / 0.14);
     flex-shrink: 0;
   }
+  .mock-avatar {
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 50%;
+    background-color: color-mix(in oklab, var(--primary) 40%, oklch(0.5 0.01 50));
+    flex-shrink: 0;
+  }
   .mock-feed.is-active {
     background-color: color-mix(in oklab, var(--primary) 16%, transparent);
     color: var(--color-ink);
@@ -945,9 +645,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     align-items: center;
     gap: 0.5rem;
   }
-  .mock-star {
-    color: var(--primary);
-  }
+  .mock-star { color: var(--primary); }
 
   .mock-timeline {
     padding: 0.6rem;
@@ -998,6 +696,28 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
   .mock-entry-src {
     color: color-mix(in oklab, var(--primary) 80%, var(--color-ink-soft));
   }
+  .mock-shared-by {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-ink-faint);
+    margin-bottom: 0.25rem;
+  }
+  .mock-shared-avatar {
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 50%;
+    background-color: color-mix(in oklab, var(--primary) 40%, oklch(0.5 0.01 50));
+    flex-shrink: 0;
+  }
+  .mock-shared-handle {
+    color: color-mix(in oklab, var(--primary) 80%, var(--color-ink-soft));
+  }
+  .mock-entry.is-shared {
+    border-left: 1px solid color-mix(in oklab, var(--primary) 40%, var(--color-rule));
+  }
   .mock-entry-title {
     font-size: 0.875rem;
     font-weight: 600;
@@ -1017,13 +737,11 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-
   .mock-shadow {
     position: absolute;
     inset: 10% 0 -20% 0;
     z-index: -1;
-    background:
-      radial-gradient(ellipse 70% 60% at 50% 40%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 70%);
+    background: radial-gradient(ellipse 70% 60% at 50% 40%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 70%);
     filter: blur(40px);
     pointer-events: none;
   }
@@ -1042,9 +760,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     font-size: 0.78rem;
     color: var(--color-ink-faint);
   }
-  .trust-sep {
-    opacity: 0.5;
-  }
+  .trust-sep { opacity: 0.5; }
 
   /* ── Manifesto ───────────────────────────────────────────────── */
 
@@ -1085,6 +801,12 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
   .manifesto-body p + p {
     margin-top: 1.25rem;
   }
+  .manifesto-body a {
+    color: color-mix(in oklab, var(--primary) 85%, var(--color-ink));
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    text-decoration-color: color-mix(in oklab, var(--primary) 35%, transparent);
+  }
   .manifesto-pull {
     border-left: 1px solid var(--color-rule-strong);
     padding-left: 1.5rem;
@@ -1105,70 +827,25 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     line-height: 1.55;
     color: var(--color-ink-faint);
   }
-
-  /* ── Code sample ─────────────────────────────────────────────── */
-
-  .code-sample {
+  .manifesto .code-sample {
     margin-top: clamp(2.5rem, 6vh, 3.5rem);
-    border-radius: 0.75rem;
-    overflow: hidden;
-    border: 1px solid var(--color-rule-strong);
-    background-color: var(--color-bg-sunken);
   }
-  .code-tabbar {
+
+  /* ── Social preview ─────────────────────────────────────────── */
+
+  .social-preview {
+    padding: clamp(4.5rem, 10vh, 7rem) 0;
+    border-top: 1px solid var(--color-rule);
+  }
+  .social-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+  .social-cta {
+    margin-top: 2.5rem;
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.65rem 0.9rem;
-    border-bottom: 1px solid var(--color-rule);
-  }
-  .code-dot {
-    width: 0.7rem;
-    height: 0.7rem;
-    border-radius: 50%;
-    background-color: oklch(1 0 0 / 0.13);
-  }
-  .code-dot:nth-child(1) {
-    background-color: oklch(0.7 0.14 30);
-  }
-  .code-dot:nth-child(2) {
-    background-color: oklch(0.72 0.15 75);
-  }
-  .code-dot:nth-child(3) {
-    background-color: oklch(0.68 0.16 145);
-  }
-  .code-label {
-    margin-left: 0.5rem;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--color-ink-faint);
-  }
-  .code-spacer {
-    flex: 1;
-  }
-  .code-keys {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    color: var(--color-ink-faint);
-    padding: 0.12rem 0.4rem;
-    border: 1px solid var(--color-rule);
-    border-radius: 0.3rem;
-  }
-  .code-body {
-    margin: 0;
-    padding: 1.15rem 1.35rem;
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    line-height: 1.75;
-    color: oklch(0.84 0.01 50);
-    overflow-x: auto;
-  }
-  .code-prompt {
-    color: var(--primary);
-    font-weight: 600;
-  }
-  .code-comment {
-    color: oklch(0.6 0.012 50);
+    justify-content: flex-start;
   }
 
   /* ── Features (bento) ───────────────────────────────────────── */
@@ -1177,30 +854,16 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     padding: clamp(4.5rem, 10vh, 7rem) 0;
     border-top: 1px solid var(--color-rule);
   }
-
   .bento {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 0.9rem;
   }
-  .bento-cell {
+  .bento-tall {
     grid-column: span 2;
-    padding: 1.75rem 1.6rem;
-    border: 1px solid var(--color-rule);
-    border-radius: 0.75rem;
-    background-color: color-mix(in oklab, var(--color-bg-raised) 80%, transparent);
-    transition:
-      border-color 0.2s ease,
-      transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-      background-color 0.2s ease;
-  }
-  .bento-cell:hover {
-    border-color: color-mix(in oklab, var(--primary) 30%, var(--color-rule-strong));
-    transform: translateY(-2px);
-    background-color: color-mix(in oklab, var(--color-bg-raised) 95%, transparent);
-  }
-  .bento-wide {
-    grid-column: span 3;
+    grid-row: span 2;
+    display: flex;
+    flex-direction: column;
   }
   .bento-span4 {
     grid-column: span 4;
@@ -1208,53 +871,10 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
   .bento-full {
     grid-column: span 6;
   }
-  .bento-tall {
-    grid-row: span 2;
+  .features-more {
+    margin-top: 2.5rem;
     display: flex;
-    flex-direction: column;
-  }
-
-  .feature-icon {
-    width: 2.5rem;
-    height: 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.6rem;
-    background-color: color-mix(in oklab, var(--primary) 14%, transparent);
-    color: color-mix(in oklab, var(--primary) 85%, var(--color-ink));
-    margin-bottom: 1.1rem;
-    border: 1px solid color-mix(in oklab, var(--primary) 18%, transparent);
-  }
-  .bento-cell h3 {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1.0625rem;
-    letter-spacing: -0.01em;
-    margin: 0 0 0.5rem;
-    color: var(--color-ink);
-  }
-  .bento-cell p {
-    margin: 0;
-    font-size: 0.9375rem;
-    line-height: 1.6;
-    color: var(--color-ink-soft);
-  }
-  .feature-tags {
-    list-style: none;
-    margin: 1.25rem 0 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-  .feature-tags li {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    padding: 0.2rem 0.5rem;
-    border: 1px solid var(--color-rule);
-    border-radius: 0.3rem;
-    color: var(--color-ink-soft);
+    justify-content: flex-start;
   }
 
   /* ── Interfaces ─────────────────────────────────────────────── */
@@ -1281,15 +901,12 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     border-color: color-mix(in oklab, var(--primary) 28%, var(--color-rule-strong));
     transform: translateY(-2px);
   }
-
   .interface-mock {
     height: 11rem;
     border-bottom: 1px solid var(--color-rule);
     background-color: var(--color-bg-sunken);
     overflow: hidden;
   }
-
-  /* web mini mock */
   .mock-mini-bar {
     display: flex;
     gap: 0.3rem;
@@ -1338,34 +955,11 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     width: 70%;
     background-color: oklch(1 0 0 / 0.16);
   }
-  .mmm-short {
-    width: 40%;
-  }
-
-  /* tui / cli mocks */
-  .tui-screen {
-    margin: 0;
+  .mmm-short { width: 40%; }
+  .mock-tui .tui-screen, .mock-cli .tui-screen {
     height: 100%;
-    padding: 0.85rem 1rem;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    line-height: 1.55;
-    color: oklch(0.8 0.01 50);
-    overflow: hidden;
-    white-space: pre;
-  }
-  .tui-hl {
-    color: var(--color-ink);
-    font-weight: 600;
-  }
-  .tui-dim {
-    color: oklch(0.6 0.012 50);
-  }
-  .mock-tui .tui-screen,
-  .mock-cli .tui-screen {
     background-color: var(--color-bg-sunken);
   }
-
   .interface-badge {
     display: inline-block;
     align-self: flex-start;
@@ -1396,198 +990,35 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     color: var(--color-ink-soft);
   }
 
-  /* ── FAQ ──────────────────────────────────────────────────────── */
+  /* ── FAQ (landing) ───────────────────────────────────────────── */
 
   .faq {
     padding: clamp(4.5rem, 10vh, 7rem) 0;
     border-top: 1px solid var(--color-rule);
   }
-  .faq-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+  .faq .faq-answer a {
+    color: color-mix(in oklab, var(--primary) 85%, var(--color-ink));
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
   }
-  .faq-item {
-    border-bottom: 1px solid var(--color-rule);
+  .faq-more {
+    margin-top: 2.5rem;
   }
-  .faq-item:first-child {
-    border-top: 1px solid var(--color-rule);
-  }
-  .faq-item summary {
+
+  /* ── Link arrow ──────────────────────────────────────────────── */
+
+  .link-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     font-family: var(--font-body);
     font-weight: 500;
-    font-size: 1.0625rem;
-    padding: 1.35rem 0;
-    cursor: pointer;
-    list-style: none;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    color: var(--color-ink);
-    transition: color 0.15s ease;
-  }
-  .faq-item summary::-webkit-details-marker {
-    display: none;
-  }
-  .faq-toggle {
-    flex-shrink: 0;
-    width: 1.25rem;
-    height: 1.25rem;
-    position: relative;
-    color: var(--color-ink-faint);
-  }
-  .faq-toggle::before,
-  .faq-toggle::after {
-    content: "";
-    position: absolute;
-    background-color: currentColor;
-    border-radius: 1px;
-    transition: transform 0.2s ease;
-  }
-  .faq-toggle::before {
-    top: 50%;
-    left: 0;
-    width: 100%;
-    height: 1.5px;
-    transform: translateY(-50%);
-  }
-  .faq-toggle::after {
-    left: 50%;
-    top: 0;
-    width: 1.5px;
-    height: 100%;
-    transform: translateX(-50%);
-  }
-  .faq-item[open] .faq-toggle::after {
-    transform: translateX(-50%) scaleY(0);
-  }
-  .faq-item summary:hover {
-    color: color-mix(in oklab, var(--primary) 80%, var(--color-ink));
-  }
-  .faq-answer {
-    padding-bottom: 1.35rem;
-  }
-  .faq-answer p {
-    margin: 0;
     font-size: 0.9375rem;
-    line-height: 1.65;
-    color: var(--color-ink-soft);
-    max-width: 36rem;
+    color: color-mix(in oklab, var(--primary) 85%, var(--color-ink));
+    transition: gap 0.2s ease;
   }
-
-  /* ── Closing CTA ─────────────────────────────────────────────── */
-
-  .closing {
-    position: relative;
-    padding: clamp(6rem, 16vh, 10rem) 1.5rem;
-    text-align: center;
-    overflow: hidden;
-    isolation: isolate;
-    border-top: 1px solid var(--color-rule);
-  }
-  .closing-glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: min(760px, 90vw);
-    height: 460px;
-    z-index: -1;
-    border-radius: 50%;
-    background:
-      radial-gradient(
-        circle at center,
-        oklch(0.74 0.2 45 / 0.14) 0%,
-        oklch(0.6 0.16 50 / 0.06) 40%,
-        transparent 68%
-      );
-    filter: blur(10px);
-  }
-  .closing-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 40rem;
-    margin: 0 auto;
-  }
-  .closing-mark {
-    width: 3.25rem;
-    height: 3.25rem;
-    margin-bottom: 1.5rem;
-  }
-  .closing-headline {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(2.25rem, 6vw, 3.5rem);
-    line-height: 1.05;
-    letter-spacing: -0.035em;
-    margin: 0;
-    color: var(--color-ink);
-    text-wrap: balance;
-  }
-  .closing-lede {
-    font-size: 1.125rem;
-    line-height: 1.55;
-    color: var(--color-ink-soft);
-    max-width: 28rem;
-    margin: 1.25rem 0 0;
-  }
-  .closing .cta-row {
-    justify-content: center;
-  }
-
-  /* ── Footer ──────────────────────────────────────────────────── */
-
-  .site-footer {
-    border-top: 1px solid var(--color-rule);
-    padding: 3rem 1.5rem 3.5rem;
-  }
-  .footer-inner {
-    max-width: 72rem;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.25rem;
-    text-align: center;
-  }
-  .footer-brand {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1.0625rem;
-    letter-spacing: -0.02em;
-    color: var(--color-ink);
-  }
-  .footer-mark {
-    width: 1.5rem;
-    height: 1.5rem;
-    flex-shrink: 0;
-  }
-  .footer-nav {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1.5rem;
-    font-size: 0.9375rem;
-    font-weight: 500;
-  }
-  .footer-nav a {
-    color: var(--color-ink-soft);
-    transition: color 0.15s ease;
-  }
-  .footer-nav a:hover {
-    color: var(--color-ink);
-  }
-  .footer-note {
-    margin: 0;
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    color: var(--color-ink-faint);
-    max-width: 30rem;
+  .link-arrow:hover {
+    gap: 0.6rem;
   }
 
   /* ── Responsive ───────────────────────────────────────────────── */
@@ -1597,43 +1028,23 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
       grid-template-columns: 1.6fr 1fr;
     }
   }
-
   @media (min-width: 900px) {
     .hero-grid {
       grid-template-columns: 1fr 1.05fr;
     }
-    .hero-copy {
-      max-width: none;
-    }
+    .hero-copy { max-width: none; }
   }
-
   @media (max-width: 860px) {
     .bento {
       grid-template-columns: repeat(2, 1fr);
     }
-    .bento-cell,
-    .bento-wide,
-    .bento-span4,
-    .bento-full {
+    .bento-tall, .bento-span4, .bento-full {
       grid-column: span 2;
     }
-    .bento-tall {
-      grid-row: span 1;
-    }
-    .interfaces-grid {
-      grid-template-columns: 1fr;
-    }
+    .bento-tall { grid-row: span 1; }
+    .interfaces-grid { grid-template-columns: 1fr; }
+    .social-cards { grid-template-columns: 1fr; }
   }
-
-  @media (max-width: 768px) {
-    .nav-links {
-      display: none;
-    }
-    .nav-version {
-      display: none;
-    }
-  }
-
   @media (max-width: 640px) {
     .cta-row {
       flex-direction: column;
@@ -1643,18 +1054,8 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
       width: 100%;
       justify-content: center;
     }
-    .nav-link-login {
-      display: none;
-    }
-    .bento {
-      grid-template-columns: 1fr;
-    }
-    .bento-cell,
-    .bento-wide,
-    .bento-span4,
-    .bento-full {
-      grid-column: span 1;
-    }
+    .bento { grid-template-columns: 1fr; }
+    .bento-tall, .bento-span4, .bento-full { grid-column: span 1; }
     .manifesto-pull {
       border-left: none;
       border-top: 1px solid var(--color-rule-strong);
