@@ -106,12 +106,6 @@ func (p *Processor) ProcessFeed(ctx context.Context, feed *store.Feed) error {
 		}
 
 		if entryID > 0 {
-			// Mark the new entry unread for every user subscribed to this feed.
-			// The default read state is "read" (absence of a row), so new
-			// entries must explicitly create an "unread" row for subscribers.
-			if err := p.store.MarkEntryUnreadForSubscribers(ctx, entryID, feed.ID); err != nil {
-				slog.Warn("mark entry unread for subscribers", "feed_id", feed.ID, "entry_id", entryID, "err", err)
-			}
 			for _, enc := range item.Enclosures {
 				if err := p.store.CreateEnclosure(ctx, entryID, enc.URL, enc.MimeType, enc.Size); err != nil {
 					slog.Warn("create enclosure failed", "entry_id", entryID, "err", err)
