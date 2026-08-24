@@ -26,7 +26,7 @@
   /* Ink — warm near-white, tuned for ≥4.5:1 on the dark bg */
   --color-ink: oklch(0.97 0.004 50);
   --color-ink-soft: oklch(0.74 0.012 50);
-  --color-ink-faint: oklch(0.62 0.014 50);
+  --color-ink-faint: oklch(0.645 0.014 50);
 
   /* Hairlines — translucent white for depth without hard edges */
   --color-rule: oklch(1 0 0 / 0.08);
@@ -556,7 +556,7 @@ button {
   font-size: 1.125rem;
   line-height: 1.55;
   color: var(--color-ink-soft);
-  max-width: 28rem;
+  max-width: 30rem;
   margin: 1.25rem 0 0;
 }
 .closing .cta-row {
@@ -787,6 +787,7 @@ button {
   height: 1.25rem;
   position: relative;
   color: var(--color-ink-faint);
+  transition: color 0.15s ease;
 }
 .faq-toggle::before,
 .faq-toggle::after {
@@ -815,6 +816,9 @@ button {
 }
 .faq-item summary:hover {
   color: color-mix(in oklab, var(--primary) 80%, var(--color-ink));
+}
+.faq-item summary:hover .faq-toggle {
+  color: color-mix(in oklab, var(--primary) 70%, var(--color-ink-soft));
 }
 .faq-answer {
   padding-bottom: 1.35rem;
