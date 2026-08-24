@@ -44,10 +44,34 @@ func (s *Store) UpsertInstance(ctx context.Context, url string) (int, error) {
 // UpsertTrackedDID registers a new DID with the relay.
 // If the DID already exists, updates pds_url and handle.
 // Returns the row id and whether the DID is newly inserted.
+//
+// A handle resolves to at most one DID: before upserting, any other row that
+// currently holds the same non-empty handle has its handle cleared. This
+// keeps the partial unique index on (handle) WHERE handle <> ” satisfied
+// and prevents stale rows (e.g. from a DID rotation) from shadowing the
+// current owner of a handle.
 func (s *Store) UpsertTrackedDID(ctx context.Context, did, pdsURL, handle string, instanceID int) (int64, bool, error) {
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, false, err
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	if handle != "" {
+		if _, err := tx.ExecContext(ctx,
+			`UPDATE tracked_dids SET handle = '' WHERE handle = $1 AND did <> $2`,
+			handle, did); err != nil {
+			return 0, false, err
+		}
+	}
+
 	var id int64
 	var isNew bool
-	err := s.DB.QueryRowContext(ctx, `
+	err = tx.QueryRowContext(ctx, `
 		INSERT INTO tracked_dids (did, pds_url, handle, instance_id)
 		VALUES ($1, $2, $3, $4)
 		ON CONFLICT (did) DO UPDATE
@@ -57,7 +81,14 @@ func (s *Store) UpsertTrackedDID(ctx context.Context, did, pdsURL, handle string
 		RETURNING id, (xmax = 0)`,
 		did, pdsURL, handle, instanceID,
 	).Scan(&id, &isNew)
-	return id, isNew, err
+	if err != nil {
+		return 0, false, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, false, err
+	}
+	return id, isNew, nil
 }
 
 // ListActiveTrackedDIDs returns all DIDs with status='active'.

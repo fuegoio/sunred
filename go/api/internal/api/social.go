@@ -276,13 +276,15 @@ func (a *API) registerSocialRoutes() {
 		if len(profiles) < input.Limit {
 			remaining := input.Limit - len(profiles)
 			remote := a.relaySearchDIDs(ctx, input.Query, remaining)
-			// Deduplicate by handle — skip remote results already in local results.
+			// Deduplicate by handle — skip remote results already in local
+			// results or earlier in the remote batch.
 			seen := make(map[string]bool, len(profiles))
 			for _, p := range profiles {
 				seen[p.Handle] = true
 			}
 			for _, r := range remote {
 				if !seen[r.Handle] {
+					seen[r.Handle] = true
 					profiles = append(profiles, r)
 				}
 			}
