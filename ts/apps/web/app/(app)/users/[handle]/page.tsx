@@ -349,18 +349,22 @@ export default function UserProfilePage({
         />
       </div>
       <Tabs defaultValue="articles" className="flex min-h-0 flex-1 flex-col gap-0">
-        <div className="mx-auto w-full max-w-3xl shrink-0 px-4 pt-3 lg:pl-[48px]">
-          <TabsList>
+        <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 pt-1.5 lg:pl-[48px]">
+          <TabsList variant="line" className="h-8! px-0">
             <TabsTrigger value="articles">
               Articles
               {articles.length > 0 && (
-                <span className="text-xs text-muted-foreground">{articles.length}</span>
+                <span className="rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums text-foreground/70">
+                  {articles.length}
+                </span>
               )}
             </TabsTrigger>
             <TabsTrigger value="feeds">
               Feeds
               {userFeeds.length > 0 && (
-                <span className="text-xs text-muted-foreground">{userFeeds.length}</span>
+                <span className="rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums text-foreground/70">
+                  {userFeeds.length}
+                </span>
               )}
             </TabsTrigger>
           </TabsList>
