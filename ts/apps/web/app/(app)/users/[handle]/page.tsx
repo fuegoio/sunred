@@ -165,10 +165,12 @@ function ProfileMasthead({
         <Avatar.Root
           className={cn(
             "flex size-12 shrink-0 items-center justify-center rounded-full",
-            "bg-primary text-lg font-semibold text-primary-foreground select-none",
+            "bg-muted text-lg font-semibold text-foreground select-none",
           )}
         >
-          <Avatar.Fallback>{displayName.charAt(0).toUpperCase()}</Avatar.Fallback>
+          <Avatar.Fallback>
+            {(hasDisplayName ? displayName.charAt(0) : handle.charAt(0)).toUpperCase()}
+          </Avatar.Fallback>
         </Avatar.Root>
 
         <div className="min-w-0 flex-1">
