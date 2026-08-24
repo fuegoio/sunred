@@ -346,6 +346,22 @@ export type SharedArticle = {
     user_id: number;
 };
 
+export type ToggleEntryStarredByUrlRequest = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    article_url: string;
+    author?: string;
+    description?: string;
+    feed_site_url?: string;
+    feed_title?: string;
+    feed_url?: string;
+    published_at?: string;
+    starred: boolean;
+    title: string;
+};
+
 export type ToggleEntryStarredRequest = {
     /**
      * A URL to the JSON Schema for this object.
@@ -371,6 +387,15 @@ export type UpdateEntriesRequest = {
      */
     readonly $schema?: string;
     entry_ids: Array<number> | null;
+    status: 'unread' | 'read' | 'removed';
+};
+
+export type UpdateEntryStatusByUrlRequest = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    article_url: string;
     status: 'unread' | 'read' | 'removed';
 };
 
@@ -648,6 +673,18 @@ export type SharedArticleWritable = {
     user_id: number;
 };
 
+export type ToggleEntryStarredByUrlRequestWritable = {
+    article_url: string;
+    author?: string;
+    description?: string;
+    feed_site_url?: string;
+    feed_title?: string;
+    feed_url?: string;
+    published_at?: string;
+    starred: boolean;
+    title: string;
+};
+
 export type ToggleEntryStarredRequestWritable = {
     starred: boolean;
 };
@@ -661,6 +698,11 @@ export type TokenOutputBodyWritable = {
 
 export type UpdateEntriesRequestWritable = {
     entry_ids: Array<number> | null;
+    status: 'unread' | 'read' | 'removed';
+};
+
+export type UpdateEntryStatusByUrlRequestWritable = {
+    article_url: string;
     status: 'unread' | 'read' | 'removed';
 };
 
@@ -1264,6 +1306,56 @@ export type UpdateEntriesResponses = {
 };
 
 export type UpdateEntriesResponse = UpdateEntriesResponses[keyof UpdateEntriesResponses];
+
+export type UpdateEntryStatusByUrlData = {
+    body: UpdateEntryStatusByUrlRequestWritable;
+    path?: never;
+    query?: never;
+    url: '/v1/entries/by-url';
+};
+
+export type UpdateEntryStatusByUrlErrors = {
+    /**
+     * Error
+     */
+    default: ErrorModel;
+};
+
+export type UpdateEntryStatusByUrlError = UpdateEntryStatusByUrlErrors[keyof UpdateEntryStatusByUrlErrors];
+
+export type UpdateEntryStatusByUrlResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type UpdateEntryStatusByUrlResponse = UpdateEntryStatusByUrlResponses[keyof UpdateEntryStatusByUrlResponses];
+
+export type ToggleEntryStarredByUrlData = {
+    body: ToggleEntryStarredByUrlRequestWritable;
+    path?: never;
+    query?: never;
+    url: '/v1/entries/by-url/starred';
+};
+
+export type ToggleEntryStarredByUrlErrors = {
+    /**
+     * Error
+     */
+    default: ErrorModel;
+};
+
+export type ToggleEntryStarredByUrlError = ToggleEntryStarredByUrlErrors[keyof ToggleEntryStarredByUrlErrors];
+
+export type ToggleEntryStarredByUrlResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ToggleEntryStarredByUrlResponse = ToggleEntryStarredByUrlResponses[keyof ToggleEntryStarredByUrlResponses];
 
 export type GetEntryData = {
     body?: never;

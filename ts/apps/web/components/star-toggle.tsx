@@ -6,9 +6,10 @@ import { toast } from "sonner";
 import { Star } from "lucide-react";
 import { motion, useAnimationControls } from "motion/react";
 import { Button } from "@workspace/ui/components/button";
-import { getClient, toggleEntryStarred } from "@/lib/sunred";
+import { getClient, toggleEntryStarred, toggleEntryStarredByUrl } from "@/lib/sunred";
 import { getApiErrorMessage } from "@/lib/errors";
 import { cn } from "@workspace/ui/lib/utils";
+import type { Entry, Feed } from "@/lib/types";
 
 /**
  * Toggles the starred flag on an entry. Optimistically flips the star
@@ -16,15 +17,23 @@ import { cn } from "@workspace/ui/lib/utils";
  * starred/unread counts stay fresh after the mutation settles.
  *
  * Plays a scale-pop via framer-motion on every toggle for tactile feedback.
+ *
+ * When `entryId` is 0 (preview mode), uses the URL-based endpoint with
+ * article metadata so the star persists without a materialized entry.
  */
 export function StarToggle({
   entryId,
   starred: starredProp,
+  entry,
+  feed,
   size = "icon-sm",
   className,
 }: {
   entryId: number;
   starred: boolean;
+  /** Full entry for URL-based starring when entryId is 0 (preview mode). */
+  entry?: Entry;
+  feed?: Feed;
   size?: "icon-xs" | "icon-sm" | "icon";
   className?: string;
 }) {
@@ -32,6 +41,8 @@ export function StarToggle({
   const [starred, setOptimistic] = useOptimistic(starredProp);
   const [pending, setPending] = useState(false);
   const controls = useAnimationControls();
+
+  const isByUrl = entryId === 0 && entry != null;
 
   async function handleToggle() {
     const next = !starred;
@@ -42,12 +53,30 @@ export function StarToggle({
       setPending(true);
     });
     try {
-      const { error } = await toggleEntryStarred({
-        client: await getClient(),
-        path: { entryId },
-        body: { starred: next },
-      });
-      if (error) throw error;
+      if (isByUrl && entry) {
+        const { error } = await toggleEntryStarredByUrl({
+          client: await getClient(),
+          body: {
+            article_url: entry.url,
+            title: entry.title,
+            description: entry.description ?? "",
+            feed_url: feed?.feed_url ?? entry.feed?.feed_url ?? "",
+            feed_title: feed?.title ?? entry.feed?.title ?? "",
+            feed_site_url: feed?.site_url ?? entry.feed?.site_url ?? "",
+            author: entry.author ?? "",
+            published_at: entry.published_at ?? undefined,
+            starred: next,
+          },
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await toggleEntryStarred({
+          client: await getClient(),
+          path: { entryId },
+          body: { starred: next },
+        });
+        if (error) throw error;
+      }
       await queryClient.invalidateQueries({ queryKey: ["entries"] });
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Could not update entry"));

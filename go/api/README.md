@@ -288,6 +288,8 @@ middleware (except the explicitly public paths listed first).
 | GET | `/v1/entries/{entryId}` | Get entry (visible only) |
 | PUT | `/v1/entries` | Bulk status update (null entry_ids = mark all read) |
 | PUT | `/v1/entries/{entryId}/starred` | Toggle starred |
+| PUT | `/v1/entries/by-url/starred` | Toggle starred by article URL (no entry ID) |
+| PUT | `/v1/entries/by-url` | Update read status by article URL (no entry ID) |
 | POST/GET | `/v1/tokens` | Create (returns plaintext `pla_…` once) / list API tokens |
 | DELETE | `/v1/tokens/{tokenId}` | Delete API token |
 | GET | `/v1/opml/export` | Export subscriptions+folders as OPML 2.0 |

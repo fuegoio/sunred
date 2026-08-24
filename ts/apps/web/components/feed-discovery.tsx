@@ -7,10 +7,12 @@ import type { Entry, Feed, PreviewFeedBody, PreviewFeedItem, FeedSubscribersResp
 
 /**
  * Map a preview item to the Entry shape EntryCard expects. Preview items
- * have no id, status, or starred state — those fields are stubbed and never
- * read because `preview` mode gates the actions that use them.
+ * have no real entry id — id is stubbed with the array index, which
+ * triggers URL-based star/read in EntryCard's preview mode. The feed
+ * metadata is attached so ShareToggle and StarToggle can send it to the
+ * URL-based endpoints.
  */
-function toEntry(item: PreviewFeedItem, index: number): Entry {
+function toEntry(item: PreviewFeedItem, index: number, feed: Feed): Entry {
   return {
     id: index,
     feed_id: 0,
@@ -24,14 +26,16 @@ function toEntry(item: PreviewFeedItem, index: number): Entry {
     description: item.description ?? item.content,
     author: item.author,
     tags: item.tags,
+    feed,
   } as unknown as Entry;
 }
 
 /**
  * Discovery view for a feed the viewer is not subscribed to. Mirrors the feed
  * detail page's layout via the shared FeedHeader (with the Subscribe button in
- * the toolbar) and the same EntryCard for articles (in preview mode, which
- * hides the read/unread dot, share, star, and comments actions).
+ * the toolbar) and the same EntryCard for articles. In preview mode, EntryCard
+ * uses URL-based endpoints for star/read/share so users can interact with
+ * articles from feeds they haven't subscribed to yet.
  *
  * The preview endpoint includes the subscriber summary directly in its
  * response (looked up by feed URL on the server), so the SubscribersDialog
@@ -47,7 +51,7 @@ export function FeedDiscovery({ preview }: { preview: PreviewFeedBody }) {
     feed_url: preview.feed_url,
   } as unknown as Feed;
 
-  const entries = items.map((item, i) => toEntry(item, i));
+  const entries = items.map((item, i) => toEntry(item, i, feed));
 
   // The preview response embeds the subscriber summary when the feed is
   // known to the instance; when it's not (no one subscribes), default to a
