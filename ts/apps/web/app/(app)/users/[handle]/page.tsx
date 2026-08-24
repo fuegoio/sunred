@@ -363,7 +363,7 @@ export default function UserProfilePage({
       </div>
       <Tabs value={tab} onValueChange={handleTabChange} className="flex min-h-0 flex-1 flex-col gap-0">
         {canFollow && (
-          <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 py-2 lg:pl-[48px]">
+          <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 py-2 pl-[52px] lg:pl-[48px]">
             <FollowButton
               handle={user.handle}
               isFollowing={user.is_following ?? false}
@@ -371,7 +371,7 @@ export default function UserProfilePage({
             />
           </div>
         )}
-        <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 pt-1.5 lg:pl-[48px]">
+        <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 pt-1.5 pl-[52px] lg:pl-[48px]">
           <TabsList variant="line" className="h-8! px-0">
             <TabsTrigger value="articles">
               Articles
@@ -406,7 +406,7 @@ export default function UserProfilePage({
                   ))}
                 </div>
               ) : (
-                <div className="p-4">
+                <div className="p-4 pl-[52px] lg:pl-[48px]">
                   <Empty className="border">
                     <EmptyHeader>
                       <EmptyMedia variant="icon">
@@ -449,7 +449,7 @@ export default function UserProfilePage({
                         <Link
                           href={`/feeds?url=${encodeURIComponent(feed.feed_url)}`}
                           className={cn(
-                            "group flex items-start gap-3 px-4 py-3 lg:pl-[48px]",
+                            "group flex items-start gap-3 px-4 py-3 pl-[52px] lg:pl-[48px]",
                             "hover:bg-muted/50 transition-colors",
                           )}
                         >
@@ -479,7 +479,7 @@ export default function UserProfilePage({
                   })}
                 </ul>
               ) : (
-                <div className="p-4">
+                <div className="p-4 pl-[52px] lg:pl-[48px]">
                   <Empty className="border">
                     <EmptyHeader>
                       <EmptyMedia variant="icon">
