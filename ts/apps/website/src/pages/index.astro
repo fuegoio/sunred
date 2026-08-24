@@ -12,6 +12,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
   <a href="#positioning-heading" class="skip-link">Skip to content</a>
   <Nav />
 
+  <main>
   <!-- ════════════════════════════════════════════════════════════════
        HERO
   ═════════════════════════════════════════════════════════════════ -->
@@ -31,9 +32,9 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
         </h1>
 
         <p class="hero-tagline reveal">
-          A modern, self-hostable RSS reader with a social graph on the
-          AT Protocol. Follow people, share articles, and read what your
-          trusted circle is reading. One timeline, no algorithm.
+          A modern, self-hostable RSS reader with a federated social
+          graph. Follow people, share articles, and read what your trusted
+          circle is reading — one timeline, no algorithm.
         </p>
 
         <div class="cta-row reveal">
@@ -46,7 +47,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
           <a class="cta cta-ghost" href={selfHostUrl}>Self-host</a>
         </div>
 
-        <div class="install-chip reveal" role="group" aria-label="Install command">
+        <div class="install-chip reveal" aria-label="Install command">
           <span class="install-prompt" aria-hidden="true">$</span>
           <code class="install-cmd">docker run sunred/sunred</code>
           <span class="install-copy" aria-hidden="true">copy</span>
@@ -122,11 +123,8 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
 
     <div class="trust-strip reveal-fade">
       <span>Open source</span>
-      <span class="trust-sep">·</span>
       <span>Self-hostable</span>
-      <span class="trust-sep">·</span>
       <span>Federated on AT Protocol</span>
-      <span class="trust-sep">·</span>
       <span>No ads, no tracking, no algorithm</span>
     </div>
   </section>
@@ -461,6 +459,8 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     </div>
   </section>
 
+  </main>
+
   <Footer />
 </Base>
 
@@ -506,7 +506,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     font-size: clamp(2.75rem, 8vw, 5.25rem);
     line-height: 1;
     letter-spacing: -0.04em;
-    margin: 0 0 0;
+    margin: 0;
     color: var(--color-ink);
     text-wrap: balance;
   }
@@ -716,7 +716,10 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     color: color-mix(in oklab, var(--primary) 80%, var(--color-ink-soft));
   }
   .mock-entry.is-shared {
-    border-left: 1px solid color-mix(in oklab, var(--primary) 40%, var(--color-rule));
+    background-color: color-mix(in oklab, var(--primary) 5%, transparent);
+  }
+  .mock-entry.is-shared.is-selected {
+    background-color: color-mix(in oklab, var(--color-bg-elevated) 70%, color-mix(in oklab, var(--primary) 8%, transparent));
   }
   .mock-entry-title {
     font-size: 0.875rem;
@@ -755,12 +758,21 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 0.85rem;
+    gap: 1rem 1.75rem;
     font-family: var(--font-mono);
     font-size: 0.78rem;
     color: var(--color-ink-faint);
   }
-  .trust-sep { opacity: 0.5; }
+  .trust-strip span {
+    position: relative;
+  }
+  .trust-strip span + span::before {
+    content: "·";
+    position: absolute;
+    left: -1.25rem;
+    color: var(--color-ink-faint);
+    opacity: 0.5;
+  }
 
   /* ── Manifesto ───────────────────────────────────────────────── */
 
@@ -809,7 +821,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
   }
   .manifesto-pull {
     border-left: 1px solid var(--color-rule-strong);
-    padding-left: 1.5rem;
+    padding-left: 1.75rem;
     max-width: 22rem;
   }
   .pull-quote {
@@ -857,7 +869,7 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
   .bento {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 0.9rem;
+    gap: 1rem;
   }
   .bento-tall {
     grid-column: span 2;
@@ -1061,6 +1073,9 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
       border-top: 1px solid var(--color-rule-strong);
       padding-left: 0;
       padding-top: 1.5rem;
+    }
+    .mock-body {
+      grid-template-columns: 6.5rem 1fr;
     }
   }
 </style>
