@@ -114,7 +114,7 @@ function ProfileMasthead({
   const shell = useShell();
 
   return (
-    <div className="border-b border-border bg-background px-4 py-4 lg:pl-[48px]">
+    <div className="border-b border-border bg-background px-4 py-3 lg:pl-[48px]">
       <div className="flex items-start gap-3">
         {/* Mobile sidebar toggle — replaces the separate top bar, same as PageHeader */}
         {shell && (
@@ -131,8 +131,8 @@ function ProfileMasthead({
 
         <Avatar.Root
           className={cn(
-            "flex size-16 shrink-0 items-center justify-center rounded-full",
-            "bg-primary text-xl font-semibold text-primary-foreground select-none",
+            "flex size-12 shrink-0 items-center justify-center rounded-full",
+            "bg-primary text-lg font-semibold text-primary-foreground select-none",
           )}
         >
           <Avatar.Fallback>{displayName.charAt(0).toUpperCase()}</Avatar.Fallback>
@@ -155,7 +155,7 @@ function ProfileMasthead({
             />
           </div>
 
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span>
               <span className="font-medium text-foreground">{followerTotal}</span>{" "}
               {followerTotal === 1 ? "follower" : "followers"}
@@ -181,7 +181,7 @@ function ProfileMasthead({
 function MastheadSkeleton() {
   const shell = useShell();
   return (
-    <div className="border-b border-border bg-background px-4 py-4 lg:pl-[48px]">
+    <div className="border-b border-border bg-background px-4 py-3 lg:pl-[48px]">
       <div className="flex items-start gap-3">
         {shell && (
           <Button
@@ -194,7 +194,7 @@ function MastheadSkeleton() {
             <MenuIcon className="size-4" />
           </Button>
         )}
-        <Skeleton className="size-16 shrink-0 rounded-full" />
+        <Skeleton className="size-12 shrink-0 rounded-full" />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="flex flex-col gap-1.5">
@@ -203,7 +203,7 @@ function MastheadSkeleton() {
             </div>
             <Skeleton className="h-8 w-20" />
           </div>
-          <div className="mt-2.5 flex items-center gap-4">
+          <div className="mt-1 flex items-center gap-4">
             <Skeleton className="h-3.5 w-20" />
             <Skeleton className="h-3.5 w-20" />
           </div>
