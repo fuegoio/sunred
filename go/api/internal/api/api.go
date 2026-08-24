@@ -9,6 +9,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -513,6 +514,39 @@ func (a *API) registerFeedRoutes() {
 			return nil, huma.Error404NotFound("feed not found")
 		}
 		return &FeedOutput{Body: *feed}, nil
+	})
+
+	huma.Register(a.huma, huma.Operation{
+		OperationID: "refresh-all-feeds",
+		Method:      http.MethodPost,
+		Path:        "/v1/feeds/refresh-all",
+		Summary:     "Refresh all due feeds",
+		Description: "Fetches and parses all of the user's subscribed feeds that are due for refresh, inserting any new entries. Use this to get the latest articles without waiting for the scheduler.",
+		Tags:        []string{"feeds"},
+	}, func(ctx context.Context, input *struct{}) (*struct{}, error) {
+		if a.processor == nil {
+			return nil, huma.Error503ServiceUnavailable("feed processor is not available")
+		}
+		userID := auth.UserIDFromCtx(ctx)
+		feeds, err := a.store.ListFeedsDueForRefreshByUser(ctx, userID, 100)
+		if err != nil {
+			return nil, huma.Error500InternalServerError(err.Error())
+		}
+		// Process feeds concurrently with a bounded timeout so the page
+		// load is not blocked indefinitely. Errors are non-fatal — the page
+		// still renders with whatever entries were already stored.
+		refreshCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+		defer cancel()
+		var wg sync.WaitGroup
+		for i := range feeds {
+			wg.Add(1)
+			go func(feed *store.Feed) {
+				defer wg.Done()
+				_ = a.processor.ProcessFeed(refreshCtx, feed)
+			}(&feeds[i])
+		}
+		wg.Wait()
+		return nil, nil
 	})
 
 	huma.Register(a.huma, huma.Operation{

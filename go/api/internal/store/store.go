@@ -309,6 +309,31 @@ func (s *Store) ListFeedsDueForRefresh(ctx context.Context, limit int) ([]Feed, 
 	return feeds, rows.Err()
 }
 
+// ListFeedsDueForRefreshByUser returns up to limit global feeds that the given
+// user subscribes to and whose next_check_at <= now. Used by the refresh-all
+// endpoint to refresh only the user's own due feeds.
+func (s *Store) ListFeedsDueForRefreshByUser(ctx context.Context, userID, limit int) ([]Feed, error) {
+	rows, err := s.DB.QueryContext(ctx,
+		`SELECT `+feedColumns+`
+		 FROM feeds f
+		 JOIN subscriptions s ON s.feed_id = f.id AND s.user_id = $1
+		 WHERE f.next_check_at <= NOW() AND f.disabled = false
+		 ORDER BY f.next_check_at ASC LIMIT $2`, userID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+	var feeds []Feed
+	for rows.Next() {
+		var f Feed
+		if err := scanFeedGlobal(rows, &f); err != nil {
+			return nil, err
+		}
+		feeds = append(feeds, f)
+	}
+	return feeds, rows.Err()
+}
+
 // --- Entries ---
 
 // CreateEntry inserts a global entry (one per feed+hash), returning its id.

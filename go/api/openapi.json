@@ -2539,6 +2539,31 @@
                 ]
             }
         },
+        "/v1/feeds/refresh-all": {
+            "post": {
+                "description": "Fetches and parses all of the user's subscribed feeds that are due for refresh, inserting any new entries. Use this to get the latest articles without waiting for the scheduler.",
+                "operationId": "refresh-all-feeds",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "default": {
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        },
+                        "description": "Error"
+                    }
+                },
+                "summary": "Refresh all due feeds",
+                "tags": [
+                    "feeds"
+                ]
+            }
+        },
         "/v1/feeds/{feedId}": {
             "delete": {
                 "operationId": "delete-feed",

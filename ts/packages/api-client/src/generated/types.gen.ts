@@ -1396,6 +1396,31 @@ export type PreviewFeedResponses = {
 
 export type PreviewFeedResponse = PreviewFeedResponses[keyof PreviewFeedResponses];
 
+export type RefreshAllFeedsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/feeds/refresh-all';
+};
+
+export type RefreshAllFeedsErrors = {
+    /**
+     * Error
+     */
+    default: ErrorModel;
+};
+
+export type RefreshAllFeedsError = RefreshAllFeedsErrors[keyof RefreshAllFeedsErrors];
+
+export type RefreshAllFeedsResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type RefreshAllFeedsResponse = RefreshAllFeedsResponses[keyof RefreshAllFeedsResponses];
+
 export type DeleteFeedData = {
     body?: never;
     path: {
