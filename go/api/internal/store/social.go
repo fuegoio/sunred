@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/fuegoio/sunred/go/api/internal/urlnorm"
 )
 
 // ErrHandleTaken is returned when a requested handle is already in use.
@@ -294,6 +296,8 @@ func (s *Store) ensureSharedEntry(ctx context.Context,
 	articleURL, title, description, feedURL, feedTitle, feedSiteURL, author string,
 	publishedAt *time.Time,
 ) int64 {
+	articleURL = urlnorm.URL(articleURL)
+	feedURL = urlnorm.URL(feedURL)
 	if feedURL == "" {
 		return 0
 	}
@@ -315,6 +319,8 @@ func (s *Store) ShareArticle(ctx context.Context, userID int,
 	articleURL, title, description, feedURL, feedTitle, feedSiteURL, author string,
 	publishedAt *time.Time,
 ) (*SharedArticle, error) {
+	articleURL = urlnorm.URL(articleURL)
+	feedURL = urlnorm.URL(feedURL)
 	entryID := s.ensureSharedEntry(ctx, articleURL, title, description, feedURL, feedTitle, feedSiteURL, author, publishedAt)
 
 	var sa SharedArticle
@@ -362,6 +368,7 @@ func (s *Store) UnshareArticle(ctx context.Context, id int64, userID int) error 
 
 // GetSharedArticleByURL returns the share for a given user+URL, or nil.
 func (s *Store) GetSharedArticleByURL(ctx context.Context, userID int, articleURL string) (*SharedArticle, error) {
+	articleURL = urlnorm.URL(articleURL)
 	var sa SharedArticle
 	err := s.DB.QueryRowContext(ctx, `
 		SELECT id, user_id, article_url, title, description,

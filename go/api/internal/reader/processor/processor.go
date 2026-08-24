@@ -14,6 +14,7 @@ import (
 	"github.com/fuegoio/sunred/go/api/internal/reader/parser"
 	"github.com/fuegoio/sunred/go/api/internal/reader/sanitizer"
 	"github.com/fuegoio/sunred/go/api/internal/store"
+	"github.com/fuegoio/sunred/go/api/internal/urlnorm"
 )
 
 // Processor coordinates the fetch-parse-store pipeline for a single feed.
@@ -122,8 +123,12 @@ func (p *Processor) ProcessFeed(ctx context.Context, feed *store.Feed) error {
 	return nil
 }
 
+// hashItem computes the per-feed entry dedup hash from the article's
+// normalized link, title, and publication date. The link is normalized so
+// the same article is not duplicated within a feed when the publisher
+// appends or strips tracking query parameters between refreshes.
 func hashItem(item parser.Item) string {
-	h := sha256.Sum256([]byte(item.Link + item.Title + item.PublishedAt))
+	h := sha256.Sum256([]byte(urlnorm.URL(item.Link) + item.Title + item.PublishedAt))
 	return hex.EncodeToString(h[:])
 }
 

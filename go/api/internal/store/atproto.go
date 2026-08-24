@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
+
+	"github.com/fuegoio/sunred/go/api/internal/urlnorm"
 )
 
 // --- AT Proto identity ---
@@ -219,6 +221,7 @@ func (s *Store) GetFeedATProtoRkey(ctx context.Context, userID, feedID int) (str
 // SetStarATProtoRkey records the AT Proto rkey for a starred article.
 // Keyed by (user_id, article_url) since entry_stars is URL-keyed.
 func (s *Store) SetStarATProtoRkey(ctx context.Context, userID int, articleURL, rkey string) error {
+	articleURL = urlnorm.URL(articleURL)
 	_, err := s.DB.ExecContext(ctx, `
 		UPDATE entry_stars SET atproto_rkey = $3
 		 WHERE user_id = $1 AND article_url = $2`, userID, articleURL, rkey,
@@ -228,6 +231,7 @@ func (s *Store) SetStarATProtoRkey(ctx context.Context, userID int, articleURL, 
 
 // GetStarATProtoRkey retrieves the AT Proto rkey for a starred article.
 func (s *Store) GetStarATProtoRkey(ctx context.Context, userID int, articleURL string) (string, error) {
+	articleURL = urlnorm.URL(articleURL)
 	var rkey sql.NullString
 	err := s.DB.QueryRowContext(ctx, `
 		SELECT atproto_rkey FROM entry_stars WHERE user_id = $1 AND article_url = $2`, userID, articleURL,

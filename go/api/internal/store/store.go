@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/lib/pq"
+
+	"github.com/fuegoio/sunred/go/api/internal/urlnorm"
 )
 
 // ErrFeedNotFound is returned when a feed lookup returns no row.
@@ -125,6 +127,7 @@ func scanFeedGlobal(rows *sql.Rows, f *Feed) error {
 // provided metadata) if missing. Existing metadata is upgraded in place when
 // the caller supplies non-empty values. Idempotent on feed_url.
 func (s *Store) GetOrCreateFeed(ctx context.Context, feedURL, siteURL, title, description string) (*Feed, error) {
+	feedURL = urlnorm.URL(feedURL)
 	var f Feed
 	row := s.DB.QueryRowContext(ctx,
 		`INSERT INTO feeds (feed_url, site_url, title, description)
@@ -160,6 +163,7 @@ func (s *Store) GetFeedGlobal(ctx context.Context, id int) (*Feed, error) {
 
 // GetFeedByURL returns the global feed matching feedURL, or nil.
 func (s *Store) GetFeedByURL(ctx context.Context, feedURL string) (*Feed, error) {
+	feedURL = urlnorm.URL(feedURL)
 	var f Feed
 	row := s.DB.QueryRowContext(ctx,
 		`SELECT `+feedColumns+` FROM feeds WHERE feed_url = $1`, feedURL)
@@ -314,6 +318,7 @@ func (s *Store) ListFeedsDueForRefresh(ctx context.Context, limit int) ([]Feed, 
 // CreateEntry inserts a global entry (one per feed+hash), returning its id.
 // Returns 0 (no error) when the hash already existed for this feed.
 func (s *Store) CreateEntry(ctx context.Context, feedID int, hash, title, url, commentsURL, author, content, description string, publishedAt time.Time, tags []string) (int64, error) {
+	url = urlnorm.URL(url)
 	var id int64
 	if tags == nil {
 		tags = []string{}
@@ -497,33 +502,49 @@ type EntryStateByURL struct {
 }
 
 // GetEntryStatesByURLs returns the user's read status and starred state for
-// each article URL, keyed by URL. Absent means unread + unstarred. Used by
-// the preview endpoint to show the user's existing state for preview items.
+// each article URL, keyed by the input URL. Absent means unread + unstarred.
+// Used by the preview endpoint to show the user's existing state for preview
+// items. The lookup is performed on normalized URLs (so state set via one
+// source variant is visible for a textually-different variant), but the
+// returned map preserves the original input keys the caller passed.
 func (s *Store) GetEntryStatesByURLs(ctx context.Context, userID int, urls []string) (map[string]EntryStateByURL, error) {
 	if len(urls) == 0 {
 		return map[string]EntryStateByURL{}, nil
+	}
+	normalized := make([]string, len(urls))
+	for i, u := range urls {
+		normalized[i] = urlnorm.URL(u)
 	}
 	rows, err := s.DB.QueryContext(ctx, `
 		SELECT u.article_url, COALESCE(rs.status, 'unread'), (es.article_url IS NOT NULL)
 		FROM (SELECT unnest($2::text[]) AS article_url) u
 		LEFT JOIN entry_read_status rs ON rs.user_id = $1 AND rs.article_url = u.article_url
 		LEFT JOIN entry_stars es ON es.user_id = $1 AND es.article_url = u.article_url`,
-		userID, pq.Array(urls))
+		userID, pq.Array(normalized))
 	if err != nil {
 		return nil, fmt.Errorf("get entry states by url: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
-	out := make(map[string]EntryStateByURL, len(urls))
+	byNorm := make(map[string]EntryStateByURL, len(urls))
 	for rows.Next() {
-		var url, status string
+		var u, status string
 		var starred bool
-		if err := rows.Scan(&url, &status, &starred); err != nil {
+		if err := rows.Scan(&u, &status, &starred); err != nil {
 			return nil, err
 		}
-		out[url] = EntryStateByURL{Status: status, Starred: starred}
+		byNorm[u] = EntryStateByURL{Status: status, Starred: starred}
 	}
-	return out, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Re-key by the original input URLs the caller passed.
+	out := make(map[string]EntryStateByURL, len(urls))
+	for i, raw := range urls {
+		out[raw] = byNorm[normalized[i]]
+	}
+	return out, nil
 }
 
 // UpdateEntryStatus sets the status of a set of visible entries for the user
@@ -580,6 +601,8 @@ func (s *Store) ToggleEntryStarredByURL(ctx context.Context, userID int,
 	articleURL, title, description, feedURL, feedTitle, feedSiteURL, author string,
 	publishedAt *time.Time, starred bool,
 ) error {
+	articleURL = urlnorm.URL(articleURL)
+	feedURL = urlnorm.URL(feedURL)
 	if starred {
 		entryID := s.ensureSharedEntry(ctx, articleURL, title, description, feedURL, feedTitle, feedSiteURL, author, publishedAt)
 		_, err := s.DB.ExecContext(ctx,
@@ -613,6 +636,7 @@ func (s *Store) ToggleEntryStarredByURL(ctx context.Context, userID int,
 // otherwise the status row is created with a null entry_id. Used by the
 // URL-based read endpoint for preview and shared articles.
 func (s *Store) UpdateEntryStatusByURL(ctx context.Context, userID int, articleURL, status string) error {
+	articleURL = urlnorm.URL(articleURL)
 	_, err := s.DB.ExecContext(ctx,
 		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
 		 SELECT $1, $2, (SELECT e.id FROM entries e WHERE e.url = $2 LIMIT 1), $3, NOW()
