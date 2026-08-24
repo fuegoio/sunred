@@ -685,17 +685,20 @@ func (s *Store) MarkAllEntriesRead(ctx context.Context, userID int) error {
 }
 
 // MarkEntryUnreadForSubscribers inserts an 'unread' entry_read_status row for
-// every user subscribed to the entry's feed. Called by the feed processor when
-// a new entry is created, so freshly scraped articles appear unread for
-// subscribers. Users who already have a row (e.g. 'removed') are not
-// overwritten.
+// every user subscribed to the entry's feed whose subscription predates the
+// entry's publication. Called by the feed processor when a new entry is
+// created, so freshly scraped articles appear unread for existing subscribers.
+// Entries published before the subscription (e.g. historical articles scraped
+// on first fetch) stay read by default. Users who already have a row (e.g.
+// 'read' or 'removed') are not overwritten.
 func (s *Store) MarkEntryUnreadForSubscribers(ctx context.Context, entryID int64, feedID int) error {
 	_, err := s.DB.ExecContext(ctx,
 		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
-		 SELECT s.user_id, e.url, e.id, 'unread', NOW()
+		 SELECT sub.user_id, e.url, e.id, 'unread', NOW()
 		 FROM entries e
-		 JOIN subscriptions s ON s.feed_id = e.feed_id
+		 JOIN subscriptions sub ON sub.feed_id = e.feed_id
 		 WHERE e.id = $1 AND e.feed_id = $2
+		   AND sub.created_at < e.published_at
 		 ON CONFLICT (user_id, article_url) DO NOTHING`,
 		entryID, feedID)
 	return err
