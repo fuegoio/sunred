@@ -225,7 +225,7 @@ export function FollowSearchDialog() {
           ) : (
             <div className="flex flex-col">
               {(results ?? []).map((p) => (
-                <div key={p.user_id} className="hover:bg-muted/40 transition-colors">
+                <div key={p.handle} className="hover:bg-muted/40 transition-colors">
                   <SearchRow profile={p} query={trimmed} onToggle={handleToggle} />
                 </div>
               ))}
