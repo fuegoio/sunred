@@ -145,7 +145,7 @@ function ProfileMasthead({
 
   return (
     <div className="border-b border-border bg-background px-4 py-3 lg:pl-[48px]">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-1.5">
           {/* Mobile sidebar toggle — same pattern as PageHeader */}
           {shell && (
@@ -160,7 +160,7 @@ function ProfileMasthead({
             </Button>
           )}
           <div className="min-w-0">
-            <h1 className="truncate font-serif text-base font-bold tracking-wider sm:text-lg">
+            <h1 className="truncate font-serif text-base font-bold leading-7 tracking-wider sm:text-lg">
               {displayName}
             </h1>
             {hasDisplayName && (
