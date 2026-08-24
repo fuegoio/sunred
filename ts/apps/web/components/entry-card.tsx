@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useOptimistic, startTransition } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQueryClient, type InfiniteData, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { motion } from "motion/react";
@@ -75,6 +75,7 @@ export function EntryCard({
    */
   preview?: boolean;
 }) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
   const [readOptimistic, setReadOptimistic] = useOptimistic(entry.status === "read");
@@ -231,13 +232,17 @@ export function EntryCard({
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <FeedIcon siteUrl={feedSiteUrl} className="size-3.5 rounded-sm" />
           {feedHref ? (
-            <Link
-              href={feedHref}
-              onClick={(e) => e.stopPropagation()}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                router.push(feedHref);
+              }}
               className="truncate text-muted-foreground transition-colors hover:text-foreground hover:underline"
             >
               {feedTitle}
-            </Link>
+            </button>
           ) : (
             <span className="truncate">{feedTitle}</span>
           )}
@@ -246,13 +251,17 @@ export function EntryCard({
               <span aria-hidden>·</span>
               <span className="truncate">
                 shared by{" "}
-                <Link
-                  href={`/users/${entry.shared_by}`}
-                  onClick={(e) => e.stopPropagation()}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    router.push(`/users/${entry.shared_by}`);
+                  }}
                   className="font-medium text-foreground hover:underline"
                 >
                   {sharerName}
-                </Link>
+                </button>
               </span>
             </>
           )}

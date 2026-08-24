@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { FeedIcon } from "@/components/feed-icon";
 import { formatRelative, htmlSnippet } from "@/lib/format";
@@ -23,6 +23,7 @@ export function SharedArticleCard({
   staggerIndex?: number;
   showSharer?: boolean;
 }) {
+  const router = useRouter();
   const snippet = htmlSnippet(article.description ?? "", 200);
 
   const sharerLabel = article.sharer_display_name?.trim()
@@ -86,13 +87,17 @@ export function SharedArticleCard({
         {showSharer && article.sharer_handle && (
           <p className="mt-2 text-xs text-muted-foreground">
             Shared by{" "}
-            <Link
-              href={`/users/${article.sharer_handle}`}
-              onClick={(e) => e.stopPropagation()}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                router.push(`/users/${article.sharer_handle}`);
+              }}
               className="font-medium text-foreground hover:underline"
             >
               {sharerLabel ?? `@${article.sharer_handle}`}
-            </Link>
+            </button>
           </p>
         )}
       </div>
