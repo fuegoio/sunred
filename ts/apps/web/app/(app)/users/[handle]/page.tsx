@@ -362,34 +362,34 @@ export default function UserProfilePage({
         />
       </div>
       <Tabs value={tab} onValueChange={handleTabChange} className="flex min-h-0 flex-1 flex-col gap-0">
-        <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 pt-1.5 lg:pl-[48px]">
-          <div className="flex items-center justify-between gap-2">
-            <TabsList variant="line" className="h-8! px-0">
-              <TabsTrigger value="articles">
-                Articles
-                {articles.length > 0 && (
-                  <span className="rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums text-foreground/70">
-                    {articles.length}
-                  </span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="feeds">
-                Feeds
-                {userFeeds.length > 0 && (
-                  <span className="rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums text-foreground/70">
-                    {userFeeds.length}
-                  </span>
-                )}
-              </TabsTrigger>
-            </TabsList>
-            {canFollow && (
-              <FollowButton
-                handle={user.handle}
-                isFollowing={user.is_following ?? false}
-                onToggle={handleFollowToggle}
-              />
-            )}
+        {canFollow && (
+          <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 py-2 lg:pl-[48px]">
+            <FollowButton
+              handle={user.handle}
+              isFollowing={user.is_following ?? false}
+              onToggle={handleFollowToggle}
+            />
           </div>
+        )}
+        <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 pt-1.5 lg:pl-[48px]">
+          <TabsList variant="line" className="h-8! px-0">
+            <TabsTrigger value="articles">
+              Articles
+              {articles.length > 0 && (
+                <span className="rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums text-foreground/70">
+                  {articles.length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="feeds">
+              Feeds
+              {userFeeds.length > 0 && (
+                <span className="rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums text-foreground/70">
+                  {userFeeds.length}
+                </span>
+              )}
+            </TabsTrigger>
+          </TabsList>
         </div>
         <TabsContent value="articles" className="min-h-0 flex-1">
           <ScrollArea className="h-full">
