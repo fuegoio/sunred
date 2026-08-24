@@ -93,11 +93,12 @@ export function EntryCard({
   // and offers a one-click subscribe. In preview mode, the feed URL comes
   // from the preview/discovery data, not a subscription.
   const feedFeedURL = feed?.feed_url || entry.feed?.feed_url;
-  const feedHref = !preview && feed && feed.id > 0
-    ? `/feeds/${feed.id}`
-    : feedFeedURL
-      ? `/feeds?url=${encodeURIComponent(feedFeedURL)}`
-      : null;
+  const feedHref =
+    feed && feed.id > 0
+      ? `/feeds/${feed.id}`
+      : feedFeedURL
+        ? `/feeds?url=${encodeURIComponent(feedFeedURL)}`
+        : null;
   const sharerName = entry.shared_by_name?.trim()
     ? entry.shared_by_name
     : entry.shared_by
