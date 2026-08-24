@@ -145,8 +145,8 @@ function ProfileMasthead({
 
   return (
     <div className="border-b border-border bg-background px-4 py-3 lg:pl-[48px]">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-1.5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-1.5">
           {/* Mobile sidebar toggle — same pattern as PageHeader */}
           {shell && (
             <Button
@@ -175,7 +175,7 @@ function ProfileMasthead({
         />
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 pl-[36px] text-xs text-muted-foreground lg:pl-0">
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 pl-[36px] text-xs text-muted-foreground lg:pl-0">
         <span>
           <span className="font-medium text-foreground">{followerTotal}</span>{" "}
           {followerTotal === 1 ? "follower" : "followers"}
@@ -191,7 +191,7 @@ function ProfileMasthead({
         </span>
       </div>
 
-      {bio && <p className="mt-2 pl-[36px] text-sm text-muted-foreground lg:pl-0">{bio}</p>}
+      {bio && <p className="mt-1.5 pl-[36px] text-sm text-muted-foreground lg:pl-0">{bio}</p>}
     </div>
   );
 }
