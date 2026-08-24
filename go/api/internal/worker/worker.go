@@ -31,13 +31,13 @@ func New(proc *processor.Processor, concurrency int) *Pool {
 	return p
 }
 
-// Submit enqueues a feed for processing. Non-blocking: if the queue is full,
-// the feed is skipped (it will be picked up on the next scheduler tick).
+// Submit enqueues a feed for processing. It blocks until the feed is enqueued
+// or ctx is cancelled, so a scheduler tick never silently drops due feeds —
+// the pool applies backpressure instead. This matters at startup, where the
+// first tick dispatches the full due set at once.
 func (p *Pool) Submit(ctx context.Context, feed *store.Feed) {
 	select {
 	case p.jobs <- feed:
-	default:
-		slog.Warn("worker pool queue full, skipping feed", "feed_id", feed.ID)
 	case <-ctx.Done():
 	}
 }
@@ -46,9 +46,21 @@ func (p *Pool) worker() {
 	defer p.wg.Done()
 	for feed := range p.jobs {
 		ctx := context.Background()
-		if err := p.processor.ProcessFeed(ctx, feed); err != nil {
-			slog.Error("process feed", "feed_id", feed.ID, "url", feed.FeedURL, "err", err)
+		p.process(ctx, feed)
+	}
+}
+
+// process runs a single feed through the processor and isolates failures: a
+// returned error is logged, and a panic is recovered so one bad feed never
+// kills the worker goroutine (which would permanently shrink the pool).
+func (p *Pool) process(ctx context.Context, feed *store.Feed) {
+	defer func() {
+		if r := recover(); r != nil {
+			slog.Error("process feed panic recovered", "feed_id", feed.ID, "url", feed.FeedURL, "panic", r)
 		}
+	}()
+	if err := p.processor.ProcessFeed(ctx, feed); err != nil {
+		slog.Error("process feed", "feed_id", feed.ID, "url", feed.FeedURL, "err", err)
 	}
 }
 
