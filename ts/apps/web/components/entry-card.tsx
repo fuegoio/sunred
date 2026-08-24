@@ -59,6 +59,7 @@ export function EntryCard({
   staggerIndex,
   animateExit = false,
   shareId = null,
+  preview = false,
 }: {
   entry: Entry;
   feed?: Feed;
@@ -66,6 +67,13 @@ export function EntryCard({
   animateExit?: boolean;
   /** ID of the SharedArticle row if this entry is already shared; null otherwise. */
   shareId?: number | null;
+  /**
+   * Preview mode for discovery: the row renders as a plain external link
+   * with no read/unread dot, no share/star/comments actions, and no
+   * mark-as-read on click. Used by the feed discovery view to show a
+   * preview feed's recent articles with the same layout as real entries.
+   */
+  preview?: boolean;
 }) {
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
@@ -91,11 +99,13 @@ export function EntryCard({
   // users) go to the discovery view, which previews them and offers a
   // one-click subscribe. The global feed ID is passed so the discovery view
   // can show the subscriber count.
-  const feedHref = feed
-    ? `/feeds/${feed.id}`
-    : entry.feed?.feed_url
-      ? `/feeds?url=${encodeURIComponent(entry.feed.feed_url)}${entry.feed?.id ? `&id=${entry.feed.id}` : ""}`
-      : null;
+  const feedHref = preview
+    ? null
+    : feed
+      ? `/feeds/${feed.id}`
+      : entry.feed?.feed_url
+        ? `/feeds?url=${encodeURIComponent(entry.feed.feed_url)}${entry.feed?.id ? `&id=${entry.feed.id}` : ""}`
+        : null;
   const sharerName = entry.shared_by_name?.trim()
     ? entry.shared_by_name
     : entry.shared_by
@@ -104,7 +114,8 @@ export function EntryCard({
   // The entry's feed is not subscribed when no `feed` prop was resolved by the
   // timeline (i.e. feed_id is absent from the user's subscriptions). A share
   // from a followed user surfaces such entries; offer a one-click subscribe.
-  const canSubscribe = !subscribedOverride && !feed && Boolean(entry.feed?.feed_url);
+  const canSubscribe =
+    !preview && !subscribedOverride && !feed && Boolean(entry.feed?.feed_url);
 
   async function handleSubscribe(e: React.MouseEvent) {
     e.preventDefault();
@@ -154,25 +165,26 @@ export function EntryCard({
       e.preventDefault();
       return;
     }
-    if (unread) {
-      startTransition(() => setReadOptimistic(true));
-      void (async () => {
-        const { error } = await updateEntries({
-          client: await getClient(),
-          body: { entry_ids: [entry.id], status: "read" },
-        });
-        if (error) {
-          toast.error(getApiErrorMessage(error, "Could not mark as read"));
-          return;
-        }
-        // Patch the cache in place rather than refetching: refetching the
-        // server-filtered Unread list would drop this row immediately, before
-        // the user can star it or open comments. It leaves on the next real
-        // refetch (navigation, manual refresh, opening another article).
-        patchEntryStatus(queryClient, entry.id, "read");
-      })();
-    }
+    if (preview || !unread) return;
+    startTransition(() => setReadOptimistic(true));
+    void (async () => {
+      const { error } = await updateEntries({
+        client: await getClient(),
+        body: { entry_ids: [entry.id], status: "read" },
+      });
+      if (error) {
+        toast.error(getApiErrorMessage(error, "Could not mark as read"));
+        return;
+      }
+      // Patch the cache in place rather than refetching: refetching the
+      // server-filtered Unread list would drop this row immediately, before
+      // the user can star it or open comments. It leaves on the next real
+      // refetch (navigation, manual refresh, opening another article).
+      patchEntryStatus(queryClient, entry.id, "read");
+    })();
   }
+
+  const rowOpacity = preview ? 1 : unread ? 1 : 0.6;
 
   const inner = (
     <motion.a
@@ -181,7 +193,7 @@ export function EntryCard({
       rel={entry.url ? "noopener noreferrer" : undefined}
       onClick={handleClick}
       initial={{ opacity: 0, y: 5 }}
-      animate={{ opacity: unread ? 1 : 0.6, y: 0 }}
+      animate={{ opacity: rowOpacity, y: 0 }}
       // "row-hover" variant propagates to child motion elements that declare it.
       whileHover="row-hover"
       transition={{
@@ -190,27 +202,31 @@ export function EntryCard({
       }}
       className="group flex gap-3 px-4 py-3 hover:bg-muted/50"
     >
-      <button
-        type="button"
-        onClick={toggleRead}
-        disabled={pending}
-        aria-label={unread ? "Mark as read" : "Mark as unread"}
-        aria-pressed={unread}
-        className="flex size-5 shrink-0 items-start justify-center pt-1"
-      >
-        <motion.span
-          animate={{
-            scale: unread ? 1 : 0.75,
-            opacity: unread ? 1 : 0,
-            backgroundColor: unread ? "var(--color-primary)" : "var(--color-muted-foreground)",
-          }}
-          // When the row is hovered and the entry is read, show a ghost dot
-          // so users know they can click to mark it unread again.
-          variants={unread ? undefined : { "row-hover": { scale: 1, opacity: 0.4 } }}
-          transition={{ duration: 0.15, ease: EASE }}
-          className="size-2 rounded-full"
-        />
-      </button>
+      {preview ? (
+        <span className="size-5 shrink-0" aria-hidden />
+      ) : (
+        <button
+          type="button"
+          onClick={toggleRead}
+          disabled={pending}
+          aria-label={unread ? "Mark as read" : "Mark as unread"}
+          aria-pressed={unread}
+          className="flex size-5 shrink-0 items-start justify-center pt-1"
+        >
+          <motion.span
+            animate={{
+              scale: unread ? 1 : 0.75,
+              opacity: unread ? 1 : 0,
+              backgroundColor: unread ? "var(--color-primary)" : "var(--color-muted-foreground)",
+            }}
+            // When the row is hovered and the entry is read, show a ghost dot
+            // so users know they can click to mark it unread again.
+            variants={unread ? undefined : { "row-hover": { scale: 1, opacity: 0.4 } }}
+            transition={{ duration: 0.15, ease: EASE }}
+            className="size-2 rounded-full"
+          />
+        </button>
+      )}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <FeedIcon siteUrl={feedSiteUrl} className="size-3.5 rounded-sm" />
@@ -260,7 +276,7 @@ export function EntryCard({
         </div>
         <h3
           className={cn(
-            "mt-1 line-clamp-2 text-sm",
+            "mt-1 line-clamp-2 text-sm transition-colors group-hover:text-primary",
             unread ? "font-semibold text-foreground" : "font-medium",
           )}
         >
@@ -270,23 +286,25 @@ export function EntryCard({
           {snippet}
         </p>
       </div>
-      <div className="flex shrink-0 items-start gap-0.5" onClick={(e) => e.stopPropagation()}>
-        {entry.comments_url && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              window.open(entry.comments_url!, "_blank", "noopener,noreferrer");
-            }}
-            aria-label="View comments"
-            className="flex size-8 items-center justify-center rounded-4xl text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            <MessageSquare className="size-3.5" />
-          </button>
-        )}
-        <ShareToggle entry={entry} feed={feed} shareId={shareId} size="icon-sm" />
-        <StarToggle entryId={entry.id} starred={entry.starred} size="icon-sm" />
-      </div>
+      {!preview && (
+        <div className="flex shrink-0 items-start gap-0.5" onClick={(e) => e.stopPropagation()}>
+          {entry.comments_url && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                window.open(entry.comments_url!, "_blank", "noopener,noreferrer");
+              }}
+              aria-label="View comments"
+              className="flex size-8 items-center justify-center rounded-4xl text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <MessageSquare className="size-3.5" />
+            </button>
+          )}
+          <ShareToggle entry={entry} feed={feed} shareId={shareId} size="icon-sm" />
+          <StarToggle entryId={entry.id} starred={entry.starred} size="icon-sm" />
+        </div>
+      )}
     </motion.a>
   );
 
