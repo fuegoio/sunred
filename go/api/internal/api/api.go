@@ -320,6 +320,7 @@ type PreviewFeedItem struct {
 }
 
 type PreviewFeedBody struct {
+	ID          int               `json:"id,omitempty"`
 	Title       string            `json:"title"`
 	SiteURL     string            `json:"site_url"`
 	FeedURL     string            `json:"feed_url"`
@@ -576,7 +577,16 @@ func (a *API) registerFeedRoutes() {
 			faviconURL = "https://www.google.com/s2/favicons?domain=" + parsed.SiteURL + "&sz=64"
 		}
 
+		// Look up the global feed by URL so the caller can fetch the
+		// subscriber count. The feed exists in the database when at least
+		// one user subscribes to it; otherwise the ID is omitted.
+		feedID := 0
+		if global, err := a.store.GetFeedByURL(ctx, feedURL); err == nil && global != nil {
+			feedID = global.ID
+		}
+
 		return &PreviewFeedOutput{Body: PreviewFeedBody{
+			ID:          feedID,
 			Title:       parsed.Title,
 			SiteURL:     parsed.SiteURL,
 			FeedURL:     feedURL,

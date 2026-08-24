@@ -421,7 +421,7 @@ export default function UserProfilePage({
                   {userFeeds.map((feed) => (
                     <li key={feed.id}>
                       <Link
-                        href={`/feeds?url=${encodeURIComponent(feed.feed_url)}&id=${feed.id}`}
+                        href={`/feeds?url=${encodeURIComponent(feed.feed_url)}`}
                         className={cn(
                           "group flex items-center gap-3 px-4 py-3",
                           "hover:bg-muted/50 transition-colors",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { FeedHeader } from "@/components/feed-header";
@@ -9,6 +10,7 @@ import { ScrollArea } from "@workspace/ui/components/scroll-area";
 import {
   getClient,
   markFeedRead,
+  deleteFeed,
   refreshFeed,
   updateFeed,
   listFolders,
@@ -24,10 +26,12 @@ import type { Feed, Folder, FeedSubscribersResponse } from "@/lib/types";
  * before this component renders; the refresh button here is for on-demand use.
  */
 export function FeedDetail({ feed, initialFolders }: { feed: Feed; initialFolders?: Folder[] }) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [marking, setMarking] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [movingFolder, setMovingFolder] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const { data: folders } = useQuery<Folder[]>({
     queryKey: ["folders"],
@@ -95,6 +99,26 @@ export function FeedDetail({ feed, initialFolders }: { feed: Feed; initialFolder
     }
   }
 
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      const { error } = await deleteFeed({
+        client: await getClient(),
+        path: { feedId: feed.id },
+      });
+      if (error) throw error;
+      await queryClient.invalidateQueries({ queryKey: ["feeds"] });
+      await queryClient.invalidateQueries({ queryKey: ["entries"] });
+      toast.success(`Unsubscribed from "${feed.title}"`);
+      router.push("/");
+      router.refresh();
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Could not delete feed"));
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <FeedHeader
@@ -108,6 +132,8 @@ export function FeedDetail({ feed, initialFolders }: { feed: Feed; initialFolder
         marking={marking}
         onMoveFolder={handleMoveFolder}
         movingFolder={movingFolder}
+        onUnsubscribe={handleDelete}
+        unsubscribing={deleting}
       />
       <ScrollArea className="flex-1 min-h-0">
         <div className="mx-auto w-full max-w-3xl">

@@ -269,6 +269,7 @@ export type PreviewFeedBody = {
     description?: string;
     favicon_url?: string;
     feed_url: string;
+    id?: number;
     items: Array<PreviewFeedItem> | null;
     site_url: string;
     title: string;
@@ -590,6 +591,7 @@ export type PreviewFeedBodyWritable = {
     description?: string;
     favicon_url?: string;
     feed_url: string;
+    id?: number;
     items: Array<PreviewFeedItem> | null;
     site_url: string;
     title: string;

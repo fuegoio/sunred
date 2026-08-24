@@ -105,7 +105,7 @@ export function EntryCard({
     : feed
       ? `/feeds/${feed.id}`
       : entry.feed?.feed_url
-        ? `/feeds?url=${encodeURIComponent(entry.feed.feed_url)}${entry.feed?.id ? `&id=${entry.feed.id}` : ""}`
+        ? `/feeds?url=${encodeURIComponent(entry.feed.feed_url)}`
         : null;
   const sharerName = entry.shared_by_name?.trim()
     ? entry.shared_by_name
