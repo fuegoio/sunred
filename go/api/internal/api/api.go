@@ -339,7 +339,7 @@ type PreviewFeedBody struct {
 type FeedSubscribersResp struct {
 	Count       int                 `json:"count"`
 	GlobalCount int                 `json:"global_count"`
-	Subscribers []store.UserProfile  `json:"subscribers"`
+	Subscribers []store.UserProfile `json:"subscribers"`
 }
 
 type PreviewFeedOutput struct {

@@ -217,10 +217,12 @@ func TestRelayConsumer_StarEvent(t *testing.T) {
 		if rkey == "rkey-star-evt" {
 			// Verify the star metadata.
 			var title, feedURL string
-			s.DB.QueryRow(
+			if err := s.DB.QueryRow(
 				`SELECT title, feed_url FROM entry_stars WHERE user_id = $1 AND article_url = $2`,
 				userID, "https://example.com/relay-star",
-			).Scan(&title, &feedURL)
+			).Scan(&title, &feedURL); err != nil {
+				t.Fatalf("read star: %v", err)
+			}
 			if title != "Relay Star" {
 				t.Errorf("title=%q, want 'Relay Star'", title)
 			}
@@ -269,10 +271,12 @@ func TestRelayConsumer_UnstarEvent(t *testing.T) {
 	deadline := time.Now().Add(3 * time.Second)
 	for time.Now().Before(deadline) {
 		var n int
-		s.DB.QueryRow(
+		if err := s.DB.QueryRow(
 			`SELECT COUNT(*) FROM entry_stars WHERE user_id = $1 AND atproto_rkey = $2`,
 			userID, "rkey-unstar-evt",
-		).Scan(&n)
+		).Scan(&n); err != nil {
+			t.Fatalf("count stars: %v", err)
+		}
 		if n == 0 {
 			cancel()
 			return

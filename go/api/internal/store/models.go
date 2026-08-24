@@ -123,12 +123,12 @@ type DeviceCode struct {
 // User represents an authenticated account. The local database is a cache of
 // the user's ATProto data; the PDS is the source of truth.
 type User struct {
-	ID        int       `json:"id"`
-	Handle    string    `json:"handle"`
-	DID       string    `json:"did,omitempty"`
-	DisplayName string  `json:"display_name,omitempty"`
-	Bio       string    `json:"bio,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
+	ID          int       `json:"id"`
+	Handle      string    `json:"handle"`
+	DID         string    `json:"did,omitempty"`
+	DisplayName string    `json:"display_name,omitempty"`
+	Bio         string    `json:"bio,omitempty"`
+	CreatedAt   time.Time `json:"created_at"`
 	// PDSSyncStatus tracks the post-login backfill from the user's PDS:
 	// "syncing" while in progress, "idle" once done, "failed" on error.
 	// The web UI polls this to show a waiting state on first login.

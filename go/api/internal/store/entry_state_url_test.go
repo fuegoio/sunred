@@ -110,9 +110,11 @@ func TestToggleEntryStarredByURL_StarWithoutEntry(t *testing.T) {
 
 	// ensureSharedEntry should have materialized the entry (feed_url was provided).
 	var entryCount int
-	s.DB.QueryRow(
+	if err := s.DB.QueryRow(
 		`SELECT COUNT(*) FROM entries WHERE url = $1`, articleURL,
-	).Scan(&entryCount)
+	).Scan(&entryCount); err != nil {
+		t.Fatalf("count entries: %v", err)
+	}
 	if entryCount != 1 {
 		t.Errorf("expected 1 materialized entry, got %d", entryCount)
 	}
@@ -139,9 +141,11 @@ func TestToggleEntryStarredByURL_StarWithoutFeedURL(t *testing.T) {
 
 	// No entry should be materialized.
 	var entryCount int
-	s.DB.QueryRow(
+	if err := s.DB.QueryRow(
 		`SELECT COUNT(*) FROM entries WHERE url = $1`, articleURL,
-	).Scan(&entryCount)
+	).Scan(&entryCount); err != nil {
+		t.Fatalf("count entries: %v", err)
+	}
 	if entryCount != 0 {
 		t.Errorf("expected 0 entries, got %d", entryCount)
 	}
@@ -267,10 +271,12 @@ func TestUpdateEntryStatusByURL_MarkReadWithoutEntry(t *testing.T) {
 
 	// entry_id should be null (no materialized entry).
 	var entryID *int64
-	s.DB.QueryRow(
+	if err := s.DB.QueryRow(
 		`SELECT entry_id FROM entry_read_status WHERE user_id = $1 AND article_url = $2`,
 		userID, articleURL,
-	).Scan(&entryID)
+	).Scan(&entryID); err != nil {
+		t.Fatalf("read entry_id: %v", err)
+	}
 	if entryID != nil {
 		t.Errorf("expected null entry_id, got %d", *entryID)
 	}
@@ -298,10 +304,12 @@ func TestUpdateEntryStatusByURL_MarkReadWithEntry(t *testing.T) {
 
 	// entry_id should be linked to the materialized entry.
 	var linkedID *int64
-	s.DB.QueryRow(
+	if err := s.DB.QueryRow(
 		`SELECT entry_id FROM entry_read_status WHERE user_id = $1 AND article_url = $2`,
 		userID, articleURL,
-	).Scan(&linkedID)
+	).Scan(&linkedID); err != nil {
+		t.Fatalf("read entry_id: %v", err)
+	}
 	if linkedID == nil {
 		t.Fatal("expected non-null entry_id")
 	}
@@ -459,19 +467,23 @@ func TestUpsertStarWithRkey_MaterializesEntry(t *testing.T) {
 
 	// Entry should be materialized (feed_url was provided).
 	var entryCount int
-	s.DB.QueryRow(
+	if err := s.DB.QueryRow(
 		`SELECT COUNT(*) FROM entries WHERE url = $1`, articleURL,
-	).Scan(&entryCount)
+	).Scan(&entryCount); err != nil {
+		t.Fatalf("count entries: %v", err)
+	}
 	if entryCount != 1 {
 		t.Errorf("expected 1 materialized entry, got %d", entryCount)
 	}
 
 	// Star row should carry the metadata.
 	var title string
-	s.DB.QueryRow(
+	if err := s.DB.QueryRow(
 		`SELECT title FROM entry_stars WHERE user_id = $1 AND article_url = $2`,
 		userID, articleURL,
-	).Scan(&title)
+	).Scan(&title); err != nil {
+		t.Fatalf("read star title: %v", err)
+	}
 	if title != "Relay Star Title" {
 		t.Errorf("title=%q, want 'Relay Star Title'", title)
 	}
@@ -495,9 +507,11 @@ func TestUpsertStarWithRkey_NoFeedURL(t *testing.T) {
 
 	// No entry materialized.
 	var entryCount int
-	s.DB.QueryRow(
+	if err := s.DB.QueryRow(
 		`SELECT COUNT(*) FROM entries WHERE url = $1`, articleURL,
-	).Scan(&entryCount)
+	).Scan(&entryCount); err != nil {
+		t.Fatalf("count entries: %v", err)
+	}
 	if entryCount != 0 {
 		t.Errorf("expected 0 entries, got %d", entryCount)
 	}
