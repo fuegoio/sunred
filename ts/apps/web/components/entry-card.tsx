@@ -185,8 +185,6 @@ export function EntryCard({
     })();
   }
 
-  const rowOpacity = preview ? 1 : unread ? 1 : 0.6;
-
   const inner = (
     <motion.a
       href={entry.url ?? "#"}
@@ -194,7 +192,7 @@ export function EntryCard({
       rel={entry.url ? "noopener noreferrer" : undefined}
       onClick={handleClick}
       initial={{ opacity: 0, y: 5 }}
-      animate={{ opacity: rowOpacity, y: 0 }}
+      animate={{ opacity: 1, y: 0 }}
       // "row-hover" variant propagates to child motion elements that declare it.
       whileHover="row-hover"
       transition={{
@@ -285,7 +283,7 @@ export function EntryCard({
         </div>
         <h3
           className={cn(
-            "mt-1 line-clamp-2 text-sm transition-colors group-hover:text-primary",
+            "mt-1 line-clamp-2 text-sm",
             unread ? "font-semibold text-foreground" : "font-medium",
           )}
         >
