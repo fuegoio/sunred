@@ -428,9 +428,6 @@ export const EntrySchema = {
             format: 'int64',
             type: 'integer'
         },
-        liked: {
-            type: 'boolean'
-        },
         published_at: {
             format: 'date-time',
             type: 'string'
@@ -1671,9 +1668,6 @@ export const EntryWritableSchema = {
         id: {
             format: 'int64',
             type: 'integer'
-        },
-        liked: {
-            type: 'boolean'
         },
         published_at: {
             format: 'date-time',

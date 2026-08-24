@@ -137,7 +137,6 @@ export type Entry = {
     feed_id: number;
     hash: string;
     id: number;
-    liked?: boolean;
     published_at: string;
     shared_by?: string;
     shared_by_name?: string;
@@ -509,7 +508,6 @@ export type EntryWritable = {
     feed_id: number;
     hash: string;
     id: number;
-    liked?: boolean;
     published_at: string;
     shared_by?: string;
     shared_by_name?: string;

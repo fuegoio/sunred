@@ -346,14 +346,15 @@ func visibleEntryFilter(userID int) string {
 
 // ListEntries returns entries visible to the user — entries from feeds they
 // subscribe to, UNION entries shared by users they follow — with per-user
-// read/starred state from entry_state. Filters: feed, folder (subscription
-// folder), status, starred, full-text search, source (feeds = own
-// subscriptions only, follows = shared by followed users only). Paginated.
+// read state from entry_read_status and star state from entry_stars, both
+// joined by article URL. Filters: feed, folder (subscription folder), status,
+// starred, full-text search, source (feeds = own subscriptions only,
+// follows = shared by followed users only). Paginated.
 func (s *Store) ListEntries(ctx context.Context, userID int, feedID *int, folderID *int, status string, starred *bool, search string, source string, limit, offset int) ([]Entry, error) {
 	q := `SELECT e.id, e.feed_id, e.hash, e.title, e.url, e.comments_url,
 	             e.author, '' AS content, LEFT(e.description, 400) AS description,
-	             COALESCE(st.status, 'unread'), COALESCE(st.starred, false), COALESCE(st.liked, false),
-	             e.published_at, COALESCE(st.changed_at, e.created_at), e.tags,
+	             COALESCE(rs.status, 'unread'), (es.article_url IS NOT NULL),
+	             e.published_at, GREATEST(COALESCE(rs.changed_at, e.created_at), COALESCE(es.starred_at, e.created_at)), e.tags,
 	             f.id, f.feed_url, f.site_url, f.title, f.description,
 	             f.etag_header, f.last_modified_header, f.parsing_error, f.parsing_error_count,
 	             f.disabled, f.scraper_rules, f.rewrite_rules, f.crawler,
@@ -361,7 +362,8 @@ func (s *Store) ListEntries(ctx context.Context, userID int, feedID *int, folder
 	             COALESCE(sh.handle, ''), COALESCE(sh.display_name, '')
 	      FROM entries e
 	      JOIN feeds f ON f.id = e.feed_id
-	      LEFT JOIN entry_state st ON st.entry_id = e.id AND st.user_id = $1
+	      LEFT JOIN entry_read_status rs ON rs.user_id = $1 AND rs.article_url = e.url
+	      LEFT JOIN entry_stars es ON es.user_id = $1 AND es.article_url = e.url
 	      LEFT JOIN LATERAL (
 	        SELECT sa.user_id, sa.entry_id FROM shared_articles sa
 	        JOIN user_follows uf ON uf.followee_id = sa.user_id AND uf.follower_id = $1
@@ -400,12 +402,12 @@ func (s *Store) ListEntries(ctx context.Context, userID int, feedID *int, folder
 		argIdx++
 	}
 	if status != "" {
-		q += fmt.Sprintf(" AND COALESCE(st.status, 'unread') = $%d", argIdx)
+		q += fmt.Sprintf(" AND COALESCE(rs.status, 'unread') = $%d", argIdx)
 		args = append(args, status)
 		argIdx++
 	}
 	if starred != nil {
-		q += fmt.Sprintf(" AND COALESCE(st.starred, false) = $%d", argIdx)
+		q += fmt.Sprintf(" AND (es.article_url IS NOT NULL) = $%d", argIdx)
 		args = append(args, *starred)
 		argIdx++
 	}
@@ -428,7 +430,7 @@ func (s *Store) ListEntries(ctx context.Context, userID int, feedID *int, folder
 		var e Entry
 		var f Feed
 		if err := rows.Scan(&e.ID, &e.FeedID, &e.Hash, &e.Title, &e.URL, &e.CommentsURL,
-			&e.Author, &e.Content, &e.Description, &e.Status, &e.Starred, &e.Liked,
+			&e.Author, &e.Content, &e.Description, &e.Status, &e.Starred,
 			&e.PublishedAt, &e.ChangedAt, pq.Array(&e.Tags),
 			&f.ID, &f.FeedURL, &f.SiteURL, &f.Title, &f.Description,
 			&f.EtagHeader, &f.LastModified, &f.ParsingError, &f.ParsingErrorCount,
@@ -451,8 +453,8 @@ func (s *Store) GetEntryByID(ctx context.Context, id int64, userID int) (*Entry,
 	err := s.DB.QueryRowContext(ctx,
 		`SELECT e.id, e.feed_id, e.hash, e.title, e.url, e.comments_url,
 		        e.author, '' AS content, LEFT(e.description, 400) AS description,
-		        COALESCE(st.status, 'unread'), COALESCE(st.starred, false), COALESCE(st.liked, false),
-		        e.published_at, COALESCE(st.changed_at, e.created_at), e.tags,
+		        COALESCE(rs.status, 'unread'), (es.article_url IS NOT NULL),
+		        e.published_at, GREATEST(COALESCE(rs.changed_at, e.created_at), COALESCE(es.starred_at, e.created_at)), e.tags,
 		        f.id, f.feed_url, f.site_url, f.title, f.description,
 		        f.etag_header, f.last_modified_header, f.parsing_error, f.parsing_error_count,
 		        f.disabled, f.scraper_rules, f.rewrite_rules, f.crawler,
@@ -460,7 +462,8 @@ func (s *Store) GetEntryByID(ctx context.Context, id int64, userID int) (*Entry,
 		        COALESCE(sh.handle, ''), COALESCE(sh.display_name, '')
 		 FROM entries e
 		 JOIN feeds f ON f.id = e.feed_id
-		 LEFT JOIN entry_state st ON st.entry_id = e.id AND st.user_id = $2
+		 LEFT JOIN entry_read_status rs ON rs.user_id = $2 AND rs.article_url = e.url
+		 LEFT JOIN entry_stars es ON es.user_id = $2 AND es.article_url = e.url
 		 LEFT JOIN LATERAL (
 		   SELECT sa.user_id FROM shared_articles sa
 		   JOIN user_follows uf ON uf.followee_id = sa.user_id AND uf.follower_id = $2
@@ -469,7 +472,7 @@ func (s *Store) GetEntryByID(ctx context.Context, id int64, userID int) (*Entry,
 		 LEFT JOIN users sh ON sh.id = sh_row.user_id
 		 WHERE e.id = $1 AND (`+visibleEntryFilter(userID)+`)`, id, userID,
 	).Scan(&e.ID, &e.FeedID, &e.Hash, &e.Title, &e.URL, &e.CommentsURL,
-		&e.Author, &e.Content, &e.Description, &e.Status, &e.Starred, &e.Liked,
+		&e.Author, &e.Content, &e.Description, &e.Status, &e.Starred,
 		&e.PublishedAt, &e.ChangedAt, pq.Array(&e.Tags),
 		&f.ID, &f.FeedURL, &f.SiteURL, &f.Title, &f.Description,
 		&f.EtagHeader, &f.LastModified, &f.ParsingError, &f.ParsingErrorCount,
@@ -487,42 +490,59 @@ func (s *Store) GetEntryByID(ctx context.Context, id int64, userID int) (*Entry,
 }
 
 // UpdateEntryStatus sets the status of a set of visible entries for the user
-// via upsert into entry_state.
+// via upsert into entry_read_status, keyed by (user_id, article_url).
 func (s *Store) UpdateEntryStatus(ctx context.Context, entryIDs []int64, userID int, status string) error {
 	if len(entryIDs) == 0 {
 		return nil
 	}
 	_, err := s.DB.ExecContext(ctx,
-		`INSERT INTO entry_state (user_id, entry_id, status, changed_at)
-		 SELECT $2, e.id, $3, NOW()
+		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
+		 SELECT $2, e.url, e.id, $3, NOW()
 		 FROM entries e
 		 WHERE e.id = ANY($1) AND (`+visibleEntryFilter(userID)+`)
-		 ON CONFLICT (user_id, entry_id) DO UPDATE SET status = EXCLUDED.status, changed_at = NOW()`,
+		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = EXCLUDED.status, changed_at = NOW()`,
 		pq.Array(entryIDs), userID, status)
 	return err
 }
 
-// ToggleEntryStarred sets the starred flag on a visible entry for the user.
+// ToggleEntryStarred stars or unstars an entry for the user. Star = upsert into
+// entry_stars (carrying article metadata from the entry+feed join); unstar =
+// delete the row. Keyed by (user_id, article_url) so state survives entry
+// deletion and can exist before materialization.
 func (s *Store) ToggleEntryStarred(ctx context.Context, id int64, userID int, starred bool) error {
+	if starred {
+		_, err := s.DB.ExecContext(ctx,
+			`INSERT INTO entry_stars
+			   (user_id, article_url, entry_id, title, description,
+			    feed_url, feed_title, feed_site_url, author, published_at, starred_at)
+			 SELECT $2, e.url, e.id, e.title, e.description,
+			        f.feed_url, f.title, f.site_url, e.author, e.published_at, NOW()
+			 FROM entries e
+			 JOIN feeds f ON f.id = e.feed_id
+			 WHERE e.id = $1 AND (`+visibleEntryFilter(userID)+`)
+			 ON CONFLICT (user_id, article_url) DO UPDATE
+			   SET entry_id  = COALESCE(entry_stars.entry_id, EXCLUDED.entry_id),
+			       starred_at = NOW()`,
+			id, userID)
+		return err
+	}
 	_, err := s.DB.ExecContext(ctx,
-		`INSERT INTO entry_state (user_id, entry_id, starred, changed_at)
-		 SELECT $2, e.id, $3, NOW()
-		 FROM entries e
-		 WHERE e.id = $1 AND (`+visibleEntryFilter(userID)+`)
-		 ON CONFLICT (user_id, entry_id) DO UPDATE SET starred = EXCLUDED.starred, changed_at = NOW()`,
-		id, userID, starred)
+		`DELETE FROM entry_stars
+		 WHERE user_id = $2
+		   AND article_url = (SELECT e.url FROM entries e WHERE e.id = $1)`,
+		id, userID)
 	return err
 }
 
 // MarkFeedEntriesRead marks all unread entries in the given feed as read for
-// the user (upserts entry_state to 'read').
+// the user (upserts entry_read_status to 'read').
 func (s *Store) MarkFeedEntriesRead(ctx context.Context, feedID, userID int) error {
 	_, err := s.DB.ExecContext(ctx,
-		`INSERT INTO entry_state (user_id, entry_id, status, changed_at)
-		 SELECT $2, e.id, 'read', NOW()
+		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
+		 SELECT $2, e.url, e.id, 'read', NOW()
 		 FROM entries e
 		 WHERE e.feed_id = $1 AND (`+visibleEntryFilter(userID)+`)
-		 ON CONFLICT (user_id, entry_id) DO UPDATE SET status = 'read', changed_at = NOW()`,
+		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = 'read', changed_at = NOW()`,
 		feedID, userID)
 	return err
 }
@@ -537,16 +557,16 @@ func (s *Store) CountEntriesByFeed(ctx context.Context, feedID int) (int, error)
 }
 
 // MarkAllEntriesRead marks every visible unread entry as read for the user
-// (upserts entry_state to 'read' for all subscribed feeds and shares by
+// (upserts entry_read_status to 'read' for all subscribed feeds and shares by
 // followed users).
 func (s *Store) MarkAllEntriesRead(ctx context.Context, userID int) error {
 	_, err := s.DB.ExecContext(ctx,
-		`INSERT INTO entry_state (user_id, entry_id, status, changed_at)
-		 SELECT $1, e.id, 'read', NOW()
+		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
+		 SELECT $1, e.url, e.id, 'read', NOW()
 		 FROM entries e
-		 WHERE COALESCE((SELECT st.status FROM entry_state st WHERE st.entry_id = e.id AND st.user_id = $1), 'unread') = 'unread'
+		 WHERE COALESCE((SELECT st.status FROM entry_read_status st WHERE st.article_url = e.url AND st.user_id = $1), 'unread') = 'unread'
 		   AND (`+visibleEntryFilter(userID)+`)
-		 ON CONFLICT (user_id, entry_id) DO UPDATE SET status = 'read', changed_at = NOW()`,
+		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = 'read', changed_at = NOW()`,
 		userID)
 	return err
 }

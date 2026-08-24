@@ -78,26 +78,36 @@ func seedFeed(t *testing.T, s *Store, userID int, folderID *int, title string) i
 }
 
 // seedEntry creates a global entry against feedID and writes per-user state
-// (status/starred) for userID. Absent state means unread; a state row is only
-// inserted when the entry is not "unread unstarred". Returns the entry ID.
+// (status/starred) for userID. Absent state means unread; a read-status row is
+// only inserted when status is not "unread"; a star row is only inserted when
+// starred is true. Returns the entry ID.
 func seedEntry(t *testing.T, s *Store, userID, feedID int, title, status string, starred bool) int64 {
 	t.Helper()
 	var id int64
+	entryURL := fmt.Sprintf("https://example.com/%s", title)
 	err := s.DB.QueryRow(
-		`INSERT INTO entries (feed_id, hash, title, content, published_at)
-		 VALUES ($1, $2, $3, $3, NOW())
+		`INSERT INTO entries (feed_id, hash, title, url, content, published_at)
+		 VALUES ($1, $2, $3, $4, $3, NOW())
 		 RETURNING id`,
-		feedID, fmt.Sprintf("hash-%d-%s", feedID, title), title,
+		feedID, fmt.Sprintf("hash-%d-%s", feedID, title), title, entryURL,
 	).Scan(&id)
 	if err != nil {
 		t.Fatalf("seed entry: %v", err)
 	}
-	if status != "unread" || starred {
+	if status != "unread" {
 		if _, err := s.DB.Exec(
-			`INSERT INTO entry_state (user_id, entry_id, status, starred) VALUES ($1, $2, $3, $4)`,
-			userID, id, status, starred,
+			`INSERT INTO entry_read_status (user_id, article_url, entry_id, status) VALUES ($1, $2, $3, $4)`,
+			userID, entryURL, id, status,
 		); err != nil {
-			t.Fatalf("seed entry state: %v", err)
+			t.Fatalf("seed read status: %v", err)
+		}
+	}
+	if starred {
+		if _, err := s.DB.Exec(
+			`INSERT INTO entry_stars (user_id, article_url, entry_id) VALUES ($1, $2, $3)`,
+			userID, entryURL, id,
+		); err != nil {
+			t.Fatalf("seed star: %v", err)
 		}
 	}
 	t.Cleanup(func() {

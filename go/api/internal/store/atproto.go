@@ -216,20 +216,21 @@ func (s *Store) GetFeedATProtoRkey(ctx context.Context, userID, feedID int) (str
 	return rkey.String, err
 }
 
-// SetStarATProtoRkey records the AT Proto rkey for a starred entry.
-func (s *Store) SetStarATProtoRkey(ctx context.Context, userID int, entryID int64, rkey string) error {
+// SetStarATProtoRkey records the AT Proto rkey for a starred article.
+// Keyed by (user_id, article_url) since entry_stars is URL-keyed.
+func (s *Store) SetStarATProtoRkey(ctx context.Context, userID int, articleURL, rkey string) error {
 	_, err := s.DB.ExecContext(ctx, `
-		UPDATE entry_state SET atproto_rkey = $3
-		 WHERE user_id = $1 AND entry_id = $2`, userID, entryID, rkey,
+		UPDATE entry_stars SET atproto_rkey = $3
+		 WHERE user_id = $1 AND article_url = $2`, userID, articleURL, rkey,
 	)
 	return err
 }
 
-// GetStarATProtoRkey retrieves the AT Proto rkey for a starred entry.
-func (s *Store) GetStarATProtoRkey(ctx context.Context, userID int, entryID int64) (string, error) {
+// GetStarATProtoRkey retrieves the AT Proto rkey for a starred article.
+func (s *Store) GetStarATProtoRkey(ctx context.Context, userID int, articleURL string) (string, error) {
 	var rkey sql.NullString
 	err := s.DB.QueryRowContext(ctx, `
-		SELECT atproto_rkey FROM entry_state WHERE user_id = $1 AND entry_id = $2`, userID, entryID,
+		SELECT atproto_rkey FROM entry_stars WHERE user_id = $1 AND article_url = $2`, userID, articleURL,
 	).Scan(&rkey)
 	if err == sql.ErrNoRows {
 		return "", nil

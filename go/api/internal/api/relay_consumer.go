@@ -261,9 +261,16 @@ func (c *RelayConsumer) handleUnshareEvent(ctx context.Context, evt *relayEvent)
 }
 
 type starPayload struct {
-	Rkey       string `json:"rkey"`
-	ArticleURL string `json:"articleUrl"`
-	CreatedAt  string `json:"createdAt"`
+	Rkey        string `json:"rkey"`
+	ArticleURL  string `json:"articleUrl"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	FeedURL     string `json:"feedUrl"`
+	FeedTitle   string `json:"feedTitle"`
+	FeedSiteURL string `json:"feedSiteUrl"`
+	Author      string `json:"author"`
+	PublishedAt string `json:"publishedAt"`
+	CreatedAt   string `json:"createdAt"`
 }
 
 func (c *RelayConsumer) handleStarEvent(ctx context.Context, evt *relayEvent) error {
@@ -275,7 +282,19 @@ func (c *RelayConsumer) handleStarEvent(ctx context.Context, evt *relayEvent) er
 	if userID == 0 {
 		return nil
 	}
-	return c.store.UpsertStarWithRkey(ctx, userID, p.ArticleURL, p.Rkey)
+	var publishedAt *time.Time
+	if p.PublishedAt != "" {
+		t, err := time.Parse(time.RFC3339, p.PublishedAt)
+		if err == nil {
+			utc := t.UTC()
+			publishedAt = &utc
+		}
+	}
+	return c.store.UpsertStarWithRkey(ctx, userID,
+		p.ArticleURL, p.Title, p.Description,
+		p.FeedURL, p.FeedTitle, p.FeedSiteURL,
+		p.Author, publishedAt, p.Rkey,
+	)
 }
 
 func (c *RelayConsumer) handleUnstarEvent(ctx context.Context, evt *relayEvent) error {

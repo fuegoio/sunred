@@ -32,6 +32,11 @@ func backfillUserFromPDS(ctx context.Context, c *atproto.Client, st *store.Store
 				slog.Warn("backfill: shares", "did", did, "err", err)
 				errs = append(errs, err)
 			}
+		case atproto.CollectionStar:
+			if err := backfillStars(ctx, c, st, userID, did); err != nil {
+				slog.Warn("backfill: stars", "did", did, "err", err)
+				errs = append(errs, err)
+			}
 		case atproto.CollectionSubscription:
 			if err := backfillFeedSubscriptions(ctx, c, st, userID, did); err != nil {
 				slog.Warn("backfill: feed subs", "did", did, "err", err)
@@ -112,7 +117,46 @@ func backfillShares(ctx context.Context, c *atproto.Client, st *store.Store, use
 		}
 		cursor = out.Cursor
 	}
-	slog.Info("sync: feed subscriptions backfilled", "user_id", userID, "count", count)
+	slog.Info("sync: shares backfilled", "user_id", userID, "count", count)
+	return nil
+}
+
+func backfillStars(ctx context.Context, c *atproto.Client, st *store.Store, userID int, did string) error {
+	cursor := ""
+	var count int
+	for {
+		out, err := c.ListRecords(ctx, did, atproto.CollectionStar, 100, cursor)
+		if err != nil {
+			return fmt.Errorf("list stars: %w", err)
+		}
+		for _, rec := range out.Records {
+			var s atproto.StarRecord
+			if err := json.Unmarshal(rec.Value, &s); err != nil || s.ArticleURL == "" {
+				continue
+			}
+			rkey := rkeyFromURI(rec.URI)
+			var publishedAt *time.Time
+			if s.PublishedAt != "" {
+				if t, err := time.Parse(time.RFC3339, s.PublishedAt); err == nil {
+					utc := t.UTC()
+					publishedAt = &utc
+				}
+			}
+			if err := st.UpsertStarWithRkey(ctx, userID,
+				s.ArticleURL, s.Title, s.Description,
+				s.FeedURL, s.FeedTitle, s.FeedSiteURL,
+				s.Author, publishedAt, rkey,
+			); err != nil {
+				slog.Warn("backfill: upsert star", "article_url", s.ArticleURL, "err", err)
+			}
+			count++
+		}
+		if out.Cursor == "" {
+			break
+		}
+		cursor = out.Cursor
+	}
+	slog.Info("sync: stars backfilled", "user_id", userID, "count", count)
 	return nil
 }
 

@@ -319,6 +319,7 @@ func (h *OAuthHandlers) syncFromPDS(ctx context.Context, did string, userID int,
 	return backfillUserFromPDS(ctx, c, h.store, userID, did, []string{
 		atproto.CollectionFollow,
 		atproto.CollectionShare,
+		atproto.CollectionStar,
 		atproto.CollectionSubscription,
 	})
 }

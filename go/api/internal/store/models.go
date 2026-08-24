@@ -42,13 +42,14 @@ type Feed struct {
 	UpdatedAt         time.Time  `json:"updated_at"`
 }
 
-// Entry is a single article/item belonging to a global feed. Read/starred
-// state is per-user (entry_state) and is populated on read; absent state means
-// unread. Feed is the nested global source feed (joined on read) so a consumer
-// can render the source feed and offer a subscribe affordance without an extra
-// lookup, including for shares from feeds the viewer doesn't subscribe to.
-// SharedBy/SharedByName identify the followed user who shared the entry, when
-// the entry reached the viewer via a share rather than a subscription.
+// Entry is a single article/item belonging to a global feed. Read state lives
+// in entry_read_status and star state in entry_stars, both per-user and keyed
+// by article URL; absent state means unread/unstarred. Feed is the nested
+// global source feed (joined on read) so a consumer can render the source
+// feed and offer a subscribe affordance without an extra lookup, including
+// for shares from feeds the viewer doesn't subscribe to. SharedBy/SharedByName
+// identify the followed user who shared the entry, when the entry reached the
+// viewer via a share rather than a subscription.
 type Entry struct {
 	ID           int64       `json:"id"`
 	FeedID       int         `json:"feed_id"`
@@ -61,7 +62,6 @@ type Entry struct {
 	Description  string      `json:"description,omitempty"`
 	Status       string      `json:"status"`
 	Starred      bool        `json:"starred"`
-	Liked        bool        `json:"liked,omitempty"`
 	PublishedAt  time.Time   `json:"published_at"`
 	ChangedAt    time.Time   `json:"changed_at"`
 	Tags         []string    `json:"tags,omitempty"`
