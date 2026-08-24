@@ -16,6 +16,7 @@ export default function StarredPage() {
             filter={{ starred: true }}
             emptyTitle="No starred articles"
             emptyDescription="Star articles you want to keep — they'll show up here for quick access."
+            emptyAction={null}
             animateExit
           />
         </div>

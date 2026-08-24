@@ -18,6 +18,7 @@ import {
 import { getClient, listEntries, listFeeds, mySharedArticles, unwrap } from "@/lib/sunred";
 import type { Entry, Feed, SharedArticle } from "@/lib/types";
 import { buttonVariants } from "@workspace/ui/components/button";
+import type { ReactNode } from "react";
 import { cn } from "@workspace/ui/lib/utils";
 
 const EASE = [0.25, 1, 0.5, 1] as const;
@@ -49,12 +50,18 @@ export function EntryTimeline({
   emptyTitle = "Nothing here yet",
   emptyDescription = "Subscribe to feeds and your latest articles will appear here.",
   emptyVariant = "default",
+  emptyAction = "default",
   animateExit = false,
 }: {
   filter: EntryFilter;
   emptyTitle?: string;
   emptyDescription?: string;
   emptyVariant?: "default" | "celebration";
+  /**
+   * CTA rendered in the default empty state. Pass `null` to hide it, or a node
+   * to render a custom action. Defaults to a "Subscribe to a feed" link.
+   */
+  emptyAction?: ReactNode | "default" | null;
   animateExit?: boolean;
 }) {
   const { data: feeds } = useQuery<Feed[]>({
@@ -191,9 +198,13 @@ export function EntryTimeline({
             <EmptyDescription>{emptyDescription}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Link href="/feeds/new" className={cn(buttonVariants({ size: "sm" }))}>
-              Subscribe to a feed
-            </Link>
+            {emptyAction === null ? null : emptyAction === "default" ? (
+              <Link href="/feeds/new" className={cn(buttonVariants({ size: "sm" }))}>
+                Subscribe to a feed
+              </Link>
+            ) : (
+              emptyAction
+            )}
           </EmptyContent>
         </Empty>
       </div>
