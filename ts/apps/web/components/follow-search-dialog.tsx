@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Search, Loader2, UserPlus, UserCheck, X } from "lucide-react";
-import { Avatar } from "@base-ui/react/avatar";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +16,7 @@ import {
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { UserAvatar } from "@/components/user-avatar";
 import { getClient, searchUsers, followUser, unfollowUser, unwrap } from "@/lib/sunred";
 import { getApiErrorMessage } from "@/lib/errors";
 import type { UserProfile } from "@/lib/types";
@@ -67,9 +67,11 @@ function SearchRow({
         href={`/users/${profile.handle}`}
         className="flex min-w-0 flex-1 items-center gap-3"
       >
-        <Avatar.Root className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground select-none">
-          <Avatar.Fallback>{displayName(profile).charAt(0).toUpperCase()}</Avatar.Fallback>
-        </Avatar.Root>
+        <UserAvatar
+          displayName={profile.display_name}
+          handle={profile.handle}
+          className="size-9 text-sm font-medium"
+        />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium leading-tight">
             {highlight(displayName(profile), query)}

@@ -13,6 +13,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { UserAvatar } from "@/components/user-avatar";
 import { getClient, getMe, updateMe, deleteMe, updateHandle, unwrap } from "@/lib/sunred";
 import { signout } from "@/lib/auth";
 import { getApiErrorMessage } from "@/lib/errors";
@@ -35,18 +36,12 @@ type ProfileValues = z.infer<typeof profileSchema>;
 // ---------------------------------------------------------------------------
 
 function AvatarDisplay({ displayName, handle }: { displayName?: string; handle?: string }) {
-  const initial = (displayName?.trim() || handle || "?").charAt(0).toUpperCase();
   return (
-    <div
-      className={cn(
-        "flex size-16 shrink-0 items-center justify-center rounded-full",
-        "bg-primary text-xl font-semibold text-primary-foreground",
-        "select-none",
-      )}
-      aria-hidden="true"
-    >
-      {initial}
-    </div>
+    <UserAvatar
+      displayName={displayName}
+      handle={handle ?? "?"}
+      className="size-16 text-xl font-semibold"
+    />
   );
 }
 

@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Menu } from "@base-ui/react/menu";
-import { Avatar } from "@base-ui/react/avatar";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { getClient, listFeeds, listFolders, listFollowing, unwrap } from "@/lib/sunred";
 import { signout } from "@/lib/auth";
@@ -25,6 +24,7 @@ import { OfflineBadge } from "@/components/offline-badge";
 import { FeedTree } from "@/components/feed-tree";
 import { SearchBox } from "@/components/search-box";
 import { FollowSearchDialog } from "@/components/follow-search-dialog";
+import { UserAvatar } from "@/components/user-avatar";
 import { buttonVariants } from "@workspace/ui/components/button";
 import { FolderCreateDialog } from "@/components/folder-create-dialog";
 import { cn } from "@workspace/ui/lib/utils";
@@ -98,9 +98,7 @@ export function AccountButton({ userHandle }: { userHandle: string }) {
         )}
         aria-label="Account menu"
       >
-        <Avatar.Root className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-          <Avatar.Fallback>{userHandle.charAt(0).toUpperCase()}</Avatar.Fallback>
-        </Avatar.Root>
+        <UserAvatar handle={userHandle} className="size-7 text-xs font-medium" />
         <span className="truncate text-sm font-medium">@{userHandle}</span>
       </Menu.Trigger>
       <Menu.Portal>
@@ -159,10 +157,6 @@ function SidebarContent({ userHandle }: { userHandle: string }) {
   });
 
   const isLoading = feedsLoading || foldersLoading;
-
-  function profileDisplay(p: UserProfile): string {
-    return p.display_name?.trim() || `@${p.handle}`;
-  }
 
   return (
     <div className="flex h-full flex-col">
@@ -267,9 +261,11 @@ function SidebarContent({ userHandle }: { userHandle: string }) {
                         : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                     )}
                   >
-                    <Avatar.Root className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground select-none">
-                      <Avatar.Fallback>{profileDisplay(p).charAt(0).toUpperCase()}</Avatar.Fallback>
-                    </Avatar.Root>
+                    <UserAvatar
+                      displayName={p.display_name}
+                      handle={p.handle}
+                      className="size-5 text-[10px] font-medium"
+                    />
                     <span className="truncate">@{p.handle}</span>
                   </Link>
                 );

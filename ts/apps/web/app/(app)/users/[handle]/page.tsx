@@ -4,12 +4,12 @@ import { use } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Users, UserCheck, UserPlus, Menu as MenuIcon, ChevronRight, Rss } from "lucide-react";
-import { Avatar } from "@base-ui/react/avatar";
 import { toast } from "sonner";
 import { EntryCard } from "@/components/entry-card";
 import { EntryCardSkeleton } from "@/components/entry-card-skeleton";
 import { FeedIcon } from "@/components/feed-icon";
 import { useShell } from "@/components/shell-context";
+import { UserAvatar } from "@/components/user-avatar";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Button } from "@workspace/ui/components/button";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
@@ -162,16 +162,11 @@ function ProfileMasthead({
           </Button>
         )}
 
-        <Avatar.Root
-          className={cn(
-            "flex size-12 shrink-0 items-center justify-center rounded-full",
-            "bg-muted text-lg font-semibold text-foreground select-none",
-          )}
-        >
-          <Avatar.Fallback>
-            {(hasDisplayName ? displayName.charAt(0) : handle.charAt(0)).toUpperCase()}
-          </Avatar.Fallback>
-        </Avatar.Root>
+        <UserAvatar
+          displayName={hasDisplayName ? displayName : undefined}
+          handle={handle}
+          className="size-12 text-lg font-semibold"
+        />
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
