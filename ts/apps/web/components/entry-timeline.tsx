@@ -213,7 +213,11 @@ export function EntryTimeline({
 
   return (
     <div className="divide-y divide-border">
-      <AnimatePresence initial={false}>
+      {/* No `initial={false}`: the first-page entrance is intentional — it
+       * drives the staggered fade-in in EntryCard via `staggerIndex`. Disabling
+       * it would suppress the entrance for the whole first page; only newly
+       * appended pages (infinite scroll) would animate. */}
+      <AnimatePresence>
         {entries.map((entry, i) => (
           <EntryCard
             key={entry.id}
