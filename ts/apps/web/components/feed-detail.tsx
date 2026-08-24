@@ -3,20 +3,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  ExternalLink,
-  CheckCheck,
-  Loader2,
-  RefreshCw,
-  Rss,
-} from "lucide-react";
-import { FeedRenameDialog } from "@/components/feed-rename-dialog";
-import { FolderPickerPopover } from "@/components/folder-picker-popover";
-import { SubscribersDialog } from "@/components/subscribers-dialog";
-import { SubscribeButton } from "@/components/subscribe-button";
-import { Button, buttonVariants } from "@workspace/ui/components/button";
-import { FeedIcon } from "@/components/feed-icon";
-import { PageHeader } from "@/components/page-header";
+import { FeedHeader } from "@/components/feed-header";
 import { EntryTimeline } from "@/components/entry-timeline";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
 import {
@@ -29,7 +16,6 @@ import {
   unwrap,
 } from "@/lib/sunred";
 import { getApiErrorMessage } from "@/lib/errors";
-import { cn } from "@workspace/ui/lib/utils";
 import type { Feed, Folder, FeedSubscribersResponse } from "@/lib/types";
 
 /**
@@ -111,81 +97,18 @@ export function FeedDetail({ feed, initialFolders }: { feed: Feed; initialFolder
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <div className="shrink-0">
-        <div className="mx-auto w-full max-w-3xl">
-          <PageHeader
-            className="static"
-            title={feed.title || "Untitled feed"}
-            icon={<FeedIcon siteUrl={feed.site_url} className="size-5 shrink-0 rounded-md" />}
-            actions={
-              <div className="flex items-center gap-1">
-                <FeedRenameDialog feed={feed} />
-                <SubscribeButton
-                  subscribed
-                  feedId={feed.id}
-                  feedUrl={feed.feed_url}
-                  feedTitle={feed.title}
-                />
-                {feed.site_url && (
-                  <a
-                    href={feed.site_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Open website"
-                    className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }))}
-                  >
-                    <ExternalLink className="size-3.5" />
-                  </a>
-                )}
-                {feed.feed_url && (
-                  <a
-                    href={feed.feed_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Open feed XML"
-                    className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }))}
-                  >
-                    <Rss className="size-3.5" />
-                  </a>
-                )}
-              </div>
-            }
-            metadata={
-              <>
-                {feed.description && <p>{feed.description}</p>}
-                {feed.parsing_error && (
-                  <p className="mt-1 text-destructive">Last parse error: {feed.parsing_error}</p>
-                )}
-              </>
-            }
-          />
-          <div className="flex items-center gap-2 border-b border-border px-4 py-2 pl-[52px] lg:pl-[48px]">
-            <Button variant="outline" size="sm" onClick={handleMarkAllRead} disabled={marking}>
-              {marking ? <Loader2 className="animate-spin" /> : <CheckCheck />}
-              Mark all as read
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
-              {refreshing ? <Loader2 className="animate-spin" /> : <RefreshCw />}
-              Refresh
-            </Button>
-            <FolderPickerPopover
-              folders={folders}
-              currentFolderId={feed.folder_id}
-              disabled={movingFolder}
-              onSelect={(folderId) => handleMoveFolder(folderId)}
-            />
-            {subscribers !== undefined && (
-              <div className="ml-auto">
-                <SubscribersDialog
-                  count={subscribers.count}
-                  globalCount={subscribers.global_count}
-                  subscribers={subscribers.subscribers ?? []}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <FeedHeader
+        feed={feed}
+        subscribed
+        folders={folders}
+        subscribers={subscribers}
+        onRefresh={handleRefresh}
+        refreshing={refreshing}
+        onMarkAllRead={handleMarkAllRead}
+        marking={marking}
+        onMoveFolder={handleMoveFolder}
+        movingFolder={movingFolder}
+      />
       <ScrollArea className="flex-1 min-h-0">
         <div className="mx-auto w-full max-w-3xl">
           <EntryTimeline
