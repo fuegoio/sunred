@@ -8,6 +8,7 @@ export type {
   ErrorDetail,
   ErrorModel,
   Feed,
+  FeedSubscribersResp,
   FeedSubscribersResponse,
   FeedWritable,
   Folder,

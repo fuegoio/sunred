@@ -217,6 +217,12 @@ export type Feed = {
     updated_at: string;
 };
 
+export type FeedSubscribersResp = {
+    count: number;
+    global_count: number;
+    subscribers: Array<UserProfile> | null;
+};
+
 export type FeedSubscribersResponse = {
     /**
      * A URL to the JSON Schema for this object.
@@ -272,6 +278,7 @@ export type PreviewFeedBody = {
     id?: number;
     items: Array<PreviewFeedItem> | null;
     site_url: string;
+    subscribers?: FeedSubscribersResp;
     title: string;
 };
 
@@ -559,6 +566,12 @@ export type FeedWritable = {
     updated_at: string;
 };
 
+export type FeedSubscribersRespWritable = {
+    count: number;
+    global_count: number;
+    subscribers: Array<UserProfileWritable> | null;
+};
+
 export type FeedSubscribersResponseWritable = {
     count: number;
     global_count: number;
@@ -594,6 +607,7 @@ export type PreviewFeedBodyWritable = {
     id?: number;
     items: Array<PreviewFeedItem> | null;
     site_url: string;
+    subscribers?: FeedSubscribersRespWritable;
     title: string;
 };
 

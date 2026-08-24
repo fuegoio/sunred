@@ -642,6 +642,35 @@ export const FeedSchema = {
     type: 'object'
 } as const;
 
+export const FeedSubscribersRespSchema = {
+    additionalProperties: false,
+    properties: {
+        count: {
+            format: 'int64',
+            type: 'integer'
+        },
+        global_count: {
+            format: 'int64',
+            type: 'integer'
+        },
+        subscribers: {
+            items: {
+                $ref: '#/components/schemas/UserProfile'
+            },
+            type: [
+                'array',
+                'null'
+            ]
+        }
+    },
+    required: [
+        'count',
+        'global_count',
+        'subscribers'
+    ],
+    type: 'object'
+} as const;
+
 export const FeedSubscribersResponseSchema = {
     additionalProperties: false,
     properties: {
@@ -842,6 +871,9 @@ export const PreviewFeedBodySchema = {
         },
         site_url: {
             type: 'string'
+        },
+        subscribers: {
+            $ref: '#/components/schemas/FeedSubscribersResp'
         },
         title: {
             type: 'string'
@@ -1818,6 +1850,35 @@ export const FeedWritableSchema = {
     type: 'object'
 } as const;
 
+export const FeedSubscribersRespWritableSchema = {
+    additionalProperties: false,
+    properties: {
+        count: {
+            format: 'int64',
+            type: 'integer'
+        },
+        global_count: {
+            format: 'int64',
+            type: 'integer'
+        },
+        subscribers: {
+            items: {
+                $ref: '#/components/schemas/UserProfileWritable'
+            },
+            type: [
+                'array',
+                'null'
+            ]
+        }
+    },
+    required: [
+        'count',
+        'global_count',
+        'subscribers'
+    ],
+    type: 'object'
+} as const;
+
 export const FeedSubscribersResponseWritableSchema = {
     additionalProperties: false,
     properties: {
@@ -1973,6 +2034,9 @@ export const PreviewFeedBodyWritableSchema = {
         },
         site_url: {
             type: 'string'
+        },
+        subscribers: {
+            $ref: '#/components/schemas/FeedSubscribersRespWritable'
         },
         title: {
             type: 'string'

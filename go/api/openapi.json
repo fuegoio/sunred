@@ -626,6 +626,34 @@
                 ],
                 "type": "object"
             },
+            "FeedSubscribersResp": {
+                "additionalProperties": false,
+                "properties": {
+                    "count": {
+                        "format": "int64",
+                        "type": "integer"
+                    },
+                    "global_count": {
+                        "format": "int64",
+                        "type": "integer"
+                    },
+                    "subscribers": {
+                        "items": {
+                            "$ref": "#/components/schemas/UserProfile"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "count",
+                    "global_count",
+                    "subscribers"
+                ],
+                "type": "object"
+            },
             "FeedSubscribersResponse": {
                 "additionalProperties": false,
                 "properties": {
@@ -822,6 +850,9 @@
                     },
                     "site_url": {
                         "type": "string"
+                    },
+                    "subscribers": {
+                        "$ref": "#/components/schemas/FeedSubscribersResp"
                     },
                     "title": {
                         "type": "string"

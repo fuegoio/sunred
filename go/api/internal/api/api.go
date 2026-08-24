@@ -320,13 +320,22 @@ type PreviewFeedItem struct {
 }
 
 type PreviewFeedBody struct {
-	ID          int               `json:"id,omitempty"`
-	Title       string            `json:"title"`
-	SiteURL     string            `json:"site_url"`
-	FeedURL     string            `json:"feed_url"`
-	Description string            `json:"description,omitempty"`
-	FaviconURL  string            `json:"favicon_url,omitempty"`
-	Items       []PreviewFeedItem `json:"items"`
+	ID          int                  `json:"id,omitempty"`
+	Title       string               `json:"title"`
+	SiteURL     string               `json:"site_url"`
+	FeedURL     string               `json:"feed_url"`
+	Description string               `json:"description,omitempty"`
+	FaviconURL  string               `json:"favicon_url,omitempty"`
+	Items       []PreviewFeedItem    `json:"items"`
+	Subscribers *FeedSubscribersResp `json:"subscribers,omitempty"`
+}
+
+// FeedSubscribersResp is the subscriber summary embedded in the preview
+// response when the feed is known to the instance.
+type FeedSubscribersResp struct {
+	Count       int                 `json:"count"`
+	GlobalCount int                 `json:"global_count"`
+	Subscribers []store.UserProfile  `json:"subscribers"`
 }
 
 type PreviewFeedOutput struct {
@@ -577,12 +586,24 @@ func (a *API) registerFeedRoutes() {
 			faviconURL = "https://www.google.com/s2/favicons?domain=" + parsed.SiteURL + "&sz=64"
 		}
 
-		// Look up the global feed by URL so the caller can fetch the
-		// subscriber count. The feed exists in the database when at least
-		// one user subscribes to it; otherwise the ID is omitted.
+		// Look up the global feed by URL. When it exists (at least one user
+		// subscribes), include the feed ID and the subscriber summary so the
+		// discovery view can show the subscriber count without a separate
+		// round trip.
 		feedID := 0
+		var subs *FeedSubscribersResp
 		if global, err := a.store.GetFeedByURL(ctx, feedURL); err == nil && global != nil {
 			feedID = global.ID
+			count, _ := a.store.CountFeedSubscribers(ctx, global.ID)
+			list, _ := a.store.ListFeedSubscribers(ctx, global.ID)
+			if list == nil {
+				list = []store.UserProfile{}
+			}
+			subs = &FeedSubscribersResp{
+				Count:       count,
+				GlobalCount: int(a.relayGetFeedSubscriberCount(ctx, global.FeedURL)),
+				Subscribers: list,
+			}
 		}
 
 		return &PreviewFeedOutput{Body: PreviewFeedBody{
@@ -593,6 +614,7 @@ func (a *API) registerFeedRoutes() {
 			Description: parsed.Description,
 			FaviconURL:  faviconURL,
 			Items:       items,
+			Subscribers: subs,
 		}}, nil
 	})
 }
