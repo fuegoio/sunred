@@ -547,23 +547,13 @@ func (s *Store) GetEntryStatesByURLs(ctx context.Context, userID int, urls []str
 	return out, nil
 }
 
-// UpdateEntryStatus sets the status of a set of visible entries for the user.
-// For status "read" the matching entry_read_status rows are deleted (absence
-// = read is the default); for "unread" or "removed" the rows are upserted.
+// UpdateEntryStatus sets the status of a set of visible entries for the user
+// via upsert into entry_read_status, keyed by (user_id, article_url). Storing
+// an explicit 'read' row (rather than relying on the absence default) is a
+// stronger signal that the user has seen the article.
 func (s *Store) UpdateEntryStatus(ctx context.Context, entryIDs []int64, userID int, status string) error {
 	if len(entryIDs) == 0 {
 		return nil
-	}
-	if status == "read" {
-		_, err := s.DB.ExecContext(ctx,
-			`DELETE FROM entry_read_status
-			 WHERE user_id = $2
-			   AND article_url IN (
-			     SELECT e.url FROM entries e
-			     WHERE e.id = ANY($1) AND (`+visibleEntryFilter(userID)+`)
-			   )`,
-			pq.Array(entryIDs), userID)
-		return err
 	}
 	_, err := s.DB.ExecContext(ctx,
 		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
@@ -643,18 +633,13 @@ func (s *Store) ToggleEntryStarredByURL(ctx context.Context, userID int,
 }
 
 // UpdateEntryStatusByURL sets the read status of an article by URL, without
-// requiring a materialized entry. For status "read" the matching row is
-// deleted (absence = read is the default); for "unread" or "removed" the row
-// is upserted, linking entry_id when the entry exists. Used by the URL-based
-// read endpoint for preview and shared articles.
+// requiring a materialized entry. If the entry exists, entry_id is linked
+// (picks the first match if the same URL appears in multiple feeds);
+// otherwise the status row is created with a null entry_id. Used by the
+// URL-based read endpoint for preview and shared articles. Storing an
+// explicit 'read' row is a stronger signal than relying on absence.
 func (s *Store) UpdateEntryStatusByURL(ctx context.Context, userID int, articleURL, status string) error {
 	articleURL = urlnorm.URL(articleURL)
-	if status == "read" {
-		_, err := s.DB.ExecContext(ctx,
-			`DELETE FROM entry_read_status WHERE user_id = $1 AND article_url = $2`,
-			userID, articleURL)
-		return err
-	}
 	_, err := s.DB.ExecContext(ctx,
 		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
 		 SELECT $1, $2, (SELECT e.id FROM entries e WHERE e.url = $2 LIMIT 1), $3, NOW()
@@ -664,15 +649,14 @@ func (s *Store) UpdateEntryStatusByURL(ctx context.Context, userID int, articleU
 }
 
 // MarkFeedEntriesRead marks all entries in the given feed as read for the
-// user (deletes their entry_read_status rows — absence = read).
+// user (upserts entry_read_status to 'read').
 func (s *Store) MarkFeedEntriesRead(ctx context.Context, feedID, userID int) error {
 	_, err := s.DB.ExecContext(ctx,
-		`DELETE FROM entry_read_status
-		 WHERE user_id = $2
-		   AND article_url IN (
-		     SELECT e.url FROM entries e
-		     WHERE e.feed_id = $1 AND (`+visibleEntryFilter(userID)+`)
-		   )`,
+		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
+		 SELECT $2, e.url, e.id, 'read', NOW()
+		 FROM entries e
+		 WHERE e.feed_id = $1 AND (`+visibleEntryFilter(userID)+`)
+		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = 'read', changed_at = NOW()`,
 		feedID, userID)
 	return err
 }
@@ -686,17 +670,16 @@ func (s *Store) CountEntriesByFeed(ctx context.Context, feedID int) (int, error)
 	return count, err
 }
 
-// MarkAllEntriesRead marks every visible entry as read for the user (deletes
-// their entry_read_status rows — absence = read — for all subscribed feeds
-// and shares by followed users).
+// MarkAllEntriesRead marks every visible entry as read for the user (upserts
+// entry_read_status to 'read' for all subscribed feeds and shares by followed
+// users).
 func (s *Store) MarkAllEntriesRead(ctx context.Context, userID int) error {
 	_, err := s.DB.ExecContext(ctx,
-		`DELETE FROM entry_read_status
-		 WHERE user_id = $1
-		   AND article_url IN (
-		     SELECT e.url FROM entries e
-		     WHERE `+visibleEntryFilter(userID)+`
-		   )`,
+		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
+		 SELECT $1, e.url, e.id, 'read', NOW()
+		 FROM entries e
+		 WHERE (`+visibleEntryFilter(userID)+`)
+		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = 'read', changed_at = NOW()`,
 		userID)
 	return err
 }

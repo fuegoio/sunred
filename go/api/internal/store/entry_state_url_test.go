@@ -261,19 +261,24 @@ func TestUpdateEntryStatusByURL_MarkReadWithoutEntry(t *testing.T) {
 		t.Fatalf("mark read by URL: %v", err)
 	}
 
-	// Marking read deletes the row (absence = read), so no row should exist.
 	status, exists := entryReadStatus(t, s, userID, articleURL)
-	if exists {
-		t.Errorf("expected no read-status row after marking read (absent = read), got status=%q", status)
+	if !exists {
+		t.Fatal("expected read status row to exist")
+	}
+	if status != "read" {
+		t.Errorf("status=%q, want 'read'", status)
 	}
 
-	// Verify the default state via GetEntryStatesByURLs reports 'read'.
-	states, err := s.GetEntryStatesByURLs(ctx, userID, []string{articleURL})
-	if err != nil {
-		t.Fatalf("GetEntryStatesByURLs: %v", err)
+	// entry_id should be null (no materialized entry).
+	var entryID *int64
+	if err := s.DB.QueryRow(
+		`SELECT entry_id FROM entry_read_status WHERE user_id = $1 AND article_url = $2`,
+		userID, articleURL,
+	).Scan(&entryID); err != nil {
+		t.Fatalf("read entry_id: %v", err)
 	}
-	if st := states[articleURL]; st.Status != "read" {
-		t.Errorf("status=%q, want 'read'", st.Status)
+	if entryID != nil {
+		t.Errorf("expected null entry_id, got %d", *entryID)
 	}
 }
 
@@ -289,25 +294,27 @@ func TestUpdateEntryStatusByURL_MarkReadWithEntry(t *testing.T) {
 		t.Fatalf("mark read by URL: %v", err)
 	}
 
-	// Marking read deletes the row (absence = read).
-	_, exists := entryReadStatus(t, s, userID, articleURL)
-	if exists {
-		t.Error("expected no read-status row after marking read (absent = read)")
+	status, exists := entryReadStatus(t, s, userID, articleURL)
+	if !exists {
+		t.Fatal("expected read status row to exist")
+	}
+	if status != "read" {
+		t.Errorf("status=%q, want 'read'", status)
 	}
 
-	// ListEntries should report the entry as read.
-	fid := 0
-	_ = fid
-	entries, err := s.ListEntries(ctx, userID, nil, nil, "", nil, "", "", 50, 0)
-	if err != nil {
-		t.Fatalf("ListEntries: %v", err)
+	// entry_id should be linked to the materialized entry.
+	var linkedID *int64
+	if err := s.DB.QueryRow(
+		`SELECT entry_id FROM entry_read_status WHERE user_id = $1 AND article_url = $2`,
+		userID, articleURL,
+	).Scan(&linkedID); err != nil {
+		t.Fatalf("read entry_id: %v", err)
 	}
-	for _, e := range entries {
-		if e.ID == entryID {
-			if e.Status != "read" {
-				t.Errorf("status=%q, want 'read'", e.Status)
-			}
-		}
+	if linkedID == nil {
+		t.Fatal("expected non-null entry_id")
+	}
+	if *linkedID != entryID {
+		t.Errorf("entry_id=%d, want %d", *linkedID, entryID)
 	}
 }
 
@@ -349,10 +356,12 @@ func TestUpdateEntryStatusByURL_SameURLInMultipleFeeds(t *testing.T) {
 		t.Fatalf("mark read by URL with duplicate entries: %v", err)
 	}
 
-	// Marking read deletes the row (absence = read).
-	_, exists := entryReadStatus(t, s, userID, articleURL)
-	if exists {
-		t.Error("expected no read-status row after marking read (absent = read)")
+	status, exists := entryReadStatus(t, s, userID, articleURL)
+	if !exists {
+		t.Fatal("expected read status row to exist")
+	}
+	if status != "read" {
+		t.Errorf("status=%q, want 'read'", status)
 	}
 }
 
@@ -364,9 +373,9 @@ func TestUpdateEntryStatusByURL_StatusPersistsAfterEntryDeleted(t *testing.T) {
 
 	_, entryID := seedFeedAndEntryWithURL(t, s, userID, "Persist Feed", articleURL, "Persist Entry")
 
-	// Mark unread (creates a row), then delete the entry.
-	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "unread"); err != nil {
-		t.Fatalf("mark unread: %v", err)
+	// Mark read.
+	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "read"); err != nil {
+		t.Fatalf("mark read: %v", err)
 	}
 
 	// Delete the entry (simulates feed cleanup).
@@ -377,10 +386,10 @@ func TestUpdateEntryStatusByURL_StatusPersistsAfterEntryDeleted(t *testing.T) {
 	// Read status should still exist (entry_id SET NULL on delete).
 	status, exists := entryReadStatus(t, s, userID, articleURL)
 	if !exists {
-		t.Fatal("expected unread status to persist after entry deletion")
+		t.Fatal("expected read status to persist after entry deletion")
 	}
-	if status != "unread" {
-		t.Errorf("status=%q, want 'unread'", status)
+	if status != "read" {
+		t.Errorf("status=%q, want 'read'", status)
 	}
 }
 
@@ -645,10 +654,12 @@ func TestUpdateEntryStatus_ExistingEntryID(t *testing.T) {
 		t.Fatalf("mark read by ID: %v", err)
 	}
 
-	// Marking read deletes the row (absence = read).
-	_, exists := entryReadStatus(t, s, userID, articleURL)
-	if exists {
-		t.Error("expected no read-status row after marking read (absent = read)")
+	status, exists := entryReadStatus(t, s, userID, articleURL)
+	if !exists {
+		t.Fatal("expected read status row")
+	}
+	if status != "read" {
+		t.Errorf("status=%q, want 'read'", status)
 	}
 }
 
