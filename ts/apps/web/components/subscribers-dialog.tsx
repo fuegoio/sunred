@@ -75,7 +75,6 @@ export function SubscribersDialog({
   const trimmed = deferred.trim().toLowerCase();
 
   const total = globalCount > 0 ? globalCount : count;
-  if (total === 0) return null;
 
   const filtered = useMemo(() => {
     if (!trimmed) return subscribers;
