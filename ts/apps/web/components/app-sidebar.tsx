@@ -3,17 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import {
-  LayoutList,
-  Circle,
-  Star,
-  Plus,
-  Settings,
-  LogOut,
-  Sun,
-  Moon,
-  User,
-} from "lucide-react";
+import { LayoutList, Circle, Star, Plus, Settings, LogOut, Sun, Moon, User } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Menu } from "@base-ui/react/menu";
 import { Skeleton } from "@workspace/ui/components/skeleton";
@@ -160,7 +150,7 @@ function SidebarContent({ userHandle }: { userHandle: string }) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-14 shrink-0 items-center gap-2 px-4 w-full">
+      <div className="flex h-14 shrink-0 items-center gap-2 px-4 w-full mt-1">
         <Link href="/" className="flex items-center gap-2 font-serif text-lg font-bold px-1">
           <Logo className="size-5" />
           Sunred
