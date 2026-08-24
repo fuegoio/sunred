@@ -30,9 +30,12 @@ func New(st *store.Store, pool *worker.Pool, interval time.Duration, batchSize i
 	}
 }
 
-// Start runs the scheduler loop until ctx is cancelled.
+// Start runs the scheduler loop until ctx is cancelled. It ticks immediately
+// on startup so due feeds are refreshed right away, then continues at the
+// configured interval.
 func (s *Scheduler) Start(ctx context.Context) {
 	slog.Info("scheduler started", "interval", s.interval, "batch_size", s.batchSize)
+	s.tick(ctx)
 	ticker := time.NewTicker(s.interval)
 	defer ticker.Stop()
 

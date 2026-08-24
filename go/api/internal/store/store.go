@@ -292,7 +292,7 @@ func (s *Store) UpdateFeedFetchState(ctx context.Context, feedID int, etag, last
 func (s *Store) ListFeedsDueForRefresh(ctx context.Context, limit int) ([]Feed, error) {
 	rows, err := s.DB.QueryContext(ctx,
 		`SELECT `+feedColumns+`
-		 FROM feeds WHERE next_check_at <= NOW() AND disabled = false
+		 FROM feeds WHERE (next_check_at IS NULL OR next_check_at <= NOW()) AND disabled = false
 		 ORDER BY next_check_at ASC LIMIT $1`, limit)
 	if err != nil {
 		return nil, err
