@@ -76,6 +76,18 @@ CREATE TABLE observed_subscriptions (
 CREATE INDEX idx_observed_subs_feed_url ON observed_subscriptions (feed_url);
 CREATE INDEX idx_observed_subs_did      ON observed_subscriptions (did);
 
+-- Global star observations: one row per (did, rkey) star record seen.
+CREATE TABLE observed_stars (
+  id          BIGSERIAL PRIMARY KEY,
+  did         TEXT NOT NULL,
+  rkey        TEXT NOT NULL,
+  article_url TEXT NOT NULL DEFAULT '',
+  pds_url     TEXT NOT NULL,
+  observed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (did, rkey)
+);
+CREATE INDEX idx_observed_stars_did ON observed_stars (did);
+
 -- Outbound event log for subscribeEvents WebSocket fanout to instances.
 -- Instances read from this log when they reconnect with a cursor.
 CREATE TABLE relay_events (

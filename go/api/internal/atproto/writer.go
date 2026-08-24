@@ -123,6 +123,25 @@ func (w *Writer) DeleteFeedSubscription(ctx context.Context, rkey string) error 
 	return w.deleteRecord(ctx, CollectionSubscription, rkey)
 }
 
+// PutStar writes an io.sunred.entry.star record and returns the rkey.
+func (w *Writer) PutStar(ctx context.Context, articleURL string) (string, error) {
+	rkey := NewTID()
+	_, err := w.putRecord(ctx, CollectionStar, rkey, StarRecord{
+		Type:       CollectionStar,
+		ArticleURL: articleURL,
+		CreatedAt:  FormatTime(time.Now()),
+	})
+	if err != nil {
+		return "", fmt.Errorf("put star: %w", err)
+	}
+	return rkey, nil
+}
+
+// DeleteStar removes the io.sunred.entry.star record at rkey.
+func (w *Writer) DeleteStar(ctx context.Context, rkey string) error {
+	return w.deleteRecord(ctx, CollectionStar, rkey)
+}
+
 // PutProfile writes or replaces the app.bsky.actor.profile record (rkey
 // "self"), mirroring the user's display name and bio onto their Bluesky
 // profile so it is searchable on the network. createdAt is preserved across

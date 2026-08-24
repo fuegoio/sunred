@@ -420,7 +420,7 @@ func (a *API) registerFeedRoutes() {
 			return nil, huma.Error500InternalServerError(err.Error())
 		}
 		if rkey != "" {
-			go a.ATProtoSyncFeedSubscription(userID, input.FeedID, feed.FeedURL, feed.SiteURL, feed.Title, false, time.Now())
+			go a.ATProtoSyncFeedSubscription(userID, input.FeedID, feed.FeedURL, feed.SiteURL, feed.Title, false, time.Now(), rkey)
 		}
 		return nil, nil
 	})
@@ -731,9 +731,18 @@ func (a *API) registerEntryRoutes() {
 		}
 	}) (*struct{}, error) {
 		userID := auth.UserIDFromCtx(ctx)
+		// Fetch the entry URL (for the PDS record) and the existing rkey
+		// before toggling — on unstar the rkey is needed to delete the PDS
+		// record and the row's starred flag is cleared by the toggle.
+		var articleURL string
+		if entry, err := a.store.GetEntryByID(ctx, input.EntryID, userID); err == nil && entry != nil {
+			articleURL = entry.URL
+		}
+		rkey, _ := a.store.GetStarATProtoRkey(ctx, userID, input.EntryID)
 		if err := a.store.ToggleEntryStarred(ctx, input.EntryID, userID, input.Body.Starred); err != nil {
 			return nil, huma.Error500InternalServerError(err.Error())
 		}
+		go a.ATProtoSyncStar(userID, input.EntryID, articleURL, input.Body.Starred, rkey)
 		return nil, nil
 	})
 }
@@ -897,7 +906,7 @@ func (a *API) subscribeToFeed(ctx context.Context, userID int, feedURL string, f
 
 	// Replicate the subscription to the user's PDS so it survives across
 	// instances and can be backfilled by the relay on future logins.
-	go a.ATProtoSyncFeedSubscription(userID, feed.ID, feed.FeedURL, feed.SiteURL, feed.Title, true, feed.CreatedAt)
+	go a.ATProtoSyncFeedSubscription(userID, feed.ID, feed.FeedURL, feed.SiteURL, feed.Title, true, feed.CreatedAt, "")
 
 	if sub != nil {
 		return sub, nil

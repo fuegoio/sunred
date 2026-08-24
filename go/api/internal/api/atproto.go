@@ -108,8 +108,10 @@ func (a *API) writerFromStoredPDS(ctx context.Context, userID int) (*atproto.Wri
 }
 
 // ATProtoSyncFollow writes or deletes a follow record on the PDS.
-// Called fire-and-forget from FollowUser / UnfollowUser handlers.
-func (a *API) ATProtoSyncFollow(userID, followeeUserID int, followeeHandle string, isFollow bool) {
+// Called fire-and-forget from FollowUser / UnfollowUser handlers. For deletes,
+// the handler must pass the rkey fetched before the DB row was deleted — the
+// row is gone by the time this goroutine runs, so we cannot re-fetch it.
+func (a *API) ATProtoSyncFollow(userID, followeeUserID int, followeeHandle string, isFollow bool, rkey string) {
 	ctx := context.Background()
 	w, err := a.writerForUserOrFallback(ctx, userID)
 	if err != nil {
@@ -140,8 +142,12 @@ func (a *API) ATProtoSyncFollow(userID, followeeUserID int, followeeHandle strin
 			slog.Warn("atproto: persist follow rkey", "user_id", userID, "followee_id", followeeUserID, "rkey", rkey, "err", err)
 		}
 	} else {
-		rkey, err := a.store.GetFollowATProtoRkey(ctx, userID, followeeUserID)
-		if err != nil || rkey == "" {
+		if rkey == "" {
+			// Fall back to re-fetching only if the handler didn't supply the
+			// rkey (e.g. older tests that call the sync directly).
+			rkey, _ = a.store.GetFollowATProtoRkey(ctx, userID, followeeUserID)
+		}
+		if rkey == "" {
 			return
 		}
 		slog.Info("atproto: deleting follow from PDS", "user_id", userID, "rkey", rkey)
@@ -156,8 +162,9 @@ func (a *API) ATProtoSyncFollow(userID, followeeUserID int, followeeHandle strin
 	}
 }
 
-// ATProtoSyncShare writes or deletes a share record on the PDS.
-func (a *API) ATProtoSyncShare(userID int, sa *store.SharedArticle, isShare bool) {
+// ATProtoSyncShare writes or deletes a share record on the PDS. For deletes,
+// the handler must pass the rkey fetched before the DB row was deleted.
+func (a *API) ATProtoSyncShare(userID int, sa *store.SharedArticle, isShare bool, rkey string) {
 	ctx := context.Background()
 	w, err := a.writerForUserOrFallback(ctx, userID)
 	if err != nil {
@@ -185,8 +192,10 @@ func (a *API) ATProtoSyncShare(userID int, sa *store.SharedArticle, isShare bool
 			slog.Warn("atproto: persist share rkey", "user_id", userID, "share_id", sa.ID, "rkey", rkey, "err", err)
 		}
 	} else {
-		rkey, err := a.store.GetShareATProtoRkey(ctx, sa.ID)
-		if err != nil || rkey == "" {
+		if rkey == "" {
+			rkey, _ = a.store.GetShareATProtoRkey(ctx, sa.ID)
+		}
+		if rkey == "" {
 			return
 		}
 		slog.Info("atproto: deleting share from PDS", "user_id", userID, "rkey", rkey)
@@ -228,8 +237,8 @@ func (a *API) ATProtoSyncProfile(userID int, displayName, bio string, createdAt 
 // ATProtoSyncFeedSubscription writes or deletes a feed subscription record on
 // the PDS. On subscribe it creates an io.sunred.feed.subscription record and
 // stores the rkey locally; on unsubscribe it deletes the record using the
-// stored rkey.
-func (a *API) ATProtoSyncFeedSubscription(userID, feedID int, feedURL, siteURL, title string, isSubscribe bool, createdAt time.Time) {
+// rkey passed by the handler (fetched before the DB row was deleted).
+func (a *API) ATProtoSyncFeedSubscription(userID, feedID int, feedURL, siteURL, title string, isSubscribe bool, createdAt time.Time, rkey string) {
 	ctx := context.Background()
 	w, err := a.writerForUserOrFallback(ctx, userID)
 	if err != nil {
@@ -253,8 +262,10 @@ func (a *API) ATProtoSyncFeedSubscription(userID, feedID int, feedURL, siteURL, 
 			slog.Warn("atproto: persist feed sub rkey", "user_id", userID, "feed_id", feedID, "rkey", rkey, "err", err)
 		}
 	} else {
-		rkey, err := a.store.GetFeedATProtoRkey(ctx, userID, feedID)
-		if err != nil || rkey == "" {
+		if rkey == "" {
+			rkey, _ = a.store.GetFeedATProtoRkey(ctx, userID, feedID)
+		}
+		if rkey == "" {
 			return
 		}
 		slog.Info("atproto: deleting feed subscription from PDS", "user_id", userID, "feed_url", feedURL, "rkey", rkey)
@@ -262,6 +273,52 @@ func (a *API) ATProtoSyncFeedSubscription(userID, feedID int, feedURL, siteURL, 
 			slog.Warn("atproto: delete feed subscription failed", "user_id", userID, "rkey", rkey, "err", err)
 		} else {
 			slog.Info("atproto: feed subscription deleted", "user_id", userID, "rkey", rkey)
+		}
+	}
+}
+
+// ATProtoSyncStar writes or deletes a star record on the PDS. Called
+// fire-and-forget from the toggle-entry-starred handler. For unstars, the
+// handler must pass the rkey fetched before the DB row's starred flag was
+// cleared — after the toggle the rkey column may be reset.
+func (a *API) ATProtoSyncStar(userID int, entryID int64, articleURL string, isStar bool, rkey string) {
+	ctx := context.Background()
+	w, err := a.writerForUserOrFallback(ctx, userID)
+	if err != nil {
+		slog.Warn("atproto: skip star sync, writer error", "user_id", userID, "is_star", isStar, "err", err)
+		return
+	}
+	if w == nil {
+		slog.Debug("atproto: skip star sync, no credentials", "user_id", userID, "is_star", isStar)
+		return
+	}
+
+	if isStar {
+		slog.Info("atproto: writing star to PDS", "user_id", userID, "entry_id", entryID, "article_url", articleURL)
+		rkey, err := w.PutStar(ctx, articleURL)
+		if err != nil {
+			slog.Warn("atproto: put star failed", "user_id", userID, "err", err)
+			return
+		}
+		slog.Info("atproto: star written", "user_id", userID, "entry_id", entryID, "rkey", rkey)
+		if err := a.store.SetStarATProtoRkey(ctx, userID, entryID, rkey); err != nil {
+			slog.Warn("atproto: persist star rkey", "user_id", userID, "entry_id", entryID, "rkey", rkey, "err", err)
+		}
+	} else {
+		if rkey == "" {
+			rkey, _ = a.store.GetStarATProtoRkey(ctx, userID, entryID)
+		}
+		if rkey == "" {
+			return
+		}
+		slog.Info("atproto: deleting star from PDS", "user_id", userID, "entry_id", entryID, "rkey", rkey)
+		if err := w.DeleteStar(ctx, rkey); err != nil {
+			slog.Warn("atproto: delete star failed", "user_id", userID, "rkey", rkey, "err", err)
+		} else {
+			slog.Info("atproto: star deleted", "user_id", userID, "entry_id", entryID, "rkey", rkey)
+		}
+		if err := a.store.SetStarATProtoRkey(ctx, userID, entryID, ""); err != nil {
+			slog.Warn("atproto: clear star rkey", "user_id", userID, "entry_id", entryID, "err", err)
 		}
 	}
 }

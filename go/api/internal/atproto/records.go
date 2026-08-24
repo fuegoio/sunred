@@ -9,6 +9,7 @@ const (
 	CollectionFollow       = "io.sunred.graph.follow"
 	CollectionShare        = "io.sunred.share.article"
 	CollectionSubscription = "io.sunred.feed.subscription"
+	CollectionStar         = "io.sunred.entry.star"
 	CollectionProfile      = "app.bsky.actor.profile"
 
 	// ProfileRkey is the fixed record key for the single app.bsky.actor.profile
@@ -44,6 +45,13 @@ type SubscriptionRecord struct {
 	SiteURL   string `json:"siteUrl,omitempty"`
 	Title     string `json:"title,omitempty"`
 	CreatedAt string `json:"createdAt"`
+}
+
+// StarRecord is the io.sunred.entry.star record.
+type StarRecord struct {
+	Type       string `json:"$type"`
+	ArticleURL string `json:"articleUrl"`
+	CreatedAt  string `json:"createdAt"`
 }
 
 // ProfileRecord is the app.bsky.actor.profile record (rkey "self"). Only the

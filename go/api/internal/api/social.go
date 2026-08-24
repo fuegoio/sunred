@@ -180,7 +180,7 @@ func (a *API) registerSocialRoutes() {
 				if ferr := a.store.FollowUser(ctx, userID, input.Handle); ferr != nil {
 					return nil, huma.Error500InternalServerError(ferr.Error())
 				}
-				go a.ATProtoSyncFollow(userID, followeeUserID, input.Handle, true)
+				go a.ATProtoSyncFollow(userID, followeeUserID, input.Handle, true, "")
 				go a.backfillFollowee(followeeUserID)
 				return nil, nil
 			case errors.Is(err, store.ErrCannotFollowSelf):
@@ -196,7 +196,7 @@ func (a *API) registerSocialRoutes() {
 		if followeeProfile != nil {
 			followeeUserID = followeeProfile.UserID
 		}
-		go a.ATProtoSyncFollow(userID, followeeUserID, input.Handle, true)
+		go a.ATProtoSyncFollow(userID, followeeUserID, input.Handle, true, "")
 		// Backfill the followee's shares + feed subscriptions from their PDS so
 		// they appear in the follower's timeline and on the followee's profile.
 		// No-op if the followee has no AT Proto identity.
@@ -215,19 +215,22 @@ func (a *API) registerSocialRoutes() {
 		Tags:        []string{"social"},
 	}, func(ctx context.Context, input *FollowInput) (*struct{}, error) {
 		userID := auth.UserIDFromCtx(ctx)
-		// Resolve before deleting so we still have the followee profile.
+		// Resolve before deleting so we still have the followee profile + rkey.
 		followeeProfile, _ := a.store.GetProfileByHandle(ctx, input.Handle, 0)
+		followeeUserID := 0
+		if followeeProfile != nil {
+			followeeUserID = followeeProfile.UserID
+		}
+		// Fetch the rkey before deleting — the row is gone after UnfollowUser
+		// and the fire-and-forget sync goroutine can't read it back.
+		rkey, _ := a.store.GetFollowATProtoRkey(ctx, userID, followeeUserID)
 		if err := a.store.UnfollowUser(ctx, userID, input.Handle); err != nil {
 			if errors.Is(err, store.ErrProfileNotFound) {
 				return nil, huma.Error404NotFound("user not found")
 			}
 			return nil, huma.Error500InternalServerError(err.Error())
 		}
-		followeeUserID := 0
-		if followeeProfile != nil {
-			followeeUserID = followeeProfile.UserID
-		}
-		go a.ATProtoSyncFollow(userID, followeeUserID, input.Handle, false)
+		go a.ATProtoSyncFollow(userID, followeeUserID, input.Handle, false, rkey)
 		return nil, nil
 	})
 
@@ -361,7 +364,7 @@ func (a *API) registerSocialRoutes() {
 			return nil, huma.Error500InternalServerError(fmt.Errorf("share article: %w", err).Error())
 		}
 		saSnap := *sa
-		go a.ATProtoSyncShare(userID, &saSnap, true)
+		go a.ATProtoSyncShare(userID, &saSnap, true, "")
 		return &SharedArticleOutput{Body: *sa}, nil
 	})
 
@@ -376,7 +379,9 @@ func (a *API) registerSocialRoutes() {
 		ShareID int64 `path:"shareId"`
 	}) (*struct{}, error) {
 		userID := auth.UserIDFromCtx(ctx)
-		// Grab the rkey before deleting.
+		// Fetch the rkey before deleting — the row is gone after UnshareArticle
+		// and the fire-and-forget sync goroutine can't read it back.
+		rkey, _ := a.store.GetShareATProtoRkey(ctx, input.ShareID)
 		shareSnap := &store.SharedArticle{ID: input.ShareID}
 		if err := a.store.UnshareArticle(ctx, input.ShareID, userID); err != nil {
 			if errors.Is(err, store.ErrShareNotFound) {
@@ -384,7 +389,7 @@ func (a *API) registerSocialRoutes() {
 			}
 			return nil, huma.Error500InternalServerError(err.Error())
 		}
-		go a.ATProtoSyncShare(userID, shareSnap, false)
+		go a.ATProtoSyncShare(userID, shareSnap, false, rkey)
 		return nil, nil
 	})
 

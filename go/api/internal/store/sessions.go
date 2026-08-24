@@ -221,3 +221,30 @@ func (s *Store) DeleteShareByRkey(ctx context.Context, userID int, rkey string) 
 	)
 	return err
 }
+
+// UpsertStarWithRkey marks an entry as starred for a user via a relay event,
+// matching the entry by its article URL. If the entry doesn't exist locally
+// yet (the user hasn't fetched the feed), the star is a no-op — the entry
+// will be starred on the next feed refresh when the star is replayed.
+func (s *Store) UpsertStarWithRkey(ctx context.Context, userID int, articleURL, rkey string) error {
+	_, err := s.DB.ExecContext(ctx, `
+		INSERT INTO entry_state (user_id, entry_id, starred, atproto_rkey, changed_at)
+		SELECT $1, e.id, true, $3, NOW()
+		FROM entries e WHERE e.url = $2
+		ON CONFLICT (user_id, entry_id) DO UPDATE
+			SET starred = true, atproto_rkey = EXCLUDED.atproto_rkey, changed_at = NOW()`,
+		userID, articleURL, rkey,
+	)
+	return err
+}
+
+// DeleteStarByRkey removes a star by its AT Proto rkey. Used by the relay
+// consumer to process unstar events.
+func (s *Store) DeleteStarByRkey(ctx context.Context, userID int, rkey string) error {
+	_, err := s.DB.ExecContext(ctx, `
+		UPDATE entry_state SET starred = false, atproto_rkey = NULL
+		 WHERE user_id = $1 AND atproto_rkey = $2`,
+		userID, rkey,
+	)
+	return err
+}

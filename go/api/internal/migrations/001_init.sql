@@ -110,12 +110,13 @@ CREATE INDEX        idx_entries_document      ON entries USING gin (document);
 -- --- Per-user entry state (read/starred/liked) ---
 
 CREATE TABLE entry_state (
-  user_id    INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-  entry_id   BIGINT NOT NULL REFERENCES entries (id) ON DELETE CASCADE,
-  status     VARCHAR(50) NOT NULL DEFAULT 'unread',
-  starred    BOOLEAN NOT NULL DEFAULT false,
-  liked      BOOLEAN NOT NULL DEFAULT false,
-  changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  user_id      INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+  entry_id     BIGINT NOT NULL REFERENCES entries (id) ON DELETE CASCADE,
+  status       VARCHAR(50) NOT NULL DEFAULT 'unread',
+  starred      BOOLEAN NOT NULL DEFAULT false,
+  liked        BOOLEAN NOT NULL DEFAULT false,
+  atproto_rkey TEXT,
+  changed_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (user_id, entry_id)
 );
 CREATE INDEX idx_entry_state_user_status   ON entry_state (user_id, status);
