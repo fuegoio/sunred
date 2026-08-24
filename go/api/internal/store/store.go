@@ -571,13 +571,14 @@ func (s *Store) ToggleEntryStarredByURL(ctx context.Context, userID int,
 }
 
 // UpdateEntryStatusByURL sets the read status of an article by URL, without
-// requiring a materialized entry. If the entry exists, entry_id is linked;
+// requiring a materialized entry. If the entry exists, entry_id is linked
+// (picks the first match if the same URL appears in multiple feeds);
 // otherwise the status row is created with a null entry_id. Used by the
 // URL-based read endpoint for preview and shared articles.
 func (s *Store) UpdateEntryStatusByURL(ctx context.Context, userID int, articleURL, status string) error {
 	_, err := s.DB.ExecContext(ctx,
 		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
-		 SELECT $1, $2, (SELECT e.id FROM entries e WHERE e.url = $2), $3, NOW()
+		 SELECT $1, $2, (SELECT e.id FROM entries e WHERE e.url = $2 LIMIT 1), $3, NOW()
 		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = EXCLUDED.status, changed_at = NOW()`,
 		userID, articleURL, status)
 	return err
