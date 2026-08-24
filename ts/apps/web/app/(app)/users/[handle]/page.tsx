@@ -155,7 +155,7 @@ function ProfileMasthead({
         <UserAvatar
           displayName={hasDisplayName ? displayName : undefined}
           handle={handle}
-          className="size-12 shrink-0 text-lg font-semibold"
+          className="size-5 shrink-0 rounded-md"
         />
       }
       actions={
@@ -199,7 +199,7 @@ function MastheadSkeleton() {
     <PageHeader
       className="static"
       title={<Skeleton className="h-5 w-32" />}
-      icon={<Skeleton className="size-12 shrink-0 rounded-full" />}
+      icon={<Skeleton className="size-5 shrink-0 rounded-md" />}
       actions={null}
       metadata={
         <div className="flex flex-col gap-1.5">
