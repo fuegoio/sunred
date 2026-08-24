@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getClient, getFeed, refreshFeed, listFolders } from "@/lib/sunred";
+import { getClient, getFeed, listFolders } from "@/lib/sunred";
 import { getApiErrorMessage, apiErrorStatus } from "@/lib/errors";
 import { ApiError } from "@/components/api-error";
 import { FeedDetail } from "@/components/feed-detail";
@@ -46,24 +46,8 @@ export default async function FeedPage({ params }: { params: Promise<{ id: strin
   }
   if (!feed) notFound();
 
-  // Refresh the feed server-side so the latest articles are fetched before
-  // the page renders. Errors are non-fatal — the page still renders with
-  // whatever entries were already stored.
-  let refreshedFeed = feed as Feed;
-  try {
-    const { data: refreshed, error: refreshError } = await refreshFeed({
-      client,
-      path: { feedId },
-    });
-    if (!refreshError && refreshed) {
-      refreshedFeed = refreshed as Feed;
-    }
-  } catch {
-    // refresh is best-effort
-  }
-
   const { data: foldersData } = await listFolders({ client });
   const folders = (foldersData ?? []) as Folder[];
 
-  return <FeedDetail feed={refreshedFeed} initialFolders={folders} />;
+  return <FeedDetail feed={feed as Feed} initialFolders={folders} />;
 }
