@@ -72,10 +72,12 @@ export function EntryCard({
   const router = useRouter();
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
+  const [previewRead, setPreviewRead] = useState(entry.status === "read");
   const [readOptimistic, setReadOptimistic] = useOptimistic(entry.status === "read");
   const [pending, setPending] = useState(false);
 
-  const unread = !readOptimistic;
+  const isRead = preview ? previewRead : readOptimistic;
+  const unread = !isRead;
   const snippet = htmlSnippet(entry.description, 200);
 
   // The entry carries a nested global source feed (entry.feed) so shares from
@@ -106,25 +108,27 @@ export function EntryCard({
   function toggleRead(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    const current = readOptimistic ? "read" : "unread";
-    const next = readOptimistic ? "unread" : "read";
-    startTransition(() => {
-      setReadOptimistic(next === "read");
-      setPending(true);
-    });
+    const current = isRead ? "read" : "unread";
+    const next = isRead ? "unread" : "read";
     if (preview) {
+      setPreviewRead(next === "read");
+      setPending(true);
       void (async () => {
         const { error } = await updateEntryStatusByUrl({
           client: await getClient(),
           body: { article_url: entry.url, status: next },
         });
         if (error) {
+          setPreviewRead(current === "read");
           toast.error(getApiErrorMessage(error, "Could not update entry"));
-          return;
         }
       })().finally(() => setPending(false));
       return;
     }
+    startTransition(() => {
+      setReadOptimistic(next === "read");
+      setPending(true);
+    });
     // Patch the cache in place so the base value matches the optimistic
     // state. Without this, invalidating would revert useOptimistic to the
     // stale server value mid-refetch and the dot would flash back to its
@@ -150,8 +154,8 @@ export function EntryCard({
       return;
     }
     if (!unread) return;
-    startTransition(() => setReadOptimistic(true));
     if (preview) {
+      setPreviewRead(true);
       void (async () => {
         const { error } = await updateEntryStatusByUrl({
           client: await getClient(),
@@ -163,6 +167,7 @@ export function EntryCard({
       })();
       return;
     }
+    startTransition(() => setReadOptimistic(true));
     void (async () => {
       const { error } = await updateEntries({
         client: await getClient(),
