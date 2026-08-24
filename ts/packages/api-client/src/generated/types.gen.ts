@@ -291,6 +291,7 @@ export type PreviewFeedInputBody = {
 
 export type PreviewFeedItem = {
     author?: string;
+    comments_url?: string;
     content: string;
     description?: string;
     published_at: string;

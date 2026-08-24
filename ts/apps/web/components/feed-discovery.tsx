@@ -25,6 +25,7 @@ function toEntry(item: PreviewFeedItem, index: number, feed: Feed): Entry {
     url: item.url,
     description: item.description ?? item.content,
     author: item.author,
+    comments_url: item.comments_url,
     tags: item.tags,
     feed,
   } as unknown as Entry;

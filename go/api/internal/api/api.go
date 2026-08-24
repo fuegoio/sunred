@@ -316,6 +316,7 @@ type PreviewFeedItem struct {
 	Author      string    `json:"author,omitempty"`
 	Description string    `json:"description,omitempty"`
 	Content     string    `json:"content"`
+	CommentsURL string    `json:"comments_url,omitempty"`
 	PublishedAt time.Time `json:"published_at"`
 	Tags        []string  `json:"tags,omitempty"`
 	Status      string    `json:"status,omitempty"`
@@ -579,6 +580,7 @@ func (a *API) registerFeedRoutes() {
 				Author:      item.Author,
 				Description: sanitizer.StripHTML(item.Description),
 				Content:     sanitized,
+				CommentsURL: item.CommentsURL,
 				PublishedAt: publishedAt,
 				Tags:        item.Tags,
 			})
