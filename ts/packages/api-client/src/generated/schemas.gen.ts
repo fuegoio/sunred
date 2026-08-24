@@ -915,6 +915,9 @@ export const PreviewFeedItemSchema = {
         author: {
             type: 'string'
         },
+        comments_url: {
+            type: 'string'
+        },
         content: {
             type: 'string'
         },

@@ -302,7 +302,7 @@ export function EntryCard({
         </p>
       </div>
       <div className="flex shrink-0 items-start gap-0.5" onClick={(e) => e.stopPropagation()}>
-        {!preview && entry.comments_url && (
+        {entry.comments_url && (
           <button
             type="button"
             onClick={(e) => {

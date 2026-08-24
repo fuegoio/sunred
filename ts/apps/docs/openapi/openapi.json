@@ -892,6 +892,9 @@
                     "author": {
                         "type": "string"
                     },
+                    "comments_url": {
+                        "type": "string"
+                    },
                     "content": {
                         "type": "string"
                     },
