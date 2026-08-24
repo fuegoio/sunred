@@ -216,17 +216,17 @@ export type Feed = {
     updated_at: string;
 };
 
-export type FeedSubscribersResp = {
-    count: number;
-    global_count: number;
-    subscribers: Array<UserProfile> | null;
-};
-
 export type FeedSubscribersResponse = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
+    count: number;
+    global_count: number;
+    subscribers: Array<UserProfile> | null;
+};
+
+export type FeedSubscribersSummary = {
     count: number;
     global_count: number;
     subscribers: Array<UserProfile> | null;
@@ -277,7 +277,7 @@ export type PreviewFeedBody = {
     id?: number;
     items: Array<PreviewFeedItem> | null;
     site_url: string;
-    subscribers?: FeedSubscribersResp;
+    subscribers?: FeedSubscribersSummary;
     title: string;
 };
 
@@ -594,13 +594,13 @@ export type FeedWritable = {
     updated_at: string;
 };
 
-export type FeedSubscribersRespWritable = {
+export type FeedSubscribersResponseWritable = {
     count: number;
     global_count: number;
     subscribers: Array<UserProfileWritable> | null;
 };
 
-export type FeedSubscribersResponseWritable = {
+export type FeedSubscribersSummaryWritable = {
     count: number;
     global_count: number;
     subscribers: Array<UserProfileWritable> | null;
@@ -635,7 +635,7 @@ export type PreviewFeedBodyWritable = {
     id?: number;
     items: Array<PreviewFeedItem> | null;
     site_url: string;
-    subscribers?: FeedSubscribersRespWritable;
+    subscribers?: FeedSubscribersSummaryWritable;
     title: string;
 };
 

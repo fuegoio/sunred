@@ -331,12 +331,12 @@ type PreviewFeedBody struct {
 	Description string               `json:"description,omitempty"`
 	FaviconURL  string               `json:"favicon_url,omitempty"`
 	Items       []PreviewFeedItem    `json:"items"`
-	Subscribers *FeedSubscribersResp `json:"subscribers,omitempty"`
+	Subscribers *FeedSubscribersSummary `json:"subscribers,omitempty"`
 }
 
-// FeedSubscribersResp is the subscriber summary embedded in the preview
+// FeedSubscribersSummary is the subscriber summary embedded in the preview
 // response when the feed is known to the instance.
-type FeedSubscribersResp struct {
+type FeedSubscribersSummary struct {
 	Count       int                 `json:"count"`
 	GlobalCount int                 `json:"global_count"`
 	Subscribers []store.UserProfile `json:"subscribers"`
@@ -617,7 +617,7 @@ func (a *API) registerFeedRoutes() {
 		// discovery view can show the subscriber count without a separate
 		// round trip.
 		feedID := 0
-		var subs *FeedSubscribersResp
+		var subs *FeedSubscribersSummary
 		if global, err := a.store.GetFeedByURL(ctx, feedURL); err == nil && global != nil {
 			feedID = global.ID
 			count, _ := a.store.CountFeedSubscribers(ctx, global.ID)
@@ -625,7 +625,7 @@ func (a *API) registerFeedRoutes() {
 			if list == nil {
 				list = []store.UserProfile{}
 			}
-			subs = &FeedSubscribersResp{
+			subs = &FeedSubscribersSummary{
 				Count:       count,
 				GlobalCount: int(a.relayGetFeedSubscriberCount(ctx, global.FeedURL)),
 				Subscribers: list,

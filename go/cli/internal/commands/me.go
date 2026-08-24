@@ -28,7 +28,10 @@ var meCmd = &cobra.Command{
 		if u.DisplayName != nil {
 			fmt.Printf("Name: %s\n", *u.DisplayName)
 		}
-		fmt.Printf("Admin: %v\n", u.IsAdmin)
+		if u.Bio != nil {
+			fmt.Printf("Bio: %s\n", *u.Bio)
+		}
+		fmt.Printf("PDS sync: %s\n", u.PdsSyncStatus)
 		fmt.Printf("Created: %s\n", u.CreatedAt.Format("2006-01-02 15:04"))
 	},
 }
