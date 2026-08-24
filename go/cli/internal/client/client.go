@@ -13,6 +13,12 @@ import (
 	"github.com/fuegoio/sunred/go/sdk/sunred"
 )
 
+// DefaultBaseURL is the default API base URL used when the config file is
+// absent or has no base_url set. Points at the hosted API so the CLI works
+// out of the box against sunred.app; self-hosters override it via
+// `sunred config set base_url <url>` or `--url`.
+const DefaultBaseURL = "https://api.sunred.app"
+
 // Config holds the CLI client configuration, loaded from the config file.
 type Config struct {
 	BaseURL string `json:"base_url"`
@@ -48,7 +54,7 @@ func LoadConfig() (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return &Config{BaseURL: "http://localhost:8080"}, nil
+			return &Config{BaseURL: DefaultBaseURL}, nil
 		}
 		return nil, fmt.Errorf("read config: %w", err)
 	}
@@ -58,7 +64,7 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("parse config: %w", err)
 	}
 	if cfg.BaseURL == "" {
-		cfg.BaseURL = "http://localhost:8080"
+		cfg.BaseURL = DefaultBaseURL
 	}
 	return &cfg, nil
 }
