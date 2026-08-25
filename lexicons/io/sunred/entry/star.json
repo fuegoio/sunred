@@ -1,0 +1,62 @@
+{
+  "lexicon": 1,
+  "id": "io.sunred.entry.star",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A starred entry. The repo owner is bookmarking an article; the record carries the same article metadata as io.sunred.share.article so a remote instance can materialize the entry from the star record alone, without needing the feed to be fetched locally.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["articleUrl", "createdAt"],
+        "properties": {
+          "articleUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "Canonical URL of the starred article."
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 1024,
+            "description": "Article title at time of starring."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Short excerpt or description."
+          },
+          "feedUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL of the RSS/Atom feed the article came from."
+          },
+          "feedTitle": {
+            "type": "string",
+            "maxLength": 512,
+            "description": "Title of the source feed."
+          },
+          "feedSiteUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "Website URL of the source feed."
+          },
+          "author": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "Article author."
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "datetime",
+            "description": "Original article publication time."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime",
+            "description": "When the user starred this article."
+          }
+        }
+      }
+    }
+  }
+}

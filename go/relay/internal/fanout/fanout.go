@@ -522,10 +522,37 @@ func (f *Fanout) handleStar(ctx context.Context, did, pdsURL, rkey, action strin
 		slog.Warn("fanout: fetch star", "did", did, "rkey", rkey, "err", err)
 		return
 	}
+	f.processStarRecord(ctx, did, pdsURL, rkey, rec)
+}
+
+// processStarRecord records a star and emits an event with the full record
+// metadata (articleUrl, title, description, feed info, author, publishedAt,
+// createdAt) so remote instances can materialize the entry from the event
+// alone, mirroring processShareRecord. Shared by the live firehose path
+// (after fetchRecord) and the backfill path (with the record value from
+// listRecords).
+func (f *Fanout) processStarRecord(ctx context.Context, did, pdsURL, rkey string, rec map[string]any) {
 	articleURL, _ := rec["articleUrl"].(string)
 	if articleURL == "" {
 		slog.Warn("fanout: star record missing articleUrl", "did", did, "rkey", rkey)
 		return
+	}
+	title, _ := rec["title"].(string)
+	description, _ := rec["description"].(string)
+	feedURL, _ := rec["feedUrl"].(string)
+	feedTitle, _ := rec["feedTitle"].(string)
+	feedSiteURL, _ := rec["feedSiteUrl"].(string)
+	author, _ := rec["author"].(string)
+	createdAt := parseTime(rec["createdAt"])
+	var publishedAt *time.Time
+	if v, ok := rec["publishedAt"].(string); ok && v != "" {
+		t, err := time.Parse(time.RFC3339, v)
+		if err == nil {
+			utc := t.UTC()
+			publishedAt = &utc
+		} else {
+			slog.Warn("fanout: parse publishedAt", "did", did, "rkey", rkey, "publishedAt", v, "err", err)
+		}
 	}
 	isNew, err := f.store.RecordStar(ctx, did, rkey, articleURL, pdsURL)
 	if err != nil {
@@ -533,9 +560,16 @@ func (f *Fanout) handleStar(ctx context.Context, did, pdsURL, rkey, action strin
 		return
 	}
 	if isNew {
-		f.emit(ctx, "star", did, map[string]any{
+		payload := map[string]any{
 			"did": did, "rkey": rkey, "articleUrl": articleURL,
-		})
+			"title": title, "description": description,
+			"feedUrl": feedURL, "feedTitle": feedTitle, "feedSiteUrl": feedSiteURL,
+			"author": author, "createdAt": createdAt,
+		}
+		if publishedAt != nil {
+			payload["publishedAt"] = publishedAt.Format(time.RFC3339)
+		}
+		f.emit(ctx, "star", did, payload)
 	}
 }
 

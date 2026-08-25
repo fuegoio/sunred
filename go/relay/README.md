@@ -103,12 +103,13 @@ fanout events.
 
 ### Record collections
 
-The relay only handles three `io.sunred.*` collections:
+The relay handles the four `io.sunred.*` social-graph collections:
 
 | Collection | Event types | Store methods |
 |---|---|---|
 | `io.sunred.graph.follow` | `follow`, `unfollow` | `RecordFollow`, `DeleteFollow` |
 | `io.sunred.share.article` | `share`, `unshare` | `RecordShare`, `DeleteShare` |
+| `io.sunred.entry.star` | `star`, `unstar` | `RecordStar`, `DeleteStar` |
 | `io.sunred.feed.subscription` | `feedSubscription`, `feedUnsubscription` | `RecordFeedSubscription`, `DeleteFeedSubscription` |
 
 On `delete` ops the relay calls the store delete method and emits the matching
@@ -121,7 +122,7 @@ metadata.
 
 Newly announced DIDs get a historical backfill-then-cutover ("tap-style")
 flow. `BackfillAndSubscribe` paginates `com.atproto.repo.listRecords` across the
-three handled collections, processes each record through the same
+four handled collections, processes each record through the same
 `process*Record` functions used by the live path (so backfill and live produce
 identical events), emits a `backfillComplete` event, and then starts the live
 firehose subscription with cursor `0`. Instances use `backfillComplete` to
