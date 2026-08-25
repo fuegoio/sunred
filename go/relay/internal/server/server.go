@@ -6,6 +6,7 @@
 //	GET   /xrpc/io.sunred.relay.getCounts      — global counts for a DID
 //	GET   /xrpc/io.sunred.relay.getFeedSubscriberCount — global subscriber count for a feed URL
 //	GET   /xrpc/io.sunred.relay.getArticleShareCount   — global share count for an article URL
+//	GET   /xrpc/io.sunred.relay.getArticleStarCount    — global star count for an article URL
 //	GET   /xrpc/io.sunred.relay.subscribeEvents — WebSocket event stream for instances
 //	GET   /health
 package server
@@ -46,6 +47,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("/xrpc/io.sunred.relay.getCounts", s.handleGetCounts)
 	mux.HandleFunc("/xrpc/io.sunred.relay.getFeedSubscriberCount", s.handleGetFeedSubscriberCount)
 	mux.HandleFunc("/xrpc/io.sunred.relay.getArticleShareCount", s.handleGetArticleShareCount)
+	mux.HandleFunc("/xrpc/io.sunred.relay.getArticleStarCount", s.handleGetArticleStarCount)
 	mux.HandleFunc("/xrpc/io.sunred.relay.searchDIDs", s.handleSearchDIDs)
 	mux.HandleFunc("/xrpc/io.sunred.relay.resolveHandle", s.handleResolveHandle)
 	mux.Handle("/xrpc/io.sunred.relay.subscribeEvents", websocket.Handler(s.handleSubscribeEvents))
@@ -290,6 +292,33 @@ func (s *Server) handleGetArticleShareCount(w http.ResponseWriter, r *http.Reque
 	}
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(getArticleShareCountOutput{ArticleURL: articleURL, Count: count})
+}
+
+// --- getArticleStarCount ---
+
+type getArticleStarCountOutput struct {
+	ArticleURL string `json:"articleUrl"`
+	Count      int64  `json:"count"`
+}
+
+func (s *Server) handleGetArticleStarCount(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	articleURL := r.URL.Query().Get("articleUrl")
+	if articleURL == "" {
+		http.Error(w, "articleUrl is required", http.StatusBadRequest)
+		return
+	}
+	count, err := s.store.CountArticleStars(r.Context(), articleURL)
+	if err != nil {
+		slog.Error("relay: get article star count", "article_url", articleURL, "err", err)
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(getArticleStarCountOutput{ArticleURL: articleURL, Count: count})
 }
 
 // --- searchDIDs ---
