@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -212,9 +213,12 @@ func (a *API) ATProtoSyncShare(userID int, sa *store.SharedArticle, isShare bool
 
 // ATProtoSyncProfile writes or replaces the app.bsky.actor.profile record on
 // the user's PDS, mirroring their display name and bio onto their Bluesky
-// profile so it is searchable on the network. Fire-and-forget; a no-op when
-// the user has no AT Proto connection. createdAt is preserved across updates
-// to keep the record's creation timestamp stable.
+// profile so it is searchable on the network. The existing avatar and banner
+// blob refs are read back first and preserved across the write so a local
+// text edit doesn't wipe images the user set from a Bluesky client.
+// Fire-and-forget; a no-op when the user has no AT Proto connection.
+// createdAt is preserved across updates to keep the record's creation
+// timestamp stable.
 func (a *API) ATProtoSyncProfile(userID int, displayName, bio string, createdAt time.Time) {
 	ctx := context.Background()
 	w, err := a.writerForUserOrFallback(ctx, userID)
@@ -226,8 +230,26 @@ func (a *API) ATProtoSyncProfile(userID int, displayName, bio string, createdAt 
 		slog.Debug("atproto: skip profile sync, no credentials", "user_id", userID)
 		return
 	}
+
+	// Read the existing record so avatar/banner (which Sunred doesn't manage)
+	// survive the putRecord replace. A missing record means we're creating it
+	// fresh, so there's nothing to preserve.
+	var avatar, banner *atproto.BlobRef
+	did, pdsURL, _ := a.store.GetUserDIDAndPDS(ctx, userID)
+	if did != "" && pdsURL != "" {
+		rc := atproto.NewClient(pdsURL, "")
+		if out, err := rc.GetRecord(ctx, did, atproto.CollectionProfile, atproto.ProfileRkey); err == nil {
+			var rec atproto.ProfileRecord
+			if err := json.Unmarshal(out.Value, &rec); err == nil {
+				avatar, banner = rec.Avatar, rec.Banner
+			} else {
+				slog.Warn("atproto: unmarshal existing profile for preserve", "user_id", userID, "err", err)
+			}
+		}
+	}
+
 	slog.Info("atproto: writing profile to PDS", "user_id", userID)
-	if err := w.PutProfile(ctx, displayName, bio, createdAt); err != nil {
+	if err := w.PutProfile(ctx, displayName, bio, avatar, banner, createdAt); err != nil {
 		slog.Warn("atproto: put profile failed", "user_id", userID, "err", err)
 		return
 	}
@@ -387,6 +409,7 @@ func (a *API) backfillFollowee(followeeUserID int) {
 	}
 	c := atproto.NewClient(pdsURL, "")
 	if err := backfillUserFromPDS(ctx, c, a.store, followeeUserID, did, []string{
+		atproto.CollectionProfile,
 		atproto.CollectionShare,
 		atproto.CollectionStar,
 		atproto.CollectionSubscription,

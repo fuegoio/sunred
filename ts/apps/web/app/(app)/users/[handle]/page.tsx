@@ -130,6 +130,8 @@ function ProfileMasthead({
   displayName,
   handle,
   bio,
+  avatar,
+  banner,
   hasDisplayName,
   followerTotal,
   localFollowerCount,
@@ -142,6 +144,8 @@ function ProfileMasthead({
   displayName: string;
   handle: string;
   bio?: string;
+  avatar?: string;
+  banner?: string;
   hasDisplayName: boolean;
   followerTotal: number;
   localFollowerCount: number;
@@ -156,10 +160,20 @@ function ProfileMasthead({
   // name/handle/stats/bio align under the avatar on mobile. Collapses to 0
   // on desktop where the menu button is hidden (lg:hidden).
   const bodyIndent = "pl-11 lg:pl-0";
+  // When a banner is present the avatar overlaps its bottom edge (Twitter
+  // style); pull it up by a third of its size so it sits on the banner.
+  const avatarOverlap = banner ? "-mt-10" : "mt-0";
 
   return (
     <header className="px-4 pb-3 pt-4 lg:pl-[48px]">
-      <div className="flex items-center gap-2">
+      {banner ? (
+        <div className="h-28 w-full overflow-hidden rounded-lg bg-muted sm:h-32">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={banner} alt="" className="h-full w-full object-cover" />
+        </div>
+      ) : null}
+
+      <div className={`flex items-center gap-2 ${avatarOverlap}`}>
         {shell && (
           <Button
             variant="ghost"
@@ -174,7 +188,8 @@ function ProfileMasthead({
         <UserAvatar
           displayName={hasDisplayName ? displayName : undefined}
           handle={handle}
-          className="size-16 text-2xl font-semibold"
+          src={avatar}
+          className="size-16 shrink-0 border-2 border-background text-2xl font-semibold"
         />
       </div>
 
@@ -226,11 +241,13 @@ function ProfileMasthead({
 
 function MastheadSkeleton() {
   // Same indent + vertical rhythm as ProfileMasthead so the load state
-  // doesn't shift when the real data resolves.
+  // doesn't shift when the real data resolves. A banner placeholder is
+  // included so the avatar overlaps the same way it will once loaded.
   const bodyIndent = "pl-11 lg:pl-0";
   return (
     <header className="px-4 pb-3 pt-4 lg:pl-[48px]">
-      <Skeleton className="size-16 rounded-full" />
+      <Skeleton className="h-28 w-full rounded-lg sm:h-32" />
+      <Skeleton className="-mt-10 size-16 rounded-full border-2 border-background" />
       <div className={`mt-3 flex items-start justify-between gap-3 ${bodyIndent}`}>
         <div className="flex flex-col gap-1.5">
           <Skeleton className="h-6 w-40" />
@@ -374,6 +391,8 @@ export default function UserProfilePage({
           displayName={displayName}
           handle={user.handle}
           bio={user.bio}
+          avatar={user.avatar}
+          banner={user.banner}
           hasDisplayName={hasDisplayName}
           followerTotal={followerTotal}
           localFollowerCount={user.follower_count}

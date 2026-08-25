@@ -10,9 +10,12 @@ import (
 	"net/url"
 )
 
-// backfillCollections are the io.sunred.* collections to crawl from the PDS
-// repo during the historical backfill phase.
+// backfillCollections are the collections to crawl from the PDS repo during the
+// historical backfill phase: the io.sunred.* social-graph collections plus the
+// Bluesky profile record (app.bsky.actor.profile) so the relay caches display
+// name, bio, and avatar/banner for tracked DIDs.
 var backfillCollections = []string{
+	"app.bsky.actor.profile",
 	"io.sunred.graph.follow",
 	"io.sunred.feed.subscription",
 	"io.sunred.share.article",
@@ -123,6 +126,8 @@ func (f *Fanout) processBackfillRecord(ctx context.Context, did, pdsURL, collect
 		return
 	}
 	switch collection {
+	case "app.bsky.actor.profile":
+		f.processProfileRecord(ctx, did, pdsURL, rec)
 	case "io.sunred.graph.follow":
 		f.processFollowRecord(ctx, did, pdsURL, rkey, rec)
 	case "io.sunred.share.article":

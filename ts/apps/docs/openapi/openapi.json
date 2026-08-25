@@ -1400,6 +1400,12 @@
                         "readOnly": true,
                         "type": "string"
                     },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
                     "bio": {
                         "type": "string"
                     },
@@ -1446,6 +1452,12 @@
                         ],
                         "format": "uri",
                         "readOnly": true,
+                        "type": "string"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "banner": {
                         "type": "string"
                     },
                     "bio": {

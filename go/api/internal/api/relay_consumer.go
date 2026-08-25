@@ -135,6 +135,8 @@ func (c *RelayConsumer) processEvent(ctx context.Context, evt *relayEvent) error
 		return c.handleUnstarEvent(ctx, evt)
 	case "backfillComplete":
 		return c.handleBackfillComplete(ctx, evt)
+	case "profile":
+		return c.handleProfileEvent(ctx, evt)
 	default:
 		slog.Warn("relay consumer: unknown event type", "type", evt.EventType)
 		return nil
@@ -341,4 +343,25 @@ func (c *RelayConsumer) handleBackfillComplete(ctx context.Context, evt *relayEv
 	}
 	slog.Info("relay consumer: backfill complete", "did", p.DID, "user_id", userID)
 	return c.store.SetUserSyncStatus(ctx, userID, "idle")
+}
+
+// handleProfileEvent caches a tracked user's profile (display name, bio,
+// avatar, banner) observed by the relay from their app.bsky.actor.profile
+// record. The relay resolves blob refs to public getBlob URLs, so the values
+// are stored as-is. A user not on this instance is ignored.
+func (c *RelayConsumer) handleProfileEvent(ctx context.Context, evt *relayEvent) error {
+	var p struct {
+		DisplayName string `json:"displayName"`
+		Description string `json:"description"`
+		Avatar      string `json:"avatar"`
+		Banner      string `json:"banner"`
+	}
+	if err := json.Unmarshal(evt.Payload, &p); err != nil {
+		return fmt.Errorf("unmarshal profile payload: %w", err)
+	}
+	userID, _ := c.store.GetUserIDByDID(ctx, evt.DID)
+	if userID == 0 {
+		return nil // user not on this instance
+	}
+	return c.store.UpdateUserProfileFromPDS(ctx, userID, p.DisplayName, p.Description, p.Avatar, p.Banner)
 }

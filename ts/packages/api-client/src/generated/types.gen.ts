@@ -444,6 +444,8 @@ export type User = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
+    avatar?: string;
+    banner?: string;
     bio?: string;
     created_at: string;
     did?: string;
@@ -459,6 +461,8 @@ export type UserProfile = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
+    avatar?: string;
+    banner?: string;
     bio?: string;
     created_at: string;
     did?: string;
@@ -733,6 +737,8 @@ export type UpdateMeInputBodyWritable = {
 };
 
 export type UserWritable = {
+    avatar?: string;
+    banner?: string;
     bio?: string;
     created_at: string;
     did?: string;
@@ -744,6 +750,8 @@ export type UserWritable = {
 };
 
 export type UserProfileWritable = {
+    avatar?: string;
+    banner?: string;
     bio?: string;
     created_at: string;
     did?: string;

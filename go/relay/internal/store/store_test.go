@@ -57,6 +57,10 @@ CREATE TABLE IF NOT EXISTS tracked_dids (
   did          TEXT NOT NULL UNIQUE,
   pds_url      TEXT NOT NULL,
   handle       TEXT NOT NULL DEFAULT '',
+  display_name TEXT NOT NULL DEFAULT '',
+  bio          TEXT NOT NULL DEFAULT '',
+  avatar       TEXT NOT NULL DEFAULT '',
+  banner       TEXT NOT NULL DEFAULT '',
   instance_id  INTEGER REFERENCES instances(id) ON DELETE SET NULL,
   cursor_seq   BIGINT NOT NULL DEFAULT 0,
   status       VARCHAR(32) NOT NULL DEFAULT 'active',
@@ -111,6 +115,16 @@ CREATE TABLE IF NOT EXISTS relay_events (
 `
 	if _, err := db.Exec(ddl); err != nil {
 		t.Fatalf("apply relay DDL: %v", err)
+	}
+	// Ensure columns added by later migrations exist on pre-existing tables
+	// (the test DB persists across runs; CREATE IF NOT EXISTS won't add them).
+	if _, err := db.Exec(`
+ALTER TABLE tracked_dids ADD COLUMN IF NOT EXISTS display_name TEXT NOT NULL DEFAULT '';
+ALTER TABLE tracked_dids ADD COLUMN IF NOT EXISTS bio        TEXT NOT NULL DEFAULT '';
+ALTER TABLE tracked_dids ADD COLUMN IF NOT EXISTS avatar     TEXT NOT NULL DEFAULT '';
+ALTER TABLE tracked_dids ADD COLUMN IF NOT EXISTS banner     TEXT NOT NULL DEFAULT '';
+	`); err != nil {
+		t.Fatalf("alter tracked_dids: %v", err)
 	}
 }
 

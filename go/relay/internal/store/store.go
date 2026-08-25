@@ -345,9 +345,31 @@ type RelayEvent struct {
 
 // SearchResult is a single DID matching a search query.
 type SearchResult struct {
-	DID    string `json:"did"`
-	Handle string `json:"handle"`
-	PDSUrl string `json:"pdsUrl"`
+	DID         string `json:"did"`
+	Handle      string `json:"handle"`
+	PDSUrl      string `json:"pdsUrl"`
+	DisplayName string `json:"displayName,omitempty"`
+	Bio         string `json:"bio,omitempty"`
+	Avatar      string `json:"avatar,omitempty"`
+	Banner      string `json:"banner,omitempty"`
+}
+
+// RecordProfile caches the app.bsky.actor.profile fields for a tracked DID.
+// avatar/banner are full public getBlob URLs resolved from the blob refs by
+// the caller (the fanout layer). Overwrites unconditionally — the PDS is the
+// source of truth. Returns whether any row was actually updated.
+func (s *Store) RecordProfile(ctx context.Context, did, displayName, bio, avatar, banner string) (bool, error) {
+	res, err := s.DB.ExecContext(ctx, `
+		UPDATE tracked_dids
+		   SET display_name = $2, bio = $3, avatar = $4, banner = $5
+		 WHERE did = $1`,
+		did, displayName, bio, avatar, banner,
+	)
+	if err != nil {
+		return false, err
+	}
+	n, _ := res.RowsAffected()
+	return n > 0, nil
 }
 
 // SearchDIDs returns up to limit tracked DIDs whose handle matches the query
@@ -358,7 +380,9 @@ func (s *Store) SearchDIDs(ctx context.Context, q string, limit int) ([]SearchRe
 	}
 	like := "%" + q + "%"
 	rows, err := s.DB.QueryContext(ctx, `
-		SELECT did, handle, pds_url
+		SELECT did, handle, pds_url,
+		       COALESCE(display_name, ''), COALESCE(bio, ''),
+		       COALESCE(avatar, ''), COALESCE(banner, '')
 		FROM tracked_dids
 		WHERE handle ILIKE $1 AND handle <> ''
 		ORDER BY (handle ILIKE $2) DESC, announced_at DESC
@@ -370,7 +394,7 @@ func (s *Store) SearchDIDs(ctx context.Context, q string, limit int) ([]SearchRe
 	var out []SearchResult
 	for rows.Next() {
 		var r SearchResult
-		if err := rows.Scan(&r.DID, &r.Handle, &r.PDSUrl); err != nil {
+		if err := rows.Scan(&r.DID, &r.Handle, &r.PDSUrl, &r.DisplayName, &r.Bio, &r.Avatar, &r.Banner); err != nil {
 			return nil, err
 		}
 		out = append(out, r)
@@ -378,14 +402,32 @@ func (s *Store) SearchDIDs(ctx context.Context, q string, limit int) ([]SearchRe
 	return out, rows.Err()
 }
 
-// ResolveHandle returns the DID and PDS URL for a given handle (exact match).
-// Returns ("", "", nil) if not found.
-func (s *Store) ResolveHandle(ctx context.Context, handle string) (did, pdsURL string, err error) {
-	err = s.DB.QueryRowContext(ctx, `
-		SELECT did, pds_url FROM tracked_dids WHERE handle = $1 LIMIT 1`, handle,
-	).Scan(&did, &pdsURL)
+// ResolveResult holds the relay's cached view of a handle: identity plus the
+// app.bsky.actor.profile fields (display_name, bio, avatar, banner).
+type ResolveResult struct {
+	DID         string
+	PDSUrl      string
+	DisplayName string
+	Bio         string
+	Avatar      string
+	Banner      string
+}
+
+// ResolveHandle returns the cached identity + profile for a given handle
+// (exact match), or nil if not found.
+func (s *Store) ResolveHandle(ctx context.Context, handle string) (*ResolveResult, error) {
+	var r ResolveResult
+	err := s.DB.QueryRowContext(ctx, `
+		SELECT did, pds_url,
+		       COALESCE(display_name, ''), COALESCE(bio, ''),
+		       COALESCE(avatar, ''), COALESCE(banner, '')
+		FROM tracked_dids WHERE handle = $1 LIMIT 1`, handle,
+	).Scan(&r.DID, &r.PDSUrl, &r.DisplayName, &r.Bio, &r.Avatar, &r.Banner)
 	if err == sql.ErrNoRows {
-		return "", "", nil
+		return nil, nil
 	}
-	return did, pdsURL, err
+	if err != nil {
+		return nil, err
+	}
+	return &r, nil
 }

@@ -42,6 +42,11 @@ func backfillUserFromPDS(ctx context.Context, c *atproto.Client, st *store.Store
 				slog.Warn("backfill: feed subs", "did", did, "err", err)
 				errs = append(errs, err)
 			}
+		case atproto.CollectionProfile:
+			if err := backfillProfile(ctx, c, st, userID, did); err != nil {
+				slog.Warn("backfill: profile", "did", did, "err", err)
+				errs = append(errs, err)
+			}
 		}
 	}
 	return errors.Join(errs...)
@@ -196,4 +201,29 @@ func rkeyFromURI(uri string) string {
 		}
 	}
 	return uri
+}
+
+// backfillProfile reads the single app.bsky.actor.profile record (rkey "self")
+// from the user's PDS and caches display_name, bio, and the avatar/banner blob
+// URLs into the local users row. A missing record (no profile set on the PDS)
+// is not an error — the local cache is simply left untouched. The PDS is the
+// source of truth, so existing local values are overwritten unconditionally.
+func backfillProfile(ctx context.Context, c *atproto.Client, st *store.Store, userID int, did string) error {
+	out, err := c.GetRecord(ctx, did, atproto.CollectionProfile, atproto.ProfileRkey)
+	if err != nil {
+		// getRecord 404s when no profile record exists yet; treat as no-op.
+		slog.Debug("backfill: no profile record", "did", did, "err", err)
+		return nil
+	}
+	var rec atproto.ProfileRecord
+	if err := json.Unmarshal(out.Value, &rec); err != nil {
+		return fmt.Errorf("unmarshal profile record: %w", err)
+	}
+	avatar := rec.Avatar.BlobURL(c.PDSURL(), did)
+	banner := rec.Banner.BlobURL(c.PDSURL(), did)
+	if err := st.UpdateUserProfileFromPDS(ctx, userID, rec.DisplayName, rec.Description, avatar, banner); err != nil {
+		return fmt.Errorf("cache profile: %w", err)
+	}
+	slog.Info("sync: profile cached", "user_id", userID, "did", did, "has_avatar", avatar != "", "has_banner", banner != "")
+	return nil
 }

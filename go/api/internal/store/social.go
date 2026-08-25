@@ -48,9 +48,10 @@ func (s *Store) UpsertHandle(ctx context.Context, userID int, handle, bio string
 	err := s.DB.QueryRowContext(ctx, `
 		UPDATE users SET handle = $2, bio = $3
 		WHERE id = $1
-		RETURNING id, COALESCE(handle, ''), COALESCE(display_name, ''), bio, created_at`,
+		RETURNING id, COALESCE(handle, ''), COALESCE(display_name, ''), bio,
+		          COALESCE(avatar, ''), COALESCE(banner, ''), created_at`,
 		userID, handle, bio,
-	).Scan(&p.UserID, &p.Handle, &p.DisplayName, &p.Bio, &p.CreatedAt)
+	).Scan(&p.UserID, &p.Handle, &p.DisplayName, &p.Bio, &p.Avatar, &p.Banner, &p.CreatedAt)
 	if err != nil {
 		if strings.Contains(err.Error(), "idx_users_handle") ||
 			strings.Contains(err.Error(), "unique") {
@@ -72,6 +73,8 @@ func (s *Store) GetProfileByHandle(ctx context.Context, handle string, viewerID 
 		  u.bio,
 		  u.created_at,
 		  COALESCE(u.display_name, ''),
+		  COALESCE(u.avatar, ''),
+		  COALESCE(u.banner, ''),
 		  COALESCE(u.did, ''),
 		  (SELECT COUNT(*) FROM user_follows WHERE followee_id = u.id),
 		  (SELECT COUNT(*) FROM user_follows WHERE follower_id = u.id),
@@ -84,7 +87,7 @@ func (s *Store) GetProfileByHandle(ctx context.Context, handle string, viewerID 
 	).Scan(
 		&p.UserID, &p.Handle, &p.Bio,
 		&p.CreatedAt,
-		&p.DisplayName, &p.DID,
+		&p.DisplayName, &p.Avatar, &p.Banner, &p.DID,
 		&p.FollowerCount, &p.FollowingCount,
 		&p.IsFollowing,
 	)
@@ -173,6 +176,8 @@ func (s *Store) ListFollowing(ctx context.Context, followerID int) ([]UserProfil
 		SELECT
 		  u.id, u.handle, u.bio, u.created_at,
 		  COALESCE(u.display_name, ''),
+		  COALESCE(u.avatar, ''),
+		  COALESCE(u.banner, ''),
 		  (SELECT COUNT(*) FROM user_follows WHERE followee_id = u.id),
 		  (SELECT COUNT(*) FROM user_follows WHERE follower_id = u.id)
 		FROM user_follows f
@@ -189,7 +194,7 @@ func (s *Store) ListFollowing(ctx context.Context, followerID int) ([]UserProfil
 		var p UserProfile
 		if err := rows.Scan(
 			&p.UserID, &p.Handle, &p.Bio, &p.CreatedAt,
-			&p.DisplayName, &p.FollowerCount, &p.FollowingCount,
+			&p.DisplayName, &p.Avatar, &p.Banner, &p.FollowerCount, &p.FollowingCount,
 		); err != nil {
 			return nil, err
 		}
@@ -205,6 +210,8 @@ func (s *Store) ListFollowers(ctx context.Context, userID, viewerID int) ([]User
 		SELECT
 		  u.id, u.handle, u.bio, u.created_at,
 		  COALESCE(u.display_name, ''),
+		  COALESCE(u.avatar, ''),
+		  COALESCE(u.banner, ''),
 		  (SELECT COUNT(*) FROM user_follows WHERE followee_id = u.id),
 		  (SELECT COUNT(*) FROM user_follows WHERE follower_id = u.id),
 		  CASE WHEN $2 > 0 THEN
@@ -224,7 +231,7 @@ func (s *Store) ListFollowers(ctx context.Context, userID, viewerID int) ([]User
 		var p UserProfile
 		if err := rows.Scan(
 			&p.UserID, &p.Handle, &p.Bio, &p.CreatedAt,
-			&p.DisplayName, &p.FollowerCount, &p.FollowingCount, &p.IsFollowing,
+			&p.DisplayName, &p.Avatar, &p.Banner, &p.FollowerCount, &p.FollowingCount, &p.IsFollowing,
 		); err != nil {
 			return nil, err
 		}
@@ -252,6 +259,8 @@ func (s *Store) SearchUsers(ctx context.Context, q string, viewerID, limit int) 
 		SELECT
 		  u.id, u.handle, u.bio, u.created_at,
 		  COALESCE(u.display_name, ''),
+		  COALESCE(u.avatar, ''),
+		  COALESCE(u.banner, ''),
 		  (SELECT COUNT(*) FROM user_follows WHERE followee_id = u.id),
 		  (SELECT COUNT(*) FROM user_follows WHERE follower_id = u.id),
 		  CASE WHEN $3 > 0 THEN
@@ -276,7 +285,7 @@ func (s *Store) SearchUsers(ctx context.Context, q string, viewerID, limit int) 
 		var p UserProfile
 		if err := rows.Scan(
 			&p.UserID, &p.Handle, &p.Bio, &p.CreatedAt,
-			&p.DisplayName, &p.FollowerCount, &p.FollowingCount, &p.IsFollowing,
+			&p.DisplayName, &p.Avatar, &p.Banner, &p.FollowerCount, &p.FollowingCount, &p.IsFollowing,
 		); err != nil {
 			return nil, err
 		}
@@ -532,6 +541,8 @@ func (s *Store) ListFeedSubscribers(ctx context.Context, feedID int) ([]UserProf
 		SELECT
 		  u.id, u.handle, u.bio, u.created_at,
 		  COALESCE(u.display_name, ''),
+		  COALESCE(u.avatar, ''),
+		  COALESCE(u.banner, ''),
 		  (SELECT COUNT(*) FROM user_follows WHERE followee_id = u.id),
 		  (SELECT COUNT(*) FROM user_follows WHERE follower_id = u.id)
 		FROM subscriptions s
@@ -549,7 +560,7 @@ func (s *Store) ListFeedSubscribers(ctx context.Context, feedID int) ([]UserProf
 		var p UserProfile
 		if err := rows.Scan(
 			&p.UserID, &p.Handle, &p.Bio, &p.CreatedAt,
-			&p.DisplayName, &p.FollowerCount, &p.FollowingCount,
+			&p.DisplayName, &p.Avatar, &p.Banner, &p.FollowerCount, &p.FollowingCount,
 		); err != nil {
 			return nil, err
 		}

@@ -35,6 +35,7 @@ type fanoutStore interface {
 	DeleteFeedSubscription(ctx context.Context, did, rkey string) (bool, error)
 	RecordStar(ctx context.Context, did, rkey, articleURL, pdsURL string) (bool, error)
 	DeleteStar(ctx context.Context, did, rkey string) (bool, error)
+	RecordProfile(ctx context.Context, did, displayName, bio, avatar, banner string) (bool, error)
 	AppendEvent(ctx context.Context, eventType, did string, payload any) (int64, error)
 }
 
@@ -223,6 +224,8 @@ func (f *Fanout) processOp(ctx context.Context, did, pdsURL string, op repoOp) {
 		effectivePDS = f.testPDSURL
 	}
 	switch col {
+	case "app.bsky.actor.profile":
+		f.handleProfile(ctx, did, effectivePDS, rkey, op.Action)
 	case "io.sunred.graph.follow":
 		f.handleFollow(ctx, did, effectivePDS, rkey, op.Action)
 	case "io.sunred.share.article":
@@ -254,6 +257,47 @@ func (f *Fanout) handleFollow(ctx context.Context, did, pdsURL, rkey, action str
 		return
 	}
 	f.processFollowRecord(ctx, did, pdsURL, rkey, rec)
+}
+
+// handleProfile is the live firehose entry for app.bsky.actor.profile. The
+// profile record has a fixed rkey ("self"); a delete clears the cached fields,
+// a create/update re-fetches the record and processes it. Shared with the
+// backfill path via processProfileRecord.
+func (f *Fanout) handleProfile(ctx context.Context, did, pdsURL, rkey, action string) {
+	if action == "delete" {
+		// Clearing the cached fields is enough — there's no event to emit; a
+		// blank profile is the new state and consumers read it back on demand.
+		if _, err := f.store.RecordProfile(ctx, did, "", "", "", ""); err != nil {
+			slog.Warn("fanout: clear profile", "did", did, "err", err)
+		}
+		return
+	}
+	rec, err := f.fetchRecord(ctx, pdsURL, did, "app.bsky.actor.profile", rkey)
+	if err != nil {
+		slog.Warn("fanout: fetch profile", "did", did, "rkey", rkey, "err", err)
+		return
+	}
+	f.processProfileRecord(ctx, did, pdsURL, rec)
+}
+
+// processProfileRecord caches the app.bsky.actor.profile fields for a tracked
+// DID and emits a "profile" event so instances update their local cache.
+// avatar/banner blob refs are resolved to public getBlob URLs (pds + did +
+// cid) so consumers can store/serve them directly. Shared by the live and
+// backfill paths.
+func (f *Fanout) processProfileRecord(ctx context.Context, did, pdsURL string, rec map[string]any) {
+	displayName, _ := rec["displayName"].(string)
+	description, _ := rec["description"].(string)
+	avatar := blobURL(rec["avatar"], pdsURL, did)
+	banner := blobURL(rec["banner"], pdsURL, did)
+	if _, err := f.store.RecordProfile(ctx, did, displayName, description, avatar, banner); err != nil {
+		slog.Warn("fanout: record profile", "did", did, "err", err)
+		return
+	}
+	f.emit(ctx, "profile", did, map[string]any{
+		"did": did, "displayName": displayName, "description": description,
+		"avatar": avatar, "banner": banner,
+	})
 }
 
 // processFollowRecord records a follow and emits an event. Shared by the live
@@ -483,4 +527,34 @@ func parseTime(v any) time.Time {
 		return time.Now().UTC()
 	}
 	return t.UTC()
+}
+
+// blobURL resolves an AT Proto blob ref embedded in a record (as decoded by
+// encoding/json into a map[string]any) to its public getBlob URL on the PDS:
+// {pdsURL}/xrpc/com.atproto.sync.getBlob?did={did}&cid={cid}. Returns "" when
+// the field is absent or has no CID, so callers can store an empty string as
+// "no image set".
+func blobURL(v any, pdsURL, did string) string {
+	m, ok := v.(map[string]any)
+	if !ok {
+		return ""
+	}
+	ref, ok := m["ref"].(map[string]any)
+	if !ok {
+		return ""
+	}
+	cid, _ := ref["$link"].(string)
+	if cid == "" {
+		return ""
+	}
+	u, err := url.Parse(pdsURL)
+	if err != nil {
+		return ""
+	}
+	u.Path = "/xrpc/com.atproto.sync.getBlob"
+	q := u.Query()
+	q.Set("did", did)
+	q.Set("cid", cid)
+	u.RawQuery = q.Encode()
+	return u.String()
 }

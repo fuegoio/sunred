@@ -21,6 +21,7 @@ type stubStore struct {
 	shares       map[string]bool   // rkey → exists
 	feedSubs     map[string]string // rkey → feed_url
 	stars        map[string]string // rkey → article_url
+	profiles     map[string]store.SearchResult
 	events       []store.RelayEvent
 	didCursors   map[string]int64
 	errorDIDs    map[string]string
@@ -33,6 +34,7 @@ func newStubStore() *stubStore {
 		shares:       make(map[string]bool),
 		feedSubs:     make(map[string]string),
 		stars:        make(map[string]string),
+		profiles:     make(map[string]store.SearchResult),
 		didCursors:   make(map[string]int64),
 		errorDIDs:    make(map[string]string),
 	}
@@ -121,6 +123,14 @@ func (s *stubStore) DeleteStar(_ context.Context, did, rkey string) (bool, error
 	}
 	delete(s.stars, key)
 	return true, nil
+}
+
+func (s *stubStore) RecordProfile(_ context.Context, did, displayName, bio, avatar, banner string) (bool, error) {
+	prev, exists := s.profiles[did]
+	s.profiles[did] = store.SearchResult{
+		DID: did, DisplayName: displayName, Bio: bio, Avatar: avatar, Banner: banner,
+	}
+	return !exists || prev != s.profiles[did], nil
 }
 
 func (s *stubStore) AppendEvent(_ context.Context, eventType, did string, payload any) (int64, error) {

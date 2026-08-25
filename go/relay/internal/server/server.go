@@ -317,8 +317,12 @@ func (s *Server) handleSearchDIDs(w http.ResponseWriter, r *http.Request) {
 // --- resolveHandle ---
 
 type resolveHandleOutput struct {
-	DID    string `json:"did"`
-	PDSUrl string `json:"pdsUrl"`
+	DID         string `json:"did"`
+	PDSUrl      string `json:"pdsUrl"`
+	DisplayName string `json:"displayName,omitempty"`
+	Bio         string `json:"bio,omitempty"`
+	Avatar      string `json:"avatar,omitempty"`
+	Banner      string `json:"banner,omitempty"`
 }
 
 func (s *Server) handleResolveHandle(w http.ResponseWriter, r *http.Request) {
@@ -331,18 +335,22 @@ func (s *Server) handleResolveHandle(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "handle is required", http.StatusBadRequest)
 		return
 	}
-	did, pdsURL, err := s.store.ResolveHandle(r.Context(), handle)
+	res, err := s.store.ResolveHandle(r.Context(), handle)
 	if err != nil {
 		slog.Error("relay: resolve handle", "handle", handle, "err", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	if did == "" {
+	if res == nil {
 		http.Error(w, "handle not found", http.StatusNotFound)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(resolveHandleOutput{DID: did, PDSUrl: pdsURL})
+	_ = json.NewEncoder(w).Encode(resolveHandleOutput{
+		DID: res.DID, PDSUrl: res.PDSUrl,
+		DisplayName: res.DisplayName, Bio: res.Bio,
+		Avatar: res.Avatar, Banner: res.Banner,
+	})
 }
 
 // --- subscribeEvents ---

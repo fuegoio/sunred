@@ -1436,6 +1436,12 @@ export const UserSchema = {
             readOnly: true,
             type: 'string'
         },
+        avatar: {
+            type: 'string'
+        },
+        banner: {
+            type: 'string'
+        },
         bio: {
             type: 'string'
         },
@@ -1483,6 +1489,12 @@ export const UserProfileSchema = {
             ],
             format: 'uri',
             readOnly: true,
+            type: 'string'
+        },
+        avatar: {
+            type: 'string'
+        },
+        banner: {
             type: 'string'
         },
         bio: {
@@ -2525,6 +2537,12 @@ export const UpdateMeInputBodyWritableSchema = {
 export const UserWritableSchema = {
     additionalProperties: false,
     properties: {
+        avatar: {
+            type: 'string'
+        },
+        banner: {
+            type: 'string'
+        },
         bio: {
             type: 'string'
         },
@@ -2565,6 +2583,12 @@ export const UserWritableSchema = {
 export const UserProfileWritableSchema = {
     additionalProperties: false,
     properties: {
+        avatar: {
+            type: 'string'
+        },
+        banner: {
+            type: 'string'
+        },
         bio: {
             type: 'string'
         },

@@ -939,9 +939,10 @@ func (s *Store) UpdateUser(ctx context.Context, id int, displayName string) (*Us
 	err := s.DB.QueryRowContext(ctx,
 		`UPDATE users SET display_name = $2 WHERE id = $1
 		 RETURNING id, COALESCE(handle, ''), COALESCE(did, ''), COALESCE(display_name, ''), COALESCE(bio, ''),
+		           COALESCE(avatar, ''), COALESCE(banner, ''),
 		           created_at, pds_sync_status, pds_synced_at`,
 		id, displayName,
-	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt)
+	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.Avatar, &u.Banner, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -949,6 +950,23 @@ func (s *Store) UpdateUser(ctx context.Context, id int, displayName string) (*Us
 		return nil, err
 	}
 	return &u, nil
+}
+
+// UpdateUserProfileFromPDS caches the text + image fields read from the user's
+// app.bsky.actor.profile record on their PDS. It is the inbound sync path — the
+// PDS is the source of truth for display_name, bio, avatar, and banner, so this
+// overwrites the local cache unconditionally. avatar/banner are full public getBlob
+// URLs (pds + did + cid) so the web can render them directly. Called from the
+// login backfill, the followee backfill, and the relay profile event consumer.
+func (s *Store) UpdateUserProfileFromPDS(ctx context.Context, userID int, displayName, bio, avatar, banner string) error {
+	_, err := s.DB.ExecContext(ctx,
+		`UPDATE users SET display_name = $2, bio = $3, avatar = $4, banner = $5 WHERE id = $1`,
+		userID, displayName, bio, avatar, banner,
+	)
+	if err != nil {
+		return fmt.Errorf("update profile from pds: %w", err)
+	}
+	return nil
 }
 
 // DeleteUser deletes the user with the given id and all their associated data.
@@ -962,10 +980,11 @@ func (s *Store) GetUserByID(ctx context.Context, id int) (*User, error) {
 	var u User
 	err := s.DB.QueryRowContext(ctx,
 		`SELECT id, COALESCE(handle, ''), COALESCE(did, ''), COALESCE(display_name, ''), COALESCE(bio, ''),
-		        created_at, pds_sync_status, pds_synced_at
+		       COALESCE(avatar, ''), COALESCE(banner, ''),
+		       created_at, pds_sync_status, pds_synced_at
 		 FROM users
 		 WHERE id = $1`, id,
-	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt)
+	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.Avatar, &u.Banner, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}

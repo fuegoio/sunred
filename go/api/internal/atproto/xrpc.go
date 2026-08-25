@@ -31,6 +31,9 @@ func NewClient(pdsURL, token string) *Client {
 	}
 }
 
+// PDSURL returns the PDS base URL this client is bound to.
+func (c *Client) PDSURL() string { return c.pdsURL }
+
 // xrpcError is an XRPC error response body.
 type xrpcError struct {
 	Error   string `json:"error"`
@@ -237,6 +240,29 @@ type ListRecordsOutput struct {
 		Value json.RawMessage `json:"value"`
 	} `json:"records"`
 	Cursor string `json:"cursor"`
+}
+
+// GetRecordOutput is the response from com.atproto.repo.getRecord.
+type GetRecordOutput struct {
+	URI   string          `json:"uri"`
+	CID   string          `json:"cid"`
+	Value json.RawMessage `json:"value"`
+}
+
+// GetRecord fetches a single record by collection + rkey from a repo. Returns
+// an error when the record does not exist; callers should treat that as "no
+// profile set" rather than a hard failure.
+func (c *Client) GetRecord(ctx context.Context, did, collection, rkey string) (*GetRecordOutput, error) {
+	params := map[string]string{
+		"repo":       did,
+		"collection": collection,
+		"rkey":       rkey,
+	}
+	var out GetRecordOutput
+	if err := c.Query(ctx, "com.atproto.repo.getRecord", params, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 // ListRecords returns records in a collection, newest first.

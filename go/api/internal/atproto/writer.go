@@ -159,13 +159,17 @@ func (w *Writer) DeleteStar(ctx context.Context, rkey string) error {
 
 // PutProfile writes or replaces the app.bsky.actor.profile record (rkey
 // "self"), mirroring the user's display name and bio onto their Bluesky
-// profile so it is searchable on the network. createdAt is preserved across
-// updates; pass the user's original account creation time.
-func (w *Writer) PutProfile(ctx context.Context, displayName, description string, createdAt time.Time) error {
+// profile so it is searchable on the network. avatar and banner are passed
+// through unchanged from the existing record so a local text edit doesn't
+// wipe images the user set from a Bluesky client. createdAt is preserved
+// across updates; pass the user's original account creation time.
+func (w *Writer) PutProfile(ctx context.Context, displayName, description string, avatar, banner *BlobRef, createdAt time.Time) error {
 	rec := ProfileRecord{
 		Type:        CollectionProfile,
 		DisplayName: displayName,
 		Description: description,
+		Avatar:      avatar,
+		Banner:      banner,
 		CreatedAt:   FormatTime(createdAt),
 	}
 	if _, err := w.putRecord(ctx, CollectionProfile, ProfileRkey, rec); err != nil {

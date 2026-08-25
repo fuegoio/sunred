@@ -317,6 +317,7 @@ func safeOAuthRedirect(value, webURL string) string {
 func (h *OAuthHandlers) syncFromPDS(ctx context.Context, did string, userID int, pdsURL string) error {
 	c := atproto.NewClient(pdsURL, "")
 	return backfillUserFromPDS(ctx, c, h.store, userID, did, []string{
+		atproto.CollectionProfile,
 		atproto.CollectionFollow,
 		atproto.CollectionShare,
 		atproto.CollectionStar,

@@ -128,6 +128,8 @@ type User struct {
 	DID         string    `json:"did,omitempty"`
 	DisplayName string    `json:"display_name,omitempty"`
 	Bio         string    `json:"bio,omitempty"`
+	Avatar      string    `json:"avatar,omitempty"`
+	Banner      string    `json:"banner,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`
 	// PDSSyncStatus tracks the post-login backfill from the user's PDS:
 	// "syncing" while in progress, "idle" once done, "failed" on error.
@@ -143,6 +145,8 @@ type UserProfile struct {
 	Handle      string    `json:"handle"`
 	DisplayName string    `json:"display_name,omitempty"`
 	Bio         string    `json:"bio,omitempty"`
+	Avatar      string    `json:"avatar,omitempty"`
+	Banner      string    `json:"banner,omitempty"`
 	DID         string    `json:"did,omitempty"`
 	PDSUrl      string    `json:"pds_url,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`

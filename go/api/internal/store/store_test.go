@@ -9,11 +9,13 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+
+	"github.com/fuegoio/sunred/go/api/internal/migrations"
 )
 
 // testDB returns a Store backed by a real PostgreSQL instance, or skips
-// the test if the database is not reachable. The database must already
-// have migrations applied.
+// the test if the database is not reachable. Migrations are applied inline so
+// the test database stays current without a manual server run.
 func testDB(t *testing.T) *Store {
 	t.Helper()
 	dsn := os.Getenv("SUNRED_DATABASE_URL")
@@ -28,6 +30,9 @@ func testDB(t *testing.T) *Store {
 	defer cancel()
 	if err := db.PingContext(ctx); err != nil {
 		t.Skipf("database not reachable, skipping integration test: %v", err)
+	}
+	if err := migrations.Run(db); err != nil {
+		t.Fatalf("apply migrations: %v", err)
 	}
 	return New(db)
 }
