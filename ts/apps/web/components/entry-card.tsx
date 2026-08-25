@@ -9,6 +9,7 @@ import { MessageSquare } from "lucide-react";
 import { StarToggle } from "@/components/star-toggle";
 import { ShareToggle } from "@/components/share-toggle";
 import { FeedIcon } from "@/components/feed-icon";
+import { EntryCounts } from "@/components/entry-counts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getClient, updateEntries, updateEntryStatusByUrl } from "@/lib/sunred";
 import { getApiErrorMessage } from "@/lib/errors";
@@ -280,6 +281,7 @@ export function EntryCard({
           )}
           <span aria-hidden>·</span>
           <time className="shrink-0">{formatRelative(entry.published_at)}</time>
+          <EntryCounts repostCount={entry.repost_count} starCount={entry.star_count} />
         </div>
         <h3
           className={cn(
