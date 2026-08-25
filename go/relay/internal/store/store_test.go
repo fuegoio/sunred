@@ -325,6 +325,60 @@ func TestSetTrackedDIDError(t *testing.T) {
 	}
 }
 
+func TestUpsertTrackedDID_ErrorRecovery(t *testing.T) {
+	s := relayTestDB(t)
+	ctx := context.Background()
+
+	did := fmt.Sprintf("did:plc:rec-%d", time.Now().UnixNano())
+	instURL := fmt.Sprintf("https://rec-inst-%d.example.com", time.Now().UnixNano())
+	instID, _ := s.UpsertInstance(ctx, instURL)
+	t.Cleanup(func() {
+		_, _ = s.DB.Exec(`DELETE FROM tracked_dids WHERE did=$1`, did)
+		_, _ = s.DB.Exec(`DELETE FROM instances WHERE id=$1`, instID)
+	})
+
+	// First insert: needsBackfill should be true.
+	_, needsBackfill, err := s.UpsertTrackedDID(ctx, did, "https://pds.example.com", "h", instID)
+	if err != nil {
+		t.Fatalf("first upsert: %v", err)
+	}
+	if !needsBackfill {
+		t.Error("expected needsBackfill=true on first insert")
+	}
+
+	// Mark as error (simulating a failed PDS subscription).
+	if err := s.SetTrackedDIDError(ctx, did, "connection refused"); err != nil {
+		t.Fatalf("SetTrackedDIDError: %v", err)
+	}
+
+	// Re-announce: should reset status to 'active' and return needsBackfill=true.
+	_, needsBackfill2, err := s.UpsertTrackedDID(ctx, did, "https://pds.example.com", "h", instID)
+	if err != nil {
+		t.Fatalf("recovery upsert: %v", err)
+	}
+	if !needsBackfill2 {
+		t.Error("expected needsBackfill=true when recovering from error")
+	}
+
+	var status, errMsg string
+	_ = s.DB.QueryRow(`SELECT status, error_msg FROM tracked_dids WHERE did=$1`, did).Scan(&status, &errMsg)
+	if status != "active" {
+		t.Errorf("status=%q, want 'active' after recovery", status)
+	}
+	if errMsg != "" {
+		t.Errorf("error_msg=%q, want '' after recovery", errMsg)
+	}
+
+	// Re-announce of active DID: needsBackfill should be false.
+	_, needsBackfill3, err := s.UpsertTrackedDID(ctx, did, "https://pds.example.com", "h", instID)
+	if err != nil {
+		t.Fatalf("active re-announce: %v", err)
+	}
+	if needsBackfill3 {
+		t.Error("expected needsBackfill=false on re-announce of active DID")
+	}
+}
+
 // --- Observed follows ---
 
 func TestRecordFollow_And_Delete(t *testing.T) {

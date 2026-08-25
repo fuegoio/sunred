@@ -326,17 +326,18 @@ func (h *OAuthHandlers) syncFromPDS(ctx context.Context, did string, userID int,
 }
 
 // announceToRelay notifies the relay of a user DID (see atproto.go). It returns
-// whether the relay newly started tracking the DID (isNew) — when false the
-// relay already has the records and live subscription, so no backfill event
-// will be emitted and the caller should not wait for one.
+// whether the relay will backfill this DID and emit a backfillComplete event
+// (needsBackfill) — when false the relay already tracks the DID and will not
+// emit a backfill event, so the caller should not wait for one.
 func (h *OAuthHandlers) announceToRelay(ctx context.Context, did, pdsURL, handle string) (bool, error) {
 	return announceUserToRelay(ctx, h.cfg.RelayURL, h.cfg.BaseURL, did, pdsURL, handle)
 }
 
 // announceUserToRelay is the relay-announce primitive shared by the OAuth
-// callback and the startup backfill. It returns whether the relay newly
-// started tracking the DID (isNew) — when false the relay already tracks the
-// DID and will not emit a backfill event, so the caller must not wait for one.
+// callback and the startup backfill. It returns whether the relay will
+// backfill this DID and emit a backfillComplete event (needsBackfill) — when
+// false the relay already tracks the DID and will not emit a backfill event,
+// so the caller must not wait for one.
 func announceUserToRelay(ctx context.Context, relayURL, instanceURL, did, pdsURL, handle string) (bool, error) {
 	if relayURL == "" {
 		return false, nil
