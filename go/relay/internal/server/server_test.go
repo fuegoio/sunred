@@ -375,6 +375,33 @@ func TestServer_GetArticleShareCount(t *testing.T) {
 	}
 }
 
+func TestServer_GetArticleStarCount(t *testing.T) {
+	ts, st := newServer(t)
+	ctx := context.Background()
+
+	article := fmt.Sprintf("https://starcount-%d.example.com/post", time.Now().UnixNano())
+	t.Cleanup(func() { _, _ = st.DB.Exec(`DELETE FROM observed_stars WHERE article_url=$1`, article) })
+
+	_, _ = st.RecordStar(ctx, "did:plc:a", "r1", article, "https://pds.example.com")
+	_, _ = st.RecordStar(ctx, "did:plc:b", "r2", article, "https://pds.example.com")
+
+	resp := do(t, ts, http.MethodGet, "/xrpc/io.sunred.relay.getArticleStarCount?articleUrl="+article, nil)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+	var out struct {
+		ArticleURL string `json:"articleUrl"`
+		Count      int64  `json:"count"`
+	}
+	decode(t, resp, &out)
+	if out.ArticleURL != article {
+		t.Errorf("articleUrl = %q, want %q", out.ArticleURL, article)
+	}
+	if out.Count != 2 {
+		t.Errorf("count = %d, want 2", out.Count)
+	}
+}
+
 func TestServer_SearchDIDs(t *testing.T) {
 	ts, st := newServer(t)
 	ctx := context.Background()
