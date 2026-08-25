@@ -180,7 +180,7 @@ func (e *testEnv) doUnauth(t *testing.T, method, path string, body any) *http.Re
 // readJSON decodes resp.Body into v and closes it.
 func readJSON(t *testing.T, resp *http.Response, v any) {
 	t.Helper()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if err := json.NewDecoder(resp.Body).Decode(v); err != nil {
 		t.Fatalf("decode response: %v", err)
 	}
@@ -209,7 +209,7 @@ func TestHTTP_UnauthorizedWithoutToken(t *testing.T) {
 	if resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("status = %d, want 401", resp.StatusCode)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 }
 
 func TestHTTP_GetMe(t *testing.T) {
@@ -306,7 +306,7 @@ func TestHTTP_FoldersCRUD(t *testing.T) {
 	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
 		t.Fatalf("delete status = %d", resp.StatusCode)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 
 	resp = e.do(t, http.MethodGet, "/v1/folders", nil)
 	readJSON(t, resp, &folders)
@@ -358,7 +358,7 @@ func TestHTTP_TokensCRUD(t *testing.T) {
 	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
 		t.Fatalf("delete status = %d", resp.StatusCode)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 
 	resp = e.do(t, http.MethodGet, "/v1/tokens", nil)
 	readJSON(t, resp, &tokens)
@@ -417,7 +417,7 @@ func TestHTTP_EntryByURLStarAndRead(t *testing.T) {
 	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
 		t.Fatalf("star status = %d", resp.StatusCode)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 
 	// Verify the star landed in the store.
 	rkey, _ := e.store.GetStarATProtoRkey(context.Background(), e.userID, article)
@@ -438,7 +438,7 @@ func TestHTTP_EntryByURLStarAndRead(t *testing.T) {
 	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
 		t.Fatalf("read status = %d", resp.StatusCode)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 
 	states, _ = e.store.GetEntryStatesByURLs(context.Background(), e.userID, []string{article})
 	if states[article].Status != "read" {
@@ -454,7 +454,7 @@ func TestHTTP_EntryByURLStarAndRead(t *testing.T) {
 	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
 		t.Fatalf("unstar status = %d", resp.StatusCode)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 
 	states, _ = e.store.GetEntryStatesByURLs(context.Background(), e.userID, []string{article})
 	if states[article].Starred {
@@ -489,7 +489,7 @@ func TestHTTP_OPMLExportImportRoundTrip(t *testing.T) {
 		t.Fatalf("export status = %d", resp.StatusCode)
 	}
 	body, err := io.ReadAll(resp.Body)
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	if err != nil {
 		t.Fatalf("read export: %v", err)
 	}
@@ -545,7 +545,7 @@ func TestHTTP_RefreshFeedUnavailable(t *testing.T) {
 	if resp.StatusCode != http.StatusServiceUnavailable {
 		t.Fatalf("status = %d, want 503", resp.StatusCode)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 }
 
 func TestHTTP_GetEntryNotFound(t *testing.T) {
@@ -555,5 +555,5 @@ func TestHTTP_GetEntryNotFound(t *testing.T) {
 	if resp.StatusCode != http.StatusNotFound {
 		t.Fatalf("status = %d, want 404", resp.StatusCode)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 }

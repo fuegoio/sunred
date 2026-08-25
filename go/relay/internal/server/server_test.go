@@ -172,7 +172,7 @@ func do(t *testing.T, ts *httptest.Server, method, path string, body any) *http.
 
 func decode(t *testing.T, resp *http.Response, v any) {
 	t.Helper()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if err := json.NewDecoder(resp.Body).Decode(v); err != nil {
 		t.Fatalf("decode response: %v", err)
 	}
@@ -240,7 +240,7 @@ func TestServer_GetCounts_MissingDID(t *testing.T) {
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Fatalf("status = %d, want 400", resp.StatusCode)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 }
 
 func TestServer_GetFeedSubscriberCount(t *testing.T) {
@@ -375,7 +375,7 @@ func TestServer_ResolveHandle_NotFound(t *testing.T) {
 	if resp.StatusCode != http.StatusNotFound {
 		t.Fatalf("status = %d, want 404", resp.StatusCode)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 }
 
 func TestServer_AnnounceUser(t *testing.T) {
@@ -435,7 +435,7 @@ func TestServer_AnnounceUser_MissingFields(t *testing.T) {
 	if resp.StatusCode != http.StatusUnprocessableEntity {
 		t.Fatalf("status = %d, want 422", resp.StatusCode)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 }
 
 func TestServer_AnnounceUser_BadJSON(t *testing.T) {
@@ -449,7 +449,7 @@ func TestServer_AnnounceUser_BadJSON(t *testing.T) {
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Fatalf("status = %d, want 400", resp.StatusCode)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 }
 
 func TestServer_AnnounceUser_MethodNotAllowed(t *testing.T) {
@@ -459,5 +459,5 @@ func TestServer_AnnounceUser_MethodNotAllowed(t *testing.T) {
 	if resp.StatusCode != http.StatusMethodNotAllowed {
 		t.Fatalf("status = %d, want 405", resp.StatusCode)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 }
