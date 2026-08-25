@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	comatproto "github.com/bluesky-social/indigo/api/atproto"
@@ -92,14 +93,22 @@ func (f *Fanout) Start(ctx context.Context) {
 }
 
 // refreshProfiles re-fetches the profile record for each tracked DID with
-// bounded concurrency. Errors per DID are logged and do not abort the pass.
+// bounded concurrency. Errors per DID are logged and do not abort the pass;
+// the pass logs a summary of refreshed vs failed DIDs when done.
 func (f *Fanout) refreshProfiles(ctx context.Context, dids []store.TrackedDID) {
+	if len(dids) == 0 {
+		return
+	}
+	slog.Info("fanout: refreshing tracked profiles", "dids", len(dids))
+
 	const maxConcurrent = 8
 	sem := make(chan struct{}, maxConcurrent)
 	var wg sync.WaitGroup
+	var ok, failed int32
 	for _, d := range dids {
 		select {
 		case <-ctx.Done():
+			slog.Info("fanout: profile refresh cancelled", "did", d.DID)
 			return
 		default:
 		}
@@ -108,10 +117,17 @@ func (f *Fanout) refreshProfiles(ctx context.Context, dids []store.TrackedDID) {
 		go func(d store.TrackedDID) {
 			defer wg.Done()
 			defer func() { <-sem }()
-			f.refreshProfile(ctx, d.DID, d.PDSUrl)
+			if err := f.refreshProfile(ctx, d.DID, d.PDSUrl); err != nil {
+				slog.Warn("fanout: refresh profile", "did", d.DID, "pds", d.PDSUrl, "err", err)
+				atomic.AddInt32(&failed, 1)
+				return
+			}
+			atomic.AddInt32(&ok, 1)
 		}(d)
 	}
 	wg.Wait()
+	slog.Info("fanout: profile refresh complete",
+		"refreshed", ok, "failed", failed, "total", len(dids))
 }
 
 // EnsureSubscribed starts a subscription goroutine for did if none is running.
@@ -322,19 +338,24 @@ func (f *Fanout) handleProfile(ctx context.Context, did, pdsURL, rkey, action st
 // updated in place, so its cached copy goes stale until the next firehose
 // commit; this refresh keeps it current on relay restart without replaying
 // the whole social graph. A missing record (no profile set) clears the
-// cached fields. Safe to call concurrently per DID.
-func (f *Fanout) refreshProfile(ctx context.Context, did, pdsURL string) {
+// cached fields and is reported as success (the cache is now correct).
+// Safe to call concurrently per DID.
+func (f *Fanout) refreshProfile(ctx context.Context, did, pdsURL string) error {
 	rec, err := f.fetchRecord(ctx, pdsURL, did, "app.bsky.actor.profile", "self")
 	if err != nil {
 		// A 404 means no profile record exists; clear the cache so stale
 		// avatar/banner don't persist after the user removes their profile.
-		slog.Debug("fanout: no profile record on refresh", "did", did, "err", err)
-		if _, err := f.store.RecordProfile(ctx, did, "", "", "", ""); err != nil {
-			slog.Warn("fanout: clear profile on refresh", "did", did, "err", err)
+		// This is not a failure — the cache is now correct (empty).
+		if _, cerrErr := f.store.RecordProfile(ctx, did, "", "", "", ""); cerrErr != nil {
+			slog.Warn("fanout: clear profile on refresh", "did", did, "err", cerrErr)
+			return cerrErr
 		}
-		return
+		slog.Debug("fanout: profile cleared (no record on PDS)", "did", did, "pds", pdsURL)
+		return nil
 	}
 	f.processProfileRecord(ctx, did, pdsURL, rec)
+	slog.Debug("fanout: profile refreshed", "did", did, "pds", pdsURL)
+	return nil
 }
 
 // processProfileRecord caches the app.bsky.actor.profile fields for a tracked
