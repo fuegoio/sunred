@@ -75,7 +75,7 @@ func ensureDatabase(dsn string) error {
 	if err != nil {
 		return fmt.Errorf("open maintenance db: %w", err)
 	}
-	defer maint.Close()
+	defer func() { _ = maint.Close() }()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
