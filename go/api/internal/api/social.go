@@ -87,6 +87,16 @@ type ArticleShareCountOutput struct {
 	Body ArticleShareCountResponse
 }
 
+// ArticleStarCountResponse is the body for the article-star-count endpoint.
+type ArticleStarCountResponse struct {
+	ArticleURL string `json:"article_url"`
+	Count      int64  `json:"count"`
+}
+
+type ArticleStarCountOutput struct {
+	Body ArticleStarCountResponse
+}
+
 // registerSocialRoutes wires all social-feature endpoints.
 func (a *API) registerSocialRoutes() {
 	// PATCH /api/v1/me/handle — set or update the caller's handle + bio
@@ -495,6 +505,23 @@ func (a *API) registerSocialRoutes() {
 		return &ArticleShareCountOutput{Body: ArticleShareCountResponse{
 			ArticleURL: input.ArticleURL,
 			Count:      a.relayGetArticleShareCount(ctx, input.ArticleURL),
+		}}, nil
+	})
+
+	// GET /api/v1/social/star-count — globally accurate star count for an
+	// article URL, sourced from the relay aggregates.
+	huma.Register(a.huma, huma.Operation{
+		OperationID: "article-star-count",
+		Method:      http.MethodGet,
+		Path:        "/api/v1/social/star-count",
+		Summary:     "Get the global star count for an article URL",
+		Tags:        []string{"social"},
+	}, func(ctx context.Context, input *struct {
+		ArticleURL string `query:"article_url" required:"true"`
+	}) (*ArticleStarCountOutput, error) {
+		return &ArticleStarCountOutput{Body: ArticleStarCountResponse{
+			ArticleURL: input.ArticleURL,
+			Count:      a.relayGetArticleStarCount(ctx, input.ArticleURL),
 		}}, nil
 	})
 }

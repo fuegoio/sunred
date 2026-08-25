@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -553,4 +554,27 @@ func TestHTTP_GetEntryNotFound(t *testing.T) {
 		t.Fatalf("status = %d, want 404", resp.StatusCode)
 	}
 	_ = resp.Body.Close()
+}
+
+// TestHTTP_ArticleStarCount verifies the star-count endpoint returns the
+// expected shape. With no relay configured in the test env, the count is 0.
+func TestHTTP_ArticleStarCount(t *testing.T) {
+	e := newTestEnv(t)
+	article := fmt.Sprintf("https://starcount-%d.example.com/post", time.Now().UnixNano())
+
+	resp := e.do(t, http.MethodGet, "/api/v1/social/star-count?article_url="+url.QueryEscape(article), nil)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+	var body struct {
+		ArticleURL string `json:"article_url"`
+		Count      int64  `json:"count"`
+	}
+	readJSON(t, resp, &body)
+	if body.ArticleURL != article {
+		t.Errorf("article_url = %q, want %q", body.ArticleURL, article)
+	}
+	if body.Count != 0 {
+		t.Errorf("count = %d, want 0 (no relay configured)", body.Count)
+	}
 }

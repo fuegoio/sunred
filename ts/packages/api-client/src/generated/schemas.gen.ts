@@ -99,6 +99,33 @@ export const ArticleShareCountResponseSchema = {
     type: 'object'
 } as const;
 
+export const ArticleStarCountResponseSchema = {
+    additionalProperties: false,
+    properties: {
+        $schema: {
+            description: 'A URL to the JSON Schema for this object.',
+            examples: [
+                'https://example.com/schemas/ArticleStarCountResponse.json'
+            ],
+            format: 'uri',
+            readOnly: true,
+            type: 'string'
+        },
+        article_url: {
+            type: 'string'
+        },
+        count: {
+            format: 'int64',
+            type: 'integer'
+        }
+    },
+    required: [
+        'article_url',
+        'count'
+    ],
+    type: 'object'
+} as const;
+
 export const CreateFeedInputBodySchema = {
     additionalProperties: false,
     properties: {
@@ -432,6 +459,10 @@ export const EntrySchema = {
             format: 'date-time',
             type: 'string'
         },
+        repost_count: {
+            format: 'int64',
+            type: 'integer'
+        },
         share_id: {
             format: 'int64',
             type: 'integer'
@@ -441,6 +472,10 @@ export const EntrySchema = {
         },
         shared_by_name: {
             type: 'string'
+        },
+        star_count: {
+            format: 'int64',
+            type: 'integer'
         },
         starred: {
             type: 'boolean'
@@ -473,7 +508,9 @@ export const EntrySchema = {
         'status',
         'starred',
         'published_at',
-        'changed_at'
+        'changed_at',
+        'repost_count',
+        'star_count'
     ],
     type: 'object'
 } as const;
@@ -1592,6 +1629,24 @@ export const ArticleShareCountResponseWritableSchema = {
     type: 'object'
 } as const;
 
+export const ArticleStarCountResponseWritableSchema = {
+    additionalProperties: false,
+    properties: {
+        article_url: {
+            type: 'string'
+        },
+        count: {
+            format: 'int64',
+            type: 'integer'
+        }
+    },
+    required: [
+        'article_url',
+        'count'
+    ],
+    type: 'object'
+} as const;
+
 export const CreateFeedInputBodyWritableSchema = {
     additionalProperties: false,
     properties: {
@@ -1803,6 +1858,10 @@ export const EntryWritableSchema = {
             format: 'date-time',
             type: 'string'
         },
+        repost_count: {
+            format: 'int64',
+            type: 'integer'
+        },
         share_id: {
             format: 'int64',
             type: 'integer'
@@ -1812,6 +1871,10 @@ export const EntryWritableSchema = {
         },
         shared_by_name: {
             type: 'string'
+        },
+        star_count: {
+            format: 'int64',
+            type: 'integer'
         },
         starred: {
             type: 'boolean'
@@ -1844,7 +1907,9 @@ export const EntryWritableSchema = {
         'status',
         'starred',
         'published_at',
-        'changed_at'
+        'changed_at',
+        'repost_count',
+        'star_count'
     ],
     type: 'object'
 } as const;
