@@ -4,6 +4,7 @@
 //
 //	POST  /xrpc/io.sunred.relay.announceUser   — instance registers a new DID
 //	GET   /xrpc/io.sunred.relay.getUserFollowerCount — global follower count for a DID
+//	GET   /xrpc/io.sunred.relay.getUserFollowingCount — global following count for a DID
 //	GET   /xrpc/io.sunred.relay.getUserShareCount  — global share count for a DID
 //	GET   /xrpc/io.sunred.relay.getUserSubscriptionCount — global subscription count for a DID
 //	GET   /xrpc/io.sunred.relay.getFeedSubscriberCount — global subscriber count for a feed URL
@@ -46,6 +47,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("/health", s.handleHealth)
 	mux.HandleFunc("/xrpc/io.sunred.relay.announceUser", s.handleAnnounceUser)
 	mux.HandleFunc("/xrpc/io.sunred.relay.getUserFollowerCount", s.handleGetUserFollowerCount)
+	mux.HandleFunc("/xrpc/io.sunred.relay.getUserFollowingCount", s.handleGetUserFollowingCount)
 	mux.HandleFunc("/xrpc/io.sunred.relay.getUserShareCount", s.handleGetUserShareCount)
 	mux.HandleFunc("/xrpc/io.sunred.relay.getUserSubscriptionCount", s.handleGetUserSubscriptionCount)
 	mux.HandleFunc("/xrpc/io.sunred.relay.getFeedSubscriberCount", s.handleGetFeedSubscriberCount)
@@ -231,6 +233,33 @@ func (s *Server) handleGetUserFollowerCount(w http.ResponseWriter, r *http.Reque
 	}
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(getUserFollowerCountOutput{DID: did, Count: count})
+}
+
+// --- getUserFollowingCount ---
+
+type getUserFollowingCountOutput struct {
+	DID   string `json:"did"`
+	Count int64  `json:"count"`
+}
+
+func (s *Server) handleGetUserFollowingCount(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	did := r.URL.Query().Get("did")
+	if did == "" {
+		http.Error(w, "did is required", http.StatusBadRequest)
+		return
+	}
+	count, err := s.store.CountFollowing(r.Context(), did)
+	if err != nil {
+		slog.Error("relay: get user following count", "did", did, "err", err)
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(getUserFollowingCountOutput{DID: did, Count: count})
 }
 
 // --- getUserShareCount ---

@@ -555,6 +555,25 @@ func TestCountFollowers(t *testing.T) {
 	}
 }
 
+func TestCountFollowing(t *testing.T) {
+	s := relayTestDB(t)
+	ctx := context.Background()
+
+	did := fmt.Sprintf("did:plc:following-%d", time.Now().UnixNano())
+	followee := fmt.Sprintf("did:plc:followee-%d", time.Now().UnixNano())
+	t.Cleanup(func() { _, _ = s.DB.Exec(`DELETE FROM observed_follows WHERE follower_did=$1`, did) })
+
+	if n, _ := s.CountFollowing(ctx, did); n != 0 {
+		t.Errorf("CountFollowing before = %d, want 0", n)
+	}
+	now := time.Now()
+	_, _ = s.RecordFollow(ctx, did, followee, "rf1", "https://pds.example.com", now)
+	_, _ = s.RecordFollow(ctx, did, followee+"2", "rf2", "https://pds.example.com", now)
+	if n, _ := s.CountFollowing(ctx, did); n != 2 {
+		t.Errorf("CountFollowing after = %d, want 2", n)
+	}
+}
+
 func TestCountShares(t *testing.T) {
 	s := relayTestDB(t)
 	ctx := context.Background()

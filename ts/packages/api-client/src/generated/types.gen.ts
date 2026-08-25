@@ -310,6 +310,7 @@ export type PublicProfileResponse = {
     readonly $schema?: string;
     feeds: Array<Feed> | null;
     global_follower_count: number;
+    global_following_count: number;
     profile: UserProfile;
     shared_articles: Array<SharedArticle> | null;
 };
@@ -653,6 +654,7 @@ export type PreviewFeedInputBodyWritable = {
 export type PublicProfileResponseWritable = {
     feeds: Array<FeedWritable> | null;
     global_follower_count: number;
+    global_following_count: number;
     profile: UserProfileWritable;
     shared_articles: Array<SharedArticleWritable> | null;
 };

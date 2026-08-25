@@ -1,0 +1,36 @@
+{
+  "lexicon": 1,
+  "id": "io.sunred.relay.getUserFollowingCount",
+  "defs": {
+    "main": {
+      "type": "query",
+      "description": "Returns the globally accurate following count for a DID (number of accounts this DID follows across all tracked repos).",
+      "parameters": {
+        "type": "params",
+        "required": ["did"],
+        "properties": {
+          "did": {
+            "type": "string",
+            "description": "The DID to query the following count for."
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["did", "count"],
+          "properties": {
+            "did": {
+              "type": "string"
+            },
+            "count": {
+              "type": "integer",
+              "description": "Total number of follow records authored by this DID across all tracked repos."
+            }
+          }
+        }
+      }
+    }
+  }
+}

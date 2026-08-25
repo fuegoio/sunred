@@ -964,6 +964,10 @@
                         "format": "int64",
                         "type": "integer"
                     },
+                    "global_following_count": {
+                        "format": "int64",
+                        "type": "integer"
+                    },
                     "profile": {
                         "$ref": "#/components/schemas/UserProfile"
                     },
@@ -980,6 +984,7 @@
                 "required": [
                     "profile",
                     "global_follower_count",
+                    "global_following_count",
                     "shared_articles",
                     "feeds"
                 ],
