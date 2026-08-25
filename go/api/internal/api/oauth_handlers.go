@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -73,11 +74,27 @@ func (h *OAuthHandlers) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	// Redirect target after a successful login (defaults to the web app).
 	redirectTo := safeOAuthRedirect(r.URL.Query().Get("redirect"), h.cfg.WebURL)
+	// Raw redirect param from the request, to round-trip back to /login on
+	// failure so the user can retry and still land where they expected.
+	redirectParam := r.URL.Query().Get("redirect")
 
 	authURL, err := h.oauthApp.StartAuthFlow(r.Context(), identifier)
 	if err != nil {
 		slog.Warn("oauth: start auth flow", "identifier", identifier, "err", err)
-		http.Error(w, `{"error":"could not start login: `+err.Error()+`"}`, http.StatusBadRequest)
+		// Send the user back to the web login page with a friendly error code
+		// instead of a raw JSON 4xx (the browser would render the raw body).
+		// A bad/unresolvable handle is a user error; anything else (PDS/auth
+		// server metadata, PAR request) is treated as a generic start failure
+		// so we don't leak internal error text.
+		code := "login_failed"
+		if isHandleResolutionError(err) {
+			code = "bad_handle"
+		}
+		q := url.Values{"error": {code}}
+		if redirectParam != "" {
+			q.Set("redirect", redirectParam)
+		}
+		http.Redirect(w, r, h.cfg.WebURL+"/login?"+q.Encode(), http.StatusFound)
 		return
 	}
 
@@ -366,3 +383,17 @@ func announceUserToRelay(ctx context.Context, relayURL, instanceURL, did, pdsURL
 
 // ptr returns a pointer to s. Convenience for optional string fields.
 func ptr(s string) *string { return &s }
+
+// isHandleResolutionError reports whether err came from resolving the
+// user-supplied identifier to a DID (an invalid or unknown handle), as
+// opposed to a downstream failure talking to the PDS/auth server. The
+// atproto oauth library wraps these with stable prefixes, so we match on
+// those; everything else is treated as a generic start-login failure.
+func isHandleResolutionError(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "not a valid account identifier") ||
+		strings.Contains(msg, "failed to resolve username")
+}

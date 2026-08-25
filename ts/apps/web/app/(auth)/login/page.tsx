@@ -6,7 +6,9 @@ import { env } from "@/lib/env";
 export const metadata = { title: "Login" };
 
 const ERROR_MESSAGES: Record<string, string> = {
+  bad_handle: "We couldn't find that handle. Check it and try again.",
   oauth_failed: "Login was cancelled or failed. Please try again.",
+  login_failed: "Could not start login. Please try again.",
   internal: "Something went wrong on our side. Please try again.",
   signup_failed: "Could not start signup. Please try again.",
 };
