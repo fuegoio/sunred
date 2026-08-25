@@ -169,7 +169,7 @@ function ProfileMasthead({
   const bannerSrc = bannerUrl(handle, hasBanner);
 
   return (
-    <header className="px-4 pb-3 pt-4 lg:pl-[48px]">
+    <header className="pl-3 pr-4 pb-3 pt-4 lg:pl-[48px]">
       <div className="h-28 w-full overflow-hidden rounded-lg bg-muted sm:h-32">
         {bannerSrc ? (
           /* eslint-disable-next-line @next/next/no-img-element */
@@ -250,17 +250,23 @@ function MastheadSkeleton() {
   // included so the avatar overlaps the same way it will once loaded.
   const bodyIndent = "pl-11 lg:pl-0";
   return (
-    <header className="px-4 pb-3 pt-4 lg:pl-[48px]">
+    <header className="pl-3 pr-4 pb-3 pt-4 lg:pl-[48px]">
       <Skeleton className="h-28 w-full rounded-lg sm:h-32" />
-      <Skeleton className="-mt-10 size-16 rounded-full border-2 border-background" />
-      <div className={`mt-3 flex items-start justify-between gap-3 ${bodyIndent}`}>
-        <div className="flex flex-col gap-1.5">
-          <Skeleton className="h-6 w-40" />
-          <Skeleton className="h-4 w-24" />
-        </div>
+      {/* Mirror the loaded masthead's menu-button row so the avatar lands at
+          the same left offset (header padding + button + gap) on mobile. */}
+      <div className="flex items-center gap-2 -mt-10">
+        <Skeleton className="size-9 shrink-0 rounded-md lg:hidden" />
+        <Skeleton className="size-16 shrink-0 rounded-full border-2 border-background" />
       </div>
-      <div className={`mt-2 flex items-center gap-4 ${bodyIndent}`}>
+      <div className={`mt-3 flex items-start justify-between gap-3 ${bodyIndent}`}>
+        <Skeleton className="h-6 w-40" />
+      </div>
+      <div className={`mt-0 ${bodyIndent}`}>
+        <Skeleton className="h-4 w-24" />
+      </div>
+      <div className={`mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm ${bodyIndent}`}>
         <Skeleton className="h-4 w-20" />
+        <span aria-hidden className="h-4 w-px self-center bg-border" />
         <Skeleton className="h-4 w-20" />
       </div>
       <div className={`mt-2 space-y-1.5 ${bodyIndent}`}>
@@ -409,7 +415,7 @@ export default function UserProfilePage({
         />
       </div>
       <Tabs value={tab} onValueChange={handleTabChange} className="flex min-h-0 flex-1 flex-col gap-0">
-        <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 pt-2 pl-[60px] lg:pl-[48px]">
+        <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border pr-4 pt-2 pl-[56px] lg:pl-[48px]">
           <TabsList variant="line" className="h-8! px-0">
             <TabsTrigger value="articles">
               Shares
@@ -444,7 +450,7 @@ export default function UserProfilePage({
                   ))}
                 </div>
               ) : (
-                <div className="p-4 pl-[52px] lg:pl-[48px]">
+                <div className="p-4 pl-[48px] lg:pl-[48px]">
                   <Empty className="border">
                     <EmptyHeader>
                       <EmptyMedia variant="icon">
@@ -487,7 +493,7 @@ export default function UserProfilePage({
                         <Link
                           href={`/feeds/discover?url=${encodeURIComponent(feed.feed_url)}`}
                           className={cn(
-                            "group flex items-start gap-3 px-4 py-3 pl-[52px] lg:pl-[48px]",
+                            "group flex items-start gap-3 pr-4 py-3 pl-[48px] lg:pl-[48px]",
                             "hover:bg-muted/50 transition-colors",
                           )}
                         >
@@ -517,7 +523,7 @@ export default function UserProfilePage({
                   })}
                 </ul>
               ) : (
-                <div className="p-4 pl-[52px] lg:pl-[48px]">
+                <div className="p-4 pl-[48px] lg:pl-[48px]">
                   <Empty className="border">
                     <EmptyHeader>
                       <EmptyMedia variant="icon">
