@@ -15,7 +15,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty";
-import { getClient, listEntries, unwrap } from "@/lib/sunred";
+import { getClient, listEntries } from "@/lib/sunred";
 import type { Entry } from "@/lib/types";
 import { buttonVariants } from "@workspace/ui/components/button";
 import type { ReactNode } from "react";

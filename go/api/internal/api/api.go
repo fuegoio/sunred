@@ -395,6 +395,15 @@ func (a *API) registerFeedRoutes() {
 		if err != nil {
 			return nil, huma.Error500InternalServerError(err.Error())
 		}
+		// Fall back to the global feed so a feed page renders for viewers
+		// who don't subscribe (e.g. shares from followed users). Subscription
+		// state (folder, title override) is absent in that case.
+		if feed == nil {
+			feed, err = a.store.GetFeedGlobal(ctx, input.FeedID)
+			if err != nil {
+				return nil, huma.Error500InternalServerError(err.Error())
+			}
+		}
 		if feed == nil {
 			return nil, huma.Error404NotFound("feed not found")
 		}
