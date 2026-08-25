@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { useInfiniteQuery, useQuery, type InfiniteData } from "@tanstack/react-query";
+import { useInfiniteQuery, type InfiniteData } from "@tanstack/react-query";
 import { Rss, Sparkles } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { EntryCard } from "@/components/entry-card";
@@ -15,8 +15,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty";
-import { getClient, listEntries, listFeeds, unwrap } from "@/lib/sunred";
-import type { Entry, Feed } from "@/lib/types";
+import { getClient, listEntries, unwrap } from "@/lib/sunred";
+import type { Entry } from "@/lib/types";
 import { buttonVariants } from "@workspace/ui/components/button";
 import type { ReactNode } from "react";
 import { cn } from "@workspace/ui/lib/utils";
@@ -35,8 +35,9 @@ export type EntryFilter = {
 const PAGE_SIZE = 50;
 
 /**
- * Filtered, paginated entry list with infinite scroll. Fetches the user's feeds
- * in parallel so each card can show the owning feed's favicon + title.
+ * Filtered, paginated entry list with infinite scroll. Each entry carries its
+ * source feed (with the user's title override) on `entry.feed`, so cards render
+ * the owning feed's favicon + title without a separate feeds lookup.
  *
  * Pass `emptyVariant="celebration"` for the "all caught up" unread empty state —
  * it renders a lighter, warmer state without a subscribe CTA.
@@ -64,13 +65,6 @@ export function EntryTimeline({
   emptyAction?: ReactNode | "default" | null;
   animateExit?: boolean;
 }) {
-  const { data: feeds } = useQuery<Feed[]>({
-    queryKey: ["feeds"],
-    queryFn: async () => unwrap(listFeeds({ client: await getClient() })),
-  });
-  const feedMap = new Map<number, Feed>();
-  for (const f of feeds ?? []) feedMap.set(f.id, f);
-
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } =
     useInfiniteQuery<Entry[], Error, InfiniteData<Entry[]>, ["entries", EntryFilter], number>({
       queryKey: ["entries", filter],
@@ -214,7 +208,7 @@ export function EntryTimeline({
           <EntryCard
             key={entry.id}
             entry={entry}
-            feed={feedMap.get(entry.feed_id)}
+            feed={entry.feed}
             staggerIndex={i}
             animateExit={animateExit}
             shareId={entry.share_id ?? null}
