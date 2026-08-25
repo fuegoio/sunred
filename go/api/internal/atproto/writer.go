@@ -204,7 +204,7 @@ func (w *Writer) UploadBlob(ctx context.Context, mimeType string, r io.Reader) (
 	if err != nil {
 		return nil, fmt.Errorf("uploadBlob: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		body, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("uploadBlob: PDS returned %d: %s", resp.StatusCode, string(body))
