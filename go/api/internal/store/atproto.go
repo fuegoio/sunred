@@ -117,14 +117,16 @@ func (s *Store) UpdateATProtoTokens(ctx context.Context, userID int, accessToken
 }
 
 // ListUsersWithATProto returns all users that have a connected AT Proto identity.
-// Used by the poller to know which users to sync.
+// Used at API startup to (re-)announce existing users to the relay so a fresh
+// or swapped relay backfills their DIDs.
 func (s *Store) ListUsersWithATProto(ctx context.Context) ([]ATProtoCredentials, error) {
 	rows, err := s.DB.QueryContext(ctx, `
 		SELECT id,
 		       COALESCE(did,''), COALESCE(pds_url,''),
 		       COALESCE(atproto_access_token,''),
 		       COALESCE(atproto_refresh_token,''),
-		       atproto_token_expires_at
+		       atproto_token_expires_at,
+		       COALESCE(handle,'')
 		FROM users
 		WHERE pds_url IS NOT NULL`,
 	)
@@ -139,6 +141,7 @@ func (s *Store) ListUsersWithATProto(ctx context.Context) ([]ATProtoCredentials,
 		if err := rows.Scan(
 			&c.UserID, &c.DID, &c.PDSUrl,
 			&c.AccessToken, &c.RefreshToken, &expiresAt,
+			&c.Handle,
 		); err != nil {
 			return nil, err
 		}

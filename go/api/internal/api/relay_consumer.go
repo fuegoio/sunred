@@ -39,10 +39,41 @@ func NewRelayConsumer(st *store.Store, relayURL, instanceURL string) *RelayConsu
 	return &RelayConsumer{store: st, relayURL: relayURL, instanceURL: instanceURL}
 }
 
+// AnnounceTrackedDIDs re-announces every locally-known user with a connected
+// AT Proto identity to the relay. Existing users were only announced to the
+// relay at OAuth-confirm time, so when the relay is freshly provisioned or
+// swapped its tracked_dids table is empty and it would never track/backfill
+// them. The relay's announceUser is idempotent: already-tracked DIDs return
+// New=false and trigger no backfill, so re-announcing on every boot is safe.
+func (c *RelayConsumer) AnnounceTrackedDIDs(ctx context.Context) {
+	users, err := c.store.ListUsersWithATProto(ctx)
+	if err != nil {
+		slog.Warn("relay consumer: list users with atproto", "err", err)
+		return
+	}
+	if len(users) == 0 {
+		return
+	}
+	slog.Info("relay consumer: announcing local users to relay", "count", len(users))
+	for _, u := range users {
+		isNew, err := announceUserToRelay(ctx, c.relayURL, c.instanceURL, u.DID, u.PDSUrl, u.Handle)
+		if err != nil {
+			continue // already logged in announceUserToRelay
+		}
+		if isNew {
+			slog.Info("relay consumer: relay started tracking DID", "did", u.DID)
+		}
+	}
+}
+
 // Start connects to the relay and processes events until ctx is cancelled.
 // Reconnects automatically on disconnection with a backoff delay.
 func (c *RelayConsumer) Start(ctx context.Context) {
 	slog.Info("relay consumer: starting", "relay", c.relayURL, "instance", c.instanceURL)
+	// Re-announce every locally-known AT Proto user so a fresh or swapped
+	// relay (empty tracked_dids) backfills them. The relay treats already-
+	// tracked DIDs as a no-op, so this is safe on every boot.
+	c.AnnounceTrackedDIDs(ctx)
 	for {
 		select {
 		case <-ctx.Done():
