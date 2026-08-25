@@ -213,7 +213,7 @@ function ProfileMasthead({
         </p>
       )}
 
-      <div className={`mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm ${bodyIndent}`}>
+      <div className={`mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm ${bodyIndent}`}>
         <span className="inline-flex items-baseline gap-1">
           <span className="font-semibold tabular-nums text-foreground">{followerTotal}</span>
           <span className="text-muted-foreground">
@@ -225,6 +225,7 @@ function ProfileMasthead({
             </span>
           )}
         </span>
+        <span aria-hidden className="h-4 w-px self-center bg-border" />
         <span className="inline-flex items-baseline gap-1">
           <span className="font-semibold tabular-nums text-foreground">{followingCount}</span>
           <span className="text-muted-foreground">following</span>
