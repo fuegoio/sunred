@@ -408,7 +408,7 @@ export default function UserProfilePage({
         <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 pt-2 pl-[60px] lg:pl-[48px]">
           <TabsList variant="line" className="h-8! px-0">
             <TabsTrigger value="articles">
-              Articles
+              Shares
               {articles.length > 0 && (
                 <span className="rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums text-foreground/70">
                   {articles.length}
