@@ -25,7 +25,7 @@ export function EntryCardSkeleton() {
           </span>
           <Skeleton className="h-4 w-12" />
         </div>
-        {/* title (text-sm line-clamp-2, ~20px per line) */}
+        {/* title (text-sm line-clamp-1) */}
         <Skeleton className="mt-1 h-5 w-3/4" />
         {/* snippet (text-sm line-clamp-2 on >= sm, line-clamp-4 on mobile) */}
         <Skeleton className="mt-1 h-4 w-full" />
