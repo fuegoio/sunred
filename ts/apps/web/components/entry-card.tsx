@@ -263,7 +263,7 @@ export function EntryCard({
             <>
               <span aria-hidden>·</span>
               <span className="truncate">
-                shared by{" "}
+                reposted by{" "}
                 <button
                   type="button"
                   onClick={(e) => {

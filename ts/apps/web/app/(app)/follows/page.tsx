@@ -14,8 +14,8 @@ export default function FollowsPage() {
         <div className="mx-auto w-full max-w-3xl">
           <EntryTimeline
             filter={{ source: "follows" }}
-            emptyTitle="Nothing shared yet"
-            emptyDescription="Articles shared by people you follow will appear here. Use the + next to Follows to find people."
+            emptyTitle="Nothing reposted yet"
+            emptyDescription="Articles reposted by people you follow will appear here. Use the + next to Follows to find people."
           />
         </div>
       </ScrollArea>

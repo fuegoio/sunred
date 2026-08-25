@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Share2 } from "lucide-react";
+import { Repeat } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { getClient, shareArticle, unshareArticle } from "@/lib/sunred";
 import { getApiErrorMessage } from "@/lib/errors";
@@ -10,12 +10,12 @@ import { cn } from "@workspace/ui/lib/utils";
 import type { Entry, Feed } from "@/lib/types";
 
 /**
- * Toggles sharing of an entry to the user's social timeline.
- * On first share, sends metadata to /api/v1/social/shares.
- * On unshare, calls DELETE /api/v1/social/shares/{shareId}.
+ * Toggles reposting of an entry to the user's social timeline.
+ * On first repost, sends metadata to /api/v1/social/shares.
+ * On unrepost, calls DELETE /api/v1/social/shares/{shareId}.
  *
- * `shareId` is null when the article is not yet shared; after a successful
- * share it becomes the server-assigned id so subsequent clicks unshare.
+ * `shareId` is null when the article is not yet reposted; after a successful
+ * repost it becomes the server-assigned id so subsequent clicks unrepost.
  */
 export function ShareToggle({
   entry,
@@ -45,7 +45,7 @@ export function ShareToggle({
         });
         if (error) throw error;
         setShareId(null);
-        toast.success("Removed from your shares");
+        toast.success("Removed from your reposts");
       } else {
         const { data, error } = await shareArticle({
           client: await getClient(),
@@ -62,10 +62,10 @@ export function ShareToggle({
         });
         if (error) throw error;
         setShareId(data?.id ?? null);
-        toast.success("Shared to your timeline");
+        toast.success("Reposted to your timeline");
       }
     } catch (err) {
-      toast.error(getApiErrorMessage(err, "Could not update share"));
+      toast.error(getApiErrorMessage(err, "Could not update repost"));
     } finally {
       setPending(false);
     }
@@ -75,7 +75,7 @@ export function ShareToggle({
     <Button
       variant="ghost"
       size={size}
-      aria-label={shared ? "Remove from your shares" : "Share this article"}
+      aria-label={shared ? "Remove from your reposts" : "Repost this article"}
       aria-pressed={shared}
       disabled={pending}
       onClick={(e) => {
@@ -85,7 +85,7 @@ export function ShareToggle({
       }}
       className={cn(className)}
     >
-      <Share2
+      <Repeat
         className={cn(
           "transition-[color,fill] duration-200",
           shared ? "text-primary" : "text-muted-foreground",
