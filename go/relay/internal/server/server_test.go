@@ -194,53 +194,101 @@ func TestServer_Health(t *testing.T) {
 	}
 }
 
-func TestServer_GetCounts(t *testing.T) {
+func TestServer_GetFollowerCount(t *testing.T) {
 	ts, st := newServer(t)
 	ctx := context.Background()
 
-	did := fmt.Sprintf("did:plc:counts-%d", time.Now().UnixNano())
+	did := fmt.Sprintf("did:plc:folcount-%d", time.Now().UnixNano())
 	t.Cleanup(func() { _, _ = st.DB.Exec(`DELETE FROM observed_follows WHERE followee_did=$1`, did) })
-	t.Cleanup(func() { _, _ = st.DB.Exec(`DELETE FROM observed_shares WHERE did=$1`, did) })
-	t.Cleanup(func() { _, _ = st.DB.Exec(`DELETE FROM observed_subscriptions WHERE did=$1`, did) })
 
 	now := time.Now()
 	_, _ = st.RecordFollow(ctx, "did:plc:follower", did, "rf1", "https://pds.example.com", now)
-	_, _ = st.RecordShare(ctx, did, "rs1", "https://art.example.com/a", "https://feed.example.com/rss", "T", "https://pds.example.com", &now)
-	_, _ = st.RecordFeedSubscription(ctx, did, "rsub1", "https://feed.example.com/rss", "https://pds.example.com", &now)
 
-	resp := do(t, ts, http.MethodGet, "/xrpc/io.sunred.relay.getCounts?did="+did, nil)
+	resp := do(t, ts, http.MethodGet, "/xrpc/io.sunred.relay.getFollowerCount?did="+did, nil)
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("status = %d, want 200", resp.StatusCode)
 	}
 	var out struct {
-		DID                   string `json:"did"`
-		FollowerCount         int64  `json:"followerCount"`
-		ShareCount            int64  `json:"shareCount"`
-		FeedSubscriptionCount int64  `json:"feedSubscriptionCount"`
+		DID   string `json:"did"`
+		Count int64  `json:"count"`
 	}
 	decode(t, resp, &out)
 	if out.DID != did {
 		t.Errorf("did = %q, want %q", out.DID, did)
 	}
-	if out.FollowerCount != 1 {
-		t.Errorf("followerCount = %d, want 1", out.FollowerCount)
-	}
-	if out.ShareCount != 1 {
-		t.Errorf("shareCount = %d, want 1", out.ShareCount)
-	}
-	if out.FeedSubscriptionCount != 1 {
-		t.Errorf("feedSubscriptionCount = %d, want 1", out.FeedSubscriptionCount)
+	if out.Count != 1 {
+		t.Errorf("count = %d, want 1", out.Count)
 	}
 }
 
-func TestServer_GetCounts_MissingDID(t *testing.T) {
+func TestServer_GetShareCount(t *testing.T) {
+	ts, st := newServer(t)
+	ctx := context.Background()
+
+	did := fmt.Sprintf("did:plc:sharecount-%d", time.Now().UnixNano())
+	t.Cleanup(func() { _, _ = st.DB.Exec(`DELETE FROM observed_shares WHERE did=$1`, did) })
+
+	now := time.Now()
+	_, _ = st.RecordShare(ctx, did, "rs1", "https://art.example.com/a", "https://feed.example.com/rss", "T", "https://pds.example.com", &now)
+
+	resp := do(t, ts, http.MethodGet, "/xrpc/io.sunred.relay.getShareCount?did="+did, nil)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+	var out struct {
+		DID   string `json:"did"`
+		Count int64  `json:"count"`
+	}
+	decode(t, resp, &out)
+	if out.DID != did {
+		t.Errorf("did = %q, want %q", out.DID, did)
+	}
+	if out.Count != 1 {
+		t.Errorf("count = %d, want 1", out.Count)
+	}
+}
+
+func TestServer_GetFeedSubscriptionCount(t *testing.T) {
+	ts, st := newServer(t)
+	ctx := context.Background()
+
+	did := fmt.Sprintf("did:plc:subcount-%d", time.Now().UnixNano())
+	t.Cleanup(func() { _, _ = st.DB.Exec(`DELETE FROM observed_subscriptions WHERE did=$1`, did) })
+
+	now := time.Now()
+	_, _ = st.RecordFeedSubscription(ctx, did, "rsub1", "https://feed.example.com/rss", "https://pds.example.com", &now)
+
+	resp := do(t, ts, http.MethodGet, "/xrpc/io.sunred.relay.getFeedSubscriptionCount?did="+did, nil)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+	var out struct {
+		DID   string `json:"did"`
+		Count int64  `json:"count"`
+	}
+	decode(t, resp, &out)
+	if out.DID != did {
+		t.Errorf("did = %q, want %q", out.DID, did)
+	}
+	if out.Count != 1 {
+		t.Errorf("count = %d, want 1", out.Count)
+	}
+}
+
+func TestServer_Counts_MissingDID(t *testing.T) {
 	ts, _ := newServer(t)
 
-	resp := do(t, ts, http.MethodGet, "/xrpc/io.sunred.relay.getCounts", nil)
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Fatalf("status = %d, want 400", resp.StatusCode)
+	for _, path := range []string{
+		"/xrpc/io.sunred.relay.getFollowerCount",
+		"/xrpc/io.sunred.relay.getShareCount",
+		"/xrpc/io.sunred.relay.getFeedSubscriptionCount",
+	} {
+		resp := do(t, ts, http.MethodGet, path, nil)
+		if resp.StatusCode != http.StatusBadRequest {
+			t.Errorf("%s: status = %d, want 400", path, resp.StatusCode)
+		}
+		_ = resp.Body.Close()
 	}
-	_ = resp.Body.Close()
 }
 
 func TestServer_GetFeedSubscriberCount(t *testing.T) {

@@ -535,38 +535,60 @@ func TestRecordFeedSubscription_And_Delete(t *testing.T) {
 	}
 }
 
-// --- GetCounts ---
+// --- per-DID counts ---
 
-func TestGetCounts(t *testing.T) {
+func TestCountFollowers(t *testing.T) {
 	s := relayTestDB(t)
 	ctx := context.Background()
 
-	did := fmt.Sprintf("did:plc:counts-%d", time.Now().UnixNano())
+	did := fmt.Sprintf("did:plc:fol-count-%d", time.Now().UnixNano())
 	follower := fmt.Sprintf("did:plc:fol-%d", time.Now().UnixNano())
-	feedURL := fmt.Sprintf("https://counts-feed-%d.example.com/rss", time.Now().UnixNano())
-	t.Cleanup(func() {
-		_, _ = s.DB.Exec(`DELETE FROM observed_follows WHERE followee_did=$1`, did)
-		_, _ = s.DB.Exec(`DELETE FROM observed_shares WHERE did=$1`, did)
-		_, _ = s.DB.Exec(`DELETE FROM observed_subscriptions WHERE did=$1`, did)
-	})
+	t.Cleanup(func() { _, _ = s.DB.Exec(`DELETE FROM observed_follows WHERE followee_did=$1`, did) })
 
+	if n, _ := s.CountFollowers(ctx, did); n != 0 {
+		t.Errorf("CountFollowers before = %d, want 0", n)
+	}
 	now := time.Now()
 	_, _ = s.RecordFollow(ctx, follower, did, "rf1", "https://pds.example.com", now)
-	_, _ = s.RecordShare(ctx, did, "rs1", "https://a.com", feedURL, "T", "https://pds.example.com", &now)
-	_, _ = s.RecordFeedSubscription(ctx, did, "rsub1", feedURL, "https://pds.example.com", &now)
+	if n, _ := s.CountFollowers(ctx, did); n != 1 {
+		t.Errorf("CountFollowers after = %d, want 1", n)
+	}
+}
 
-	followers, shares, feedSubs, err := s.GetCounts(ctx, did)
-	if err != nil {
-		t.Fatalf("GetCounts: %v", err)
+func TestCountShares(t *testing.T) {
+	s := relayTestDB(t)
+	ctx := context.Background()
+
+	did := fmt.Sprintf("did:plc:share-count-%d", time.Now().UnixNano())
+	t.Cleanup(func() { _, _ = s.DB.Exec(`DELETE FROM observed_shares WHERE did=$1`, did) })
+
+	if n, _ := s.CountShares(ctx, did); n != 0 {
+		t.Errorf("CountShares before = %d, want 0", n)
 	}
-	if followers != 1 {
-		t.Errorf("follower_count=%d, want 1", followers)
+	now := time.Now()
+	_, _ = s.RecordShare(ctx, did, "rs1", "https://a.com", "https://feed.example.com/rss", "T", "https://pds.example.com", &now)
+	_, _ = s.RecordShare(ctx, did, "rs2", "https://b.com", "https://feed.example.com/rss", "T", "https://pds.example.com", &now)
+	if n, _ := s.CountShares(ctx, did); n != 2 {
+		t.Errorf("CountShares after = %d, want 2", n)
 	}
-	if shares != 1 {
-		t.Errorf("share_count=%d, want 1", shares)
+}
+
+func TestCountFeedSubscriptionsByDID(t *testing.T) {
+	s := relayTestDB(t)
+	ctx := context.Background()
+
+	did := fmt.Sprintf("did:plc:sub-count-%d", time.Now().UnixNano())
+	feedURL := fmt.Sprintf("https://counts-feed-%d.example.com/rss", time.Now().UnixNano())
+	t.Cleanup(func() { _, _ = s.DB.Exec(`DELETE FROM observed_subscriptions WHERE did=$1`, did) })
+
+	if n, _ := s.CountFeedSubscriptionsByDID(ctx, did); n != 0 {
+		t.Errorf("CountFeedSubscriptionsByDID before = %d, want 0", n)
 	}
-	if feedSubs != 1 {
-		t.Errorf("feed_sub_count=%d, want 1", feedSubs)
+	now := time.Now()
+	_, _ = s.RecordFeedSubscription(ctx, did, "rsub1", feedURL, "https://pds.example.com", &now)
+	_, _ = s.RecordFeedSubscription(ctx, did, "rsub2", feedURL+"2", "https://pds.example.com", &now)
+	if n, _ := s.CountFeedSubscriptionsByDID(ctx, did); n != 2 {
+		t.Errorf("CountFeedSubscriptionsByDID after = %d, want 2", n)
 	}
 }
 
