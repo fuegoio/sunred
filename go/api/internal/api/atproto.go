@@ -544,10 +544,10 @@ func (a *API) relayResolveHandle(ctx context.Context, handle string) (did, pdsUR
 	return out.DID, out.PDSUrl
 }
 
-// relayGetFollowerCount queries the relay for the globally accurate follower
+// relayGetUserFollowerCount queries the relay for the globally accurate follower
 // count of a DID (unique followers across all tracked repos). Returns 0 if no
 // relay is configured, the user has no DID, or the request fails.
-func (a *API) relayGetFollowerCount(ctx context.Context, did string) int64 {
+func (a *API) relayGetUserFollowerCount(ctx context.Context, did string) int64 {
 	if a.cfg.RelayURL == "" || did == "" {
 		return 0
 	}
@@ -555,7 +555,7 @@ func (a *API) relayGetFollowerCount(ctx context.Context, did string) int64 {
 	var out struct {
 		Count int64 `json:"count"`
 	}
-	if err := rc.Query(ctx, "io.sunred.relay.getFollowerCount", map[string]string{
+	if err := rc.Query(ctx, "io.sunred.relay.getUserFollowerCount", map[string]string{
 		"did": did,
 	}, &out); err != nil {
 		slog.Warn("relay: get follower count", "did", did, "err", err)

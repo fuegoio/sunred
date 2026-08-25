@@ -3,9 +3,9 @@
 // Endpoints:
 //
 //	POST  /xrpc/io.sunred.relay.announceUser   — instance registers a new DID
-//	GET   /xrpc/io.sunred.relay.getFollowerCount — global follower count for a DID
-//	GET   /xrpc/io.sunred.relay.getShareCount  — global share count for a DID
-//	GET   /xrpc/io.sunred.relay.getFeedSubscriptionCount — global feed subscription count for a DID
+//	GET   /xrpc/io.sunred.relay.getUserFollowerCount — global follower count for a DID
+//	GET   /xrpc/io.sunred.relay.getUserShareCount  — global share count for a DID
+//	GET   /xrpc/io.sunred.relay.getUserSubscriptionCount — global subscription count for a DID
 //	GET   /xrpc/io.sunred.relay.getFeedSubscriberCount — global subscriber count for a feed URL
 //	GET   /xrpc/io.sunred.relay.getArticleShareCount   — global share count for an article URL
 //	GET   /xrpc/io.sunred.relay.subscribeEvents — WebSocket event stream for instances
@@ -45,9 +45,9 @@ func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", s.handleHealth)
 	mux.HandleFunc("/xrpc/io.sunred.relay.announceUser", s.handleAnnounceUser)
-	mux.HandleFunc("/xrpc/io.sunred.relay.getFollowerCount", s.handleGetFollowerCount)
-	mux.HandleFunc("/xrpc/io.sunred.relay.getShareCount", s.handleGetShareCount)
-	mux.HandleFunc("/xrpc/io.sunred.relay.getFeedSubscriptionCount", s.handleGetFeedSubscriptionCount)
+	mux.HandleFunc("/xrpc/io.sunred.relay.getUserFollowerCount", s.handleGetUserFollowerCount)
+	mux.HandleFunc("/xrpc/io.sunred.relay.getUserShareCount", s.handleGetUserShareCount)
+	mux.HandleFunc("/xrpc/io.sunred.relay.getUserSubscriptionCount", s.handleGetUserSubscriptionCount)
 	mux.HandleFunc("/xrpc/io.sunred.relay.getFeedSubscriberCount", s.handleGetFeedSubscriberCount)
 	mux.HandleFunc("/xrpc/io.sunred.relay.getArticleShareCount", s.handleGetArticleShareCount)
 	mux.HandleFunc("/xrpc/io.sunred.relay.searchDIDs", s.handleSearchDIDs)
@@ -206,14 +206,14 @@ func (s *Server) handleAnnounceUser(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(announceUserOutput{Tracked: true, New: needsBackfill})
 }
 
-// --- getFollowerCount ---
+// --- getUserFollowerCount ---
 
-type getFollowerCountOutput struct {
+type getUserFollowerCountOutput struct {
 	DID   string `json:"did"`
 	Count int64  `json:"count"`
 }
 
-func (s *Server) handleGetFollowerCount(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleGetUserFollowerCount(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -225,22 +225,22 @@ func (s *Server) handleGetFollowerCount(w http.ResponseWriter, r *http.Request) 
 	}
 	count, err := s.store.CountFollowers(r.Context(), did)
 	if err != nil {
-		slog.Error("relay: get follower count", "did", did, "err", err)
+		slog.Error("relay: get user follower count", "did", did, "err", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(getFollowerCountOutput{DID: did, Count: count})
+	_ = json.NewEncoder(w).Encode(getUserFollowerCountOutput{DID: did, Count: count})
 }
 
-// --- getShareCount ---
+// --- getUserShareCount ---
 
-type getShareCountOutput struct {
+type getUserShareCountOutput struct {
 	DID   string `json:"did"`
 	Count int64  `json:"count"`
 }
 
-func (s *Server) handleGetShareCount(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleGetUserShareCount(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -252,22 +252,22 @@ func (s *Server) handleGetShareCount(w http.ResponseWriter, r *http.Request) {
 	}
 	count, err := s.store.CountShares(r.Context(), did)
 	if err != nil {
-		slog.Error("relay: get share count", "did", did, "err", err)
+		slog.Error("relay: get user share count", "did", did, "err", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(getShareCountOutput{DID: did, Count: count})
+	_ = json.NewEncoder(w).Encode(getUserShareCountOutput{DID: did, Count: count})
 }
 
-// --- getFeedSubscriptionCount ---
+// --- getUserSubscriptionCount ---
 
-type getFeedSubscriptionCountOutput struct {
+type getUserSubscriptionCountOutput struct {
 	DID   string `json:"did"`
 	Count int64  `json:"count"`
 }
 
-func (s *Server) handleGetFeedSubscriptionCount(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleGetUserSubscriptionCount(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -279,12 +279,12 @@ func (s *Server) handleGetFeedSubscriptionCount(w http.ResponseWriter, r *http.R
 	}
 	count, err := s.store.CountFeedSubscriptionsByDID(r.Context(), did)
 	if err != nil {
-		slog.Error("relay: get feed subscription count", "did", did, "err", err)
+		slog.Error("relay: get user subscription count", "did", did, "err", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(getFeedSubscriptionCountOutput{DID: did, Count: count})
+	_ = json.NewEncoder(w).Encode(getUserSubscriptionCountOutput{DID: did, Count: count})
 }
 
 // --- getFeedSubscriberCount ---

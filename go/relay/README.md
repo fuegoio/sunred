@@ -143,9 +143,9 @@ The HTTP/WebSocket server exposes XRPC endpoints to Sunred instances.
 |---|---|---|
 | GET | `/health` | `{"status":"ok"}` liveness probe |
 | POST | `/xrpc/io.sunred.relay.announceUser` | Register a new DID; kicks off backfill if new |
-| GET | `/xrpc/io.sunred.relay.getFollowerCount` | Global follower count for a DID |
-| GET | `/xrpc/io.sunred.relay.getShareCount` | Global share count for a DID |
-| GET | `/xrpc/io.sunred.relay.getFeedSubscriptionCount` | Global feed subscription count for a DID |
+| GET | `/xrpc/io.sunred.relay.getUserFollowerCount` | Global follower count for a DID |
+| GET | `/xrpc/io.sunred.relay.getUserShareCount` | Global share count for a DID |
+| GET | `/xrpc/io.sunred.relay.getUserSubscriptionCount` | Global subscription count for a DID |
 | GET | `/xrpc/io.sunred.relay.getFeedSubscriberCount` | Global subscriber count for a feed URL |
 | GET | `/xrpc/io.sunred.relay.getArticleShareCount` | Global share count for an article URL |
 | GET | `/xrpc/io.sunred.relay.searchDIDs` | Cross-instance handle search |
@@ -216,8 +216,8 @@ payloads (JSON):
 ## Protocol summary
 
 - **Inbound (relay ← instance):** HTTP XRPC `io.sunred.relay.*`
-  (`announceUser` POST; `getFollowerCount`, `getShareCount`,
-  `getFeedSubscriptionCount`, `getFeedSubscriberCount`,
+  (`announceUser` POST; `getUserFollowerCount`, `getUserShareCount`,
+  `getUserSubscriptionCount`, `getFeedSubscriberCount`,
   `getArticleShareCount`, `searchDIDs`, `resolveHandle` GET) plus the
   WebSocket `io.sunred.relay.subscribeEvents` (cursor-based replay + live
   fanout).
