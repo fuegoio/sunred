@@ -364,7 +364,8 @@ func (s *Store) ListEntries(ctx context.Context, userID int, feedID *int, folder
 	             f.etag_header, f.last_modified_header, f.parsing_error, f.parsing_error_count,
 	             f.disabled, f.scraper_rules, f.rewrite_rules, f.crawler,
 	             f.next_check_at, f.last_fetch_at, f.created_at, f.updated_at,
-	             COALESCE(sh.handle, ''), COALESCE(sh.display_name, '')
+	             COALESCE(sh.handle, ''), COALESCE(sh.display_name, ''),
+	             my_sa.id
 	      FROM entries e
 	      JOIN feeds f ON f.id = e.feed_id
 	      LEFT JOIN entry_read_status rs ON rs.user_id = $1 AND rs.article_url = e.url
@@ -375,7 +376,8 @@ func (s *Store) ListEntries(ctx context.Context, userID int, feedID *int, folder
 	        WHERE sa.entry_id = e.id
 	        LIMIT 1
 	      ) sh_row ON true
-	      LEFT JOIN users sh ON sh.id = sh_row.user_id`
+	      LEFT JOIN users sh ON sh.id = sh_row.user_id
+	      LEFT JOIN shared_articles my_sa ON my_sa.user_id = $1 AND my_sa.article_url = e.url`
 	args := []interface{}{userID}
 	argIdx := 2
 
@@ -441,7 +443,7 @@ func (s *Store) ListEntries(ctx context.Context, userID int, feedID *int, folder
 			&f.EtagHeader, &f.LastModified, &f.ParsingError, &f.ParsingErrorCount,
 			&f.Disabled, &f.ScraperRules, &f.RewriteRules, &f.Crawler,
 			&f.NextCheckAt, &f.LastFetchAt, &f.CreatedAt, &f.UpdatedAt,
-			&e.SharedBy, &e.SharedByName); err != nil {
+			&e.SharedBy, &e.SharedByName, &e.ShareID); err != nil {
 			return nil, err
 		}
 		e.Feed = &f
@@ -464,7 +466,8 @@ func (s *Store) GetEntryByID(ctx context.Context, id int64, userID int) (*Entry,
 		        f.etag_header, f.last_modified_header, f.parsing_error, f.parsing_error_count,
 		        f.disabled, f.scraper_rules, f.rewrite_rules, f.crawler,
 		        f.next_check_at, f.last_fetch_at, f.created_at, f.updated_at,
-		        COALESCE(sh.handle, ''), COALESCE(sh.display_name, '')
+		        COALESCE(sh.handle, ''), COALESCE(sh.display_name, ''),
+		        my_sa.id
 		 FROM entries e
 		 JOIN feeds f ON f.id = e.feed_id
 		 LEFT JOIN entry_read_status rs ON rs.user_id = $2 AND rs.article_url = e.url
@@ -475,6 +478,7 @@ func (s *Store) GetEntryByID(ctx context.Context, id int64, userID int) (*Entry,
 		   WHERE sa.entry_id = e.id LIMIT 1
 		 ) sh_row ON true
 		 LEFT JOIN users sh ON sh.id = sh_row.user_id
+		 LEFT JOIN shared_articles my_sa ON my_sa.user_id = $2 AND my_sa.article_url = e.url
 		 WHERE e.id = $1 AND (`+visibleEntryFilter(userID)+`)`, id, userID,
 	).Scan(&e.ID, &e.FeedID, &e.Hash, &e.Title, &e.URL, &e.CommentsURL,
 		&e.Author, &e.Content, &e.Description, &e.Status, &e.Starred,
@@ -483,7 +487,7 @@ func (s *Store) GetEntryByID(ctx context.Context, id int64, userID int) (*Entry,
 		&f.EtagHeader, &f.LastModified, &f.ParsingError, &f.ParsingErrorCount,
 		&f.Disabled, &f.ScraperRules, &f.RewriteRules, &f.Crawler,
 		&f.NextCheckAt, &f.LastFetchAt, &f.CreatedAt, &f.UpdatedAt,
-		&e.SharedBy, &e.SharedByName)
+		&e.SharedBy, &e.SharedByName, &e.ShareID)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -683,7 +687,6 @@ func (s *Store) MarkAllEntriesRead(ctx context.Context, userID int) error {
 		userID)
 	return err
 }
-
 
 // MarkShareUnreadForFollowers inserts an 'unread' entry_read_status row for
 // every user following the sharer. Called when a new share is created (via the

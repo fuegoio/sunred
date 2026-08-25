@@ -420,6 +420,10 @@
                         "format": "date-time",
                         "type": "string"
                     },
+                    "share_id": {
+                        "format": "int64",
+                        "type": "integer"
+                    },
                     "shared_by": {
                         "type": "string"
                     },

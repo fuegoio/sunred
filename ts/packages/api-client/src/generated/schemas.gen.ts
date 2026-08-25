@@ -432,6 +432,10 @@ export const EntrySchema = {
             format: 'date-time',
             type: 'string'
         },
+        share_id: {
+            format: 'int64',
+            type: 'integer'
+        },
         shared_by: {
             type: 'string'
         },
@@ -1789,6 +1793,10 @@ export const EntryWritableSchema = {
         published_at: {
             format: 'date-time',
             type: 'string'
+        },
+        share_id: {
+            format: 'int64',
+            type: 'integer'
         },
         shared_by: {
             type: 'string'

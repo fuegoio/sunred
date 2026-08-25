@@ -15,8 +15,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty";
-import { getClient, listEntries, listFeeds, mySharedArticles, unwrap } from "@/lib/sunred";
-import type { Entry, Feed, SharedArticle } from "@/lib/types";
+import { getClient, listEntries, listFeeds, unwrap } from "@/lib/sunred";
+import type { Entry, Feed } from "@/lib/types";
 import { buttonVariants } from "@workspace/ui/components/button";
 import type { ReactNode } from "react";
 import { cn } from "@workspace/ui/lib/utils";
@@ -70,14 +70,6 @@ export function EntryTimeline({
   });
   const feedMap = new Map<number, Feed>();
   for (const f of feeds ?? []) feedMap.set(f.id, f);
-
-  // Map article_url → share id so EntryCard can show the share toggle state.
-  const { data: shares } = useQuery<SharedArticle[]>({
-    queryKey: ["shares"],
-    queryFn: async () => unwrap(mySharedArticles({ client: await getClient() })),
-  });
-  const shareMap = new Map<string, number>();
-  for (const s of shares ?? []) shareMap.set(s.article_url, s.id);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } =
     useInfiniteQuery<Entry[], Error, InfiniteData<Entry[]>, ["entries", EntryFilter], number>({
@@ -225,7 +217,7 @@ export function EntryTimeline({
             feed={feedMap.get(entry.feed_id)}
             staggerIndex={i}
             animateExit={animateExit}
-            shareId={shareMap.get(entry.url) ?? null}
+            shareId={entry.share_id ?? null}
           />
         ))}
       </AnimatePresence>

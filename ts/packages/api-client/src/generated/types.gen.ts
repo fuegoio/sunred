@@ -138,6 +138,7 @@ export type Entry = {
     hash: string;
     id: number;
     published_at: string;
+    share_id?: number;
     shared_by?: string;
     shared_by_name?: string;
     starred: boolean;
@@ -543,6 +544,7 @@ export type EntryWritable = {
     hash: string;
     id: number;
     published_at: string;
+    share_id?: number;
     shared_by?: string;
     shared_by_name?: string;
     starred: boolean;

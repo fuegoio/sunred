@@ -69,6 +69,11 @@ type Entry struct {
 	Feed         *Feed       `json:"feed,omitempty"`
 	SharedBy     string      `json:"shared_by,omitempty"`
 	SharedByName string      `json:"shared_by_name,omitempty"`
+	// ShareID is the viewer's own shared_articles row id for this entry's
+	// article_url, or nil when the viewer hasn't shared it. Populated on
+	// list/get so clients can render the share toggle's initial state and
+	// resolve the unshare DELETE target without a separate bulk fetch.
+	ShareID *int64 `json:"share_id,omitempty"`
 }
 
 // Enclosure is a media attachment (podcast, image, file) on an entry.
@@ -123,17 +128,17 @@ type DeviceCode struct {
 // User represents an authenticated account. The local database is a cache of
 // the user's ATProto data; the PDS is the source of truth.
 type User struct {
-	ID          int       `json:"id"`
-	Handle      string    `json:"handle"`
-	DID         string    `json:"did,omitempty"`
-	DisplayName string    `json:"display_name,omitempty"`
-	Bio         string    `json:"bio,omitempty"`
+	ID          int    `json:"id"`
+	Handle      string `json:"handle"`
+	DID         string `json:"did,omitempty"`
+	DisplayName string `json:"display_name,omitempty"`
+	Bio         string `json:"bio,omitempty"`
 	// Avatar/Banner are the public PDS getBlob URLs, kept for the image
 	// proxy to fetch from. They are never serialized; clients use the
 	// /users/{handle}/avatar|banner endpoints, gated by HasAvatar/HasBanner.
-	Avatar string `json:"-"`
-	Banner string `json:"-"`
-	CreatedAt   time.Time `json:"created_at"`
+	Avatar    string    `json:"-"`
+	Banner    string    `json:"-"`
+	CreatedAt time.Time `json:"created_at"`
 	// PDSSyncStatus tracks the post-login backfill from the user's PDS:
 	// "syncing" while in progress, "idle" once done, "failed" on error.
 	// The web UI polls this to show a waiting state on first login.
@@ -148,17 +153,17 @@ type User struct {
 // UserProfile holds the public profile data for a user, with denormalised
 // social counts populated by query joins.
 type UserProfile struct {
-	UserID      int       `json:"user_id"`
-	Handle      string    `json:"handle"`
-	DisplayName string    `json:"display_name,omitempty"`
-	Bio         string    `json:"bio,omitempty"`
+	UserID      int    `json:"user_id"`
+	Handle      string `json:"handle"`
+	DisplayName string `json:"display_name,omitempty"`
+	Bio         string `json:"bio,omitempty"`
 	// Avatar/Banner are the public PDS getBlob URLs, kept for the image
 	// proxy to fetch from. Never serialized; see User for details.
-	Avatar string `json:"-"`
-	Banner string `json:"-"`
-	DID         string    `json:"did,omitempty"`
-	PDSUrl      string    `json:"pds_url,omitempty"`
-	CreatedAt   time.Time `json:"created_at"`
+	Avatar    string    `json:"-"`
+	Banner    string    `json:"-"`
+	DID       string    `json:"did,omitempty"`
+	PDSUrl    string    `json:"pds_url,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 	// HasAvatar/HasBanner tell the client an image exists without leaking
 	// the PDS URL; the client fetches the bytes via the proxy endpoints.
 	HasAvatar bool `json:"has_avatar,omitempty"`
