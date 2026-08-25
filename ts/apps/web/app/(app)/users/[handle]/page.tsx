@@ -160,18 +160,19 @@ function ProfileMasthead({
   // name/handle/stats/bio align under the avatar on mobile. Collapses to 0
   // on desktop where the menu button is hidden (lg:hidden).
   const bodyIndent = "pl-11 lg:pl-0";
-  // When a banner is present the avatar overlaps its bottom edge (Twitter
-  // style); pull it up by a third of its size so it sits on the banner.
-  const avatarOverlap = banner ? "-mt-10" : "mt-0";
+  // The banner is always rendered (even without an image) to keep the
+  // layout stable. The avatar overlaps its bottom edge (Twitter style);
+  // pull it up by a third of its size so it sits on the banner.
+  const avatarOverlap = "-mt-10";
 
   return (
     <header className="px-4 pb-3 pt-4 lg:pl-[48px]">
-      {banner ? (
-        <div className="h-28 w-full overflow-hidden rounded-lg bg-muted sm:h-32">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+      <div className="h-28 w-full overflow-hidden rounded-lg bg-muted sm:h-32">
+        {banner ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img src={banner} alt="" className="h-full w-full object-cover" />
-        </div>
-      ) : null}
+        ) : null}
+      </div>
 
       <div className={`flex items-center gap-2 ${avatarOverlap}`}>
         {shell && (
