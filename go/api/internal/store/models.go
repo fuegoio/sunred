@@ -165,6 +165,10 @@ type ATProtoCredentials struct {
 	AccessToken  string
 	RefreshToken string
 	ExpiresAt    *time.Time
+	// Handle is the user's AT Proto handle. Populated by ListUsersWithATProto
+	// (e.g. to announce the user to the relay on startup); not set by
+	// GetATProtoCredentials.
+	Handle string
 }
 
 // SharedArticle is an article that a user shared on the social timeline.
