@@ -13,6 +13,7 @@ import (
 
 	"golang.org/x/net/websocket"
 
+	"github.com/fuegoio/sunred/go/api/internal/migrations"
 	"github.com/fuegoio/sunred/go/api/internal/store"
 )
 
@@ -30,6 +31,11 @@ func testDB(t *testing.T) *store.Store {
 	defer cancel()
 	if err := db.PingContext(ctx); err != nil {
 		t.Skipf("database not reachable, skipping integration test: %v", err)
+	}
+	// Apply migrations so the schema exists on a fresh database (CI runs
+	// against a pristine Postgres). Idempotent via the schema_migrations table.
+	if err := migrations.Run(db); err != nil {
+		t.Fatalf("apply migrations: %v", err)
 	}
 	return store.New(db)
 }
