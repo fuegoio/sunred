@@ -80,18 +80,15 @@ export function EntryCard({
   const unread = !isRead;
   const snippet = htmlSnippet(entry.description, 200);
 
-  // The entry carries a nested global source feed (entry.feed) so shares from
-  // feeds the user doesn't subscribe to can still render their source. The
-  // passed `feed` prop (from the user's subscription list) carries the user's
-  // title override, so prefer it for subscribed feeds; fall back to the nested
-  // global feed for shares from unsubscribed feeds.
+  // The entry carries its source feed on `entry.feed`, with the viewer's
+  // title override already applied by the API. The `feed` prop is the same
+  // object for real entries (and a synthetic preview feed in discovery mode),
+  // so prefer it and fall back to `entry.feed` defensively.
   const feedTitle = feed?.title || entry.feed?.title || "Unknown feed";
   const feedSiteUrl = feed?.site_url || entry.feed?.site_url;
-  // Link target for the feed title: subscribed feeds go to their canonical
-  // feed page; feeds the viewer doesn't subscribe to (shares from followed
-  // users, preview articles) go to the discovery view, which previews them
-  // and offers a one-click subscribe. In preview mode, the feed URL comes
-  // from the preview/discovery data, not a subscription.
+  // Link target for the feed title: real entries go to their canonical feed
+  // page; preview articles (synthetic feed with id 0) go to the discovery
+  // view, which previews them and offers a one-click subscribe.
   const feedFeedURL = feed?.feed_url || entry.feed?.feed_url;
   const feedHref =
     feed && feed.id > 0
