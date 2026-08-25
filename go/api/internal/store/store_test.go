@@ -239,3 +239,67 @@ func TestListEntriesSearch(t *testing.T) {
 		t.Errorf("expected 1 entry matching 'Go', got %d", len(entries))
 	}
 }
+
+// TestGetFeedGlobal_NonSubscriber verifies that a feed exists globally even
+// when the viewer has no subscription: GetSubscriptionFeed returns nil for a
+// non-subscriber while GetFeedGlobal returns the feed. This backs the get-feed
+// handler's fallback so a feed page renders for shares from followed users.
+func TestGetFeedGlobal_NonSubscriber(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+
+	owner := seedUser(t, s, "feed-owner@example.com")
+	other := seedUser(t, s, "feed-nonsub@example.com")
+	feedID := seedFeed(t, s, owner, nil, "Owner Feed")
+
+	if f, err := s.GetSubscriptionFeed(ctx, feedID, other); err != nil {
+		t.Fatalf("GetSubscriptionFeed for non-subscriber errored: %v", err)
+	} else if f != nil {
+		t.Fatalf("GetSubscriptionFeed for non-subscriber returned %v, want nil", f)
+	}
+	f, err := s.GetFeedGlobal(ctx, feedID)
+	if err != nil {
+		t.Fatalf("GetFeedGlobal errored: %v", err)
+	}
+	if f == nil {
+		t.Fatal("GetFeedGlobal returned nil for an existing feed")
+	}
+	if f.ID != feedID {
+		t.Errorf("GetFeedGlobal returned id %d, want %d", f.ID, feedID)
+	}
+}
+
+// TestListEntries_FeedTitleOverride verifies that the nested feed on listed
+// entries carries the viewer's title override when set.
+func TestListEntries_FeedTitleOverride(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+
+	userID := seedUser(t, s, "override@example.com")
+	feedID := seedFeed(t, s, userID, nil, "Global Title")
+	seedEntry(t, s, userID, feedID, "Override Entry", "unread", false)
+
+	if _, err := s.DB.Exec(
+		`UPDATE subscriptions SET title_override = 'My Custom Name' WHERE user_id = $1 AND feed_id = $2`,
+		userID, feedID,
+	); err != nil {
+		t.Fatalf("set title_override: %v", err)
+	}
+
+	entries, err := s.ListEntries(ctx, userID, nil, nil, "", nil, "", "", 50, 0)
+	if err != nil {
+		t.Fatalf("ListEntries failed: %v", err)
+	}
+	var found bool
+	for _, e := range entries {
+		if e.FeedID == feedID && e.Feed != nil {
+			found = true
+			if e.Feed.Title != "My Custom Name" {
+				t.Errorf("entry feed title = %q, want %q", e.Feed.Title, "My Custom Name")
+			}
+		}
+	}
+	if !found {
+		t.Fatal("expected an entry for the overridden feed")
+	}
+}
