@@ -64,7 +64,16 @@ func New(st *store.Store, reconnectDelay time.Duration) *Fanout {
 	}
 }
 
-// Start loads all active tracked DIDs and begins subscribing. Blocks until ctx is done.
+// Start loads all active tracked DIDs, refreshes their cached profile records,
+// and begins subscribing. Blocks until ctx is done.
+//
+// Profile refresh is a startup-only pass: app.bsky.actor.profile is a single
+// record updated in place, so the relay's cached copy goes stale until the
+// next firehose commit. Re-fetching it per tracked DID on boot keeps
+// display_name/bio/avatar/banner current without replaying the append-mostly
+// io.sunred.* collections (those stay covered by the live firehose + cursor).
+// The refresh runs with bounded concurrency so a large tracked-DID set
+// doesn't fan out hundreds of simultaneous PDS reads.
 func (f *Fanout) Start(ctx context.Context) {
 	dids, err := f.store.ListActiveTrackedDIDs(ctx)
 	if err != nil {
@@ -72,11 +81,37 @@ func (f *Fanout) Start(ctx context.Context) {
 		return
 	}
 	slog.Info("fanout: starting", "tracked_dids", len(dids))
+
+	f.refreshProfiles(ctx, dids)
+
 	for _, d := range dids {
 		f.EnsureSubscribed(ctx, d.DID, d.PDSUrl, d.CursorSeq)
 	}
 	<-ctx.Done()
 	slog.Info("fanout: stopping", "tracked_dids", len(dids))
+}
+
+// refreshProfiles re-fetches the profile record for each tracked DID with
+// bounded concurrency. Errors per DID are logged and do not abort the pass.
+func (f *Fanout) refreshProfiles(ctx context.Context, dids []store.TrackedDID) {
+	const maxConcurrent = 8
+	sem := make(chan struct{}, maxConcurrent)
+	var wg sync.WaitGroup
+	for _, d := range dids {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+		wg.Add(1)
+		sem <- struct{}{}
+		go func(d store.TrackedDID) {
+			defer wg.Done()
+			defer func() { <-sem }()
+			f.refreshProfile(ctx, d.DID, d.PDSUrl)
+		}(d)
+	}
+	wg.Wait()
 }
 
 // EnsureSubscribed starts a subscription goroutine for did if none is running.
@@ -275,6 +310,28 @@ func (f *Fanout) handleProfile(ctx context.Context, did, pdsURL, rkey, action st
 	rec, err := f.fetchRecord(ctx, pdsURL, did, "app.bsky.actor.profile", rkey)
 	if err != nil {
 		slog.Warn("fanout: fetch profile", "did", did, "rkey", rkey, "err", err)
+		return
+	}
+	f.processProfileRecord(ctx, did, pdsURL, rec)
+}
+
+// refreshProfile re-fetches the single app.bsky.actor.profile record (rkey
+// "self") for a tracked DID and re-processes it, emitting a "profile" event.
+// Unlike backfill it does not touch the io.sunred.* collections — those are
+// append-mostly and covered by the live firehose. Profile is a single record
+// updated in place, so its cached copy goes stale until the next firehose
+// commit; this refresh keeps it current on relay restart without replaying
+// the whole social graph. A missing record (no profile set) clears the
+// cached fields. Safe to call concurrently per DID.
+func (f *Fanout) refreshProfile(ctx context.Context, did, pdsURL string) {
+	rec, err := f.fetchRecord(ctx, pdsURL, did, "app.bsky.actor.profile", "self")
+	if err != nil {
+		// A 404 means no profile record exists; clear the cache so stale
+		// avatar/banner don't persist after the user removes their profile.
+		slog.Debug("fanout: no profile record on refresh", "did", did, "err", err)
+		if _, err := f.store.RecordProfile(ctx, did, "", "", "", ""); err != nil {
+			slog.Warn("fanout: clear profile on refresh", "did", did, "err", err)
+		}
 		return
 	}
 	f.processProfileRecord(ctx, did, pdsURL, rec)
