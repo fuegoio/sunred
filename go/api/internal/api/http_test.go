@@ -209,7 +209,21 @@ func TestHTTP_UnauthorizedWithoutToken(t *testing.T) {
 	if resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("status = %d, want 401", resp.StatusCode)
 	}
-	_ = resp.Body.Close()
+	// The auth middleware must return a huma ErrorModel body whose `status`
+	// field lets the web client distinguish a 401 (redirect to /login) from a
+	// 5xx/network outage (render an error page).
+	var body struct {
+		Title  string `json:"title"`
+		Status int    `json:"status"`
+		Detail string `json:"detail"`
+	}
+	readJSON(t, resp, &body)
+	if body.Status != http.StatusUnauthorized {
+		t.Errorf("body status = %d, want %d", body.Status, http.StatusUnauthorized)
+	}
+	if body.Title == "" {
+		t.Errorf("body title is empty")
+	}
 }
 
 func TestHTTP_GetMe(t *testing.T) {

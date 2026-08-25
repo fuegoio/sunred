@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -52,11 +53,27 @@ func (a *Auth) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userID, err := a.resolveUserID(r)
 		if err != nil {
-			http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+			writeUnauthorized(w)
 			return
 		}
 		ctx := context.WithValue(r.Context(), userKey, userID)
 		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// writeUnauthorized emits a huma ErrorModel (RFC 9457) body for 401 responses.
+// The web client reads the `status` field to distinguish auth failures (which
+// redirect to /login) from 5xx/network outages (which render an error page), so
+// the body must carry `status` like every other huma error in the API.
+func writeUnauthorized(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(http.StatusUnauthorized)
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"$schema": "https://example.com/schemas/ErrorModel.json",
+		"title":   "Unauthorized",
+		"status":  http.StatusUnauthorized,
+		"detail":  "A valid session or API token is required.",
 	})
 }
 
