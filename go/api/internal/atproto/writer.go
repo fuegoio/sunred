@@ -2,7 +2,9 @@ package atproto
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -14,6 +16,7 @@ import (
 var (
 	nsidPutRecord    = mustNSID("com.atproto.repo.putRecord")
 	nsidDeleteRecord = mustNSID("com.atproto.repo.deleteRecord")
+	nsidUploadBlob   = mustNSID("com.atproto.repo.uploadBlob")
 )
 
 func mustNSID(s string) syntax.NSID {
@@ -176,6 +179,44 @@ func (w *Writer) PutProfile(ctx context.Context, displayName, description string
 		return fmt.Errorf("put profile: %w", err)
 	}
 	return nil
+}
+
+// uploadBlobOutput is the JSON response body of com.atproto.repo.uploadBlob:
+// the blob ref to embed in a record.
+type uploadBlobOutput struct {
+	Blob BlobRef `json:"blob"`
+}
+
+// UploadBlob uploads raw bytes to the user's PDS as a blob and returns the
+// resulting blob ref, which can then be embedded in a record (e.g. the avatar
+// field of app.bsky.actor.profile). mimeType is sent as the request
+// Content-Type and must match the blob's declared type. A nil client returns
+// errNoWriterClient.
+func (w *Writer) UploadBlob(ctx context.Context, mimeType string, r io.Reader) (*BlobRef, error) {
+	if w.client == nil {
+		return nil, errNoWriterClient
+	}
+	req := atclient.NewAPIRequest(http.MethodPost, nsidUploadBlob, r)
+	req.Headers.Set("Content-Type", mimeType)
+	req.Headers.Set("Accept", "application/json")
+
+	resp, err := w.client.Do(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("uploadBlob: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("uploadBlob: PDS returned %d: %s", resp.StatusCode, string(body))
+	}
+	var out uploadBlobOutput
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		return nil, fmt.Errorf("uploadBlob: decode response: %w", err)
+	}
+	if out.Blob.Ref.Link == "" {
+		return nil, fmt.Errorf("uploadBlob: PDS returned an empty blob ref")
+	}
+	return &out.Blob, nil
 }
 
 // putRecord creates or replaces a record in the user's repo via the OAuth

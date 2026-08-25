@@ -1382,6 +1382,10 @@
                         "readOnly": true,
                         "type": "string"
                     },
+                    "bio": {
+                        "maxLength": 500,
+                        "type": "string"
+                    },
                     "display_name": {
                         "maxLength": 255,
                         "type": "string"
@@ -3275,6 +3279,91 @@
                     }
                 },
                 "summary": "Update current user profile",
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/v1/me/avatar": {
+            "delete": {
+                "operationId": "delete-me-avatar",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "default": {
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        },
+                        "description": "Error"
+                    }
+                },
+                "summary": "Remove current user's avatar",
+                "tags": [
+                    "users"
+                ]
+            },
+            "post": {
+                "operationId": "upload-me-avatar",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "encoding": {
+                                "avatar": {
+                                    "contentType": "image/jpeg,image/png,image/webp"
+                                }
+                            },
+                            "schema": {
+                                "properties": {
+                                    "avatar": {
+                                        "contentEncoding": "binary",
+                                        "contentMediaType": "application/octet-stream",
+                                        "format": "binary",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "avatar"
+                                ],
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "default": {
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        },
+                        "description": "Error"
+                    }
+                },
+                "summary": "Upload current user's avatar",
                 "tags": [
                     "users"
                 ]

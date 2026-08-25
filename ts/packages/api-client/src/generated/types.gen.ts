@@ -437,6 +437,7 @@ export type UpdateMeInputBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
+    bio?: string;
     display_name: string;
 };
 
@@ -735,6 +736,7 @@ export type UpdateHandleInputBodyWritable = {
 };
 
 export type UpdateMeInputBodyWritable = {
+    bio?: string;
     display_name: string;
 };
 
@@ -1891,6 +1893,58 @@ export type UpdateMeResponses = {
 };
 
 export type UpdateMeResponse = UpdateMeResponses[keyof UpdateMeResponses];
+
+export type DeleteMeAvatarData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/me/avatar';
+};
+
+export type DeleteMeAvatarErrors = {
+    /**
+     * Error
+     */
+    default: ErrorModel;
+};
+
+export type DeleteMeAvatarError = DeleteMeAvatarErrors[keyof DeleteMeAvatarErrors];
+
+export type DeleteMeAvatarResponses = {
+    /**
+     * OK
+     */
+    200: User;
+};
+
+export type DeleteMeAvatarResponse = DeleteMeAvatarResponses[keyof DeleteMeAvatarResponses];
+
+export type UploadMeAvatarData = {
+    body?: {
+        avatar: Blob | File;
+    };
+    path?: never;
+    query?: never;
+    url: '/v1/me/avatar';
+};
+
+export type UploadMeAvatarErrors = {
+    /**
+     * Error
+     */
+    default: ErrorModel;
+};
+
+export type UploadMeAvatarError = UploadMeAvatarErrors[keyof UploadMeAvatarErrors];
+
+export type UploadMeAvatarResponses = {
+    /**
+     * OK
+     */
+    200: User;
+};
+
+export type UploadMeAvatarResponse = UploadMeAvatarResponses[keyof UploadMeAvatarResponses];
 
 export type ExportOpmlData = {
     body?: never;

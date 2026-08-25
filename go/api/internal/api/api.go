@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"time"
@@ -127,7 +128,8 @@ type MeOutput struct {
 
 type UpdateMeInput struct {
 	Body struct {
-		DisplayName string `json:"display_name" maxLength:"255"`
+		DisplayName string  `json:"display_name" maxLength:"255"`
+		Bio         *string `json:"bio,omitempty" maxLength:"500"`
 	}
 }
 
@@ -158,7 +160,7 @@ func (a *API) registerMeRoutes() {
 		Tags:        []string{"users"},
 	}, func(ctx context.Context, input *UpdateMeInput) (*MeOutput, error) {
 		userID := auth.UserIDFromCtx(ctx)
-		user, err := a.store.UpdateUser(ctx, userID, input.Body.DisplayName)
+		user, err := a.store.UpdateUser(ctx, userID, input.Body.DisplayName, input.Body.Bio)
 		if err != nil {
 			return nil, huma.Error500InternalServerError(fmt.Errorf("update user: %w", err).Error())
 		}
@@ -182,6 +184,69 @@ func (a *API) registerMeRoutes() {
 			return nil, huma.Error500InternalServerError(fmt.Errorf("delete user: %w", err).Error())
 		}
 		return nil, nil
+	})
+
+	// POST /v1/me/avatar — upload an avatar to the user's PDS and cache it.
+	// The avatar is the app.bsky.actor.profile record's avatar blob, uploaded
+	// via com.atproto.repo.uploadBlob and mirrored to the user's Bluesky
+	// profile so it is consistent across AT Proto clients.
+	huma.Register(a.huma, huma.Operation{
+		OperationID: "upload-me-avatar",
+		Method:      http.MethodPost,
+		Path:        "/v1/me/avatar",
+		Summary:     "Upload current user's avatar",
+		Tags:        []string{"users"},
+	}, func(ctx context.Context, input *struct {
+		RawBody huma.MultipartFormFiles[struct {
+			Avatar huma.FormFile `form:"avatar" contentType:"image/jpeg,image/png,image/webp" required:"true"`
+		}]
+	}) (*MeOutput, error) {
+		userID := auth.UserIDFromCtx(ctx)
+		file := input.RawBody.Data()
+		if !file.Avatar.IsSet {
+			return nil, huma.Error400BadRequest("avatar file is required")
+		}
+		// 2 MiB cap — avatars are small; anything larger is a mistake or abuse.
+		if file.Avatar.Size > 2<<20 {
+			return nil, huma.Error422UnprocessableEntity("avatar must be 2 MiB or smaller")
+		}
+		// Buffer the upload so the PDS request has a known Content-Length
+		// (com.atproto.repo.uploadBlob rejects chunked transfers on some PDSes).
+		body, err := io.ReadAll(&file.Avatar)
+		if err != nil {
+			return nil, huma.Error400BadRequest("could not read avatar upload")
+		}
+		avatarURL, err := a.ATProtoUploadAvatar(ctx, userID, file.Avatar.ContentType, bytes.NewReader(body))
+		if err != nil {
+			slog.Warn("atproto: avatar upload failed", "user_id", userID, "err", err)
+			return nil, huma.Error502BadGateway("could not upload avatar to your PDS")
+		}
+		user, err := a.store.UpdateUserAvatar(ctx, userID, avatarURL)
+		if err != nil || user == nil {
+			return nil, huma.Error500InternalServerError(fmt.Errorf("cache avatar: %w", err).Error())
+		}
+		return &MeOutput{Body: *user}, nil
+	})
+
+	// DELETE /v1/me/avatar — remove the avatar from the PDS profile record
+	// and clear the local cache.
+	huma.Register(a.huma, huma.Operation{
+		OperationID: "delete-me-avatar",
+		Method:      http.MethodDelete,
+		Path:        "/v1/me/avatar",
+		Summary:     "Remove current user's avatar",
+		Tags:        []string{"users"},
+	}, func(ctx context.Context, _ *struct{}) (*MeOutput, error) {
+		userID := auth.UserIDFromCtx(ctx)
+		if err := a.ATProtoDeleteAvatar(ctx, userID); err != nil {
+			slog.Warn("atproto: avatar delete failed", "user_id", userID, "err", err)
+			return nil, huma.Error502BadGateway("could not remove avatar from your PDS")
+		}
+		user, err := a.store.UpdateUserAvatar(ctx, userID, "")
+		if err != nil || user == nil {
+			return nil, huma.Error500InternalServerError(fmt.Errorf("clear avatar cache: %w", err).Error())
+		}
+		return &MeOutput{Body: *user}, nil
 	})
 }
 
@@ -325,13 +390,13 @@ type PreviewFeedItem struct {
 }
 
 type PreviewFeedBody struct {
-	ID          int                  `json:"id,omitempty"`
-	Title       string               `json:"title"`
-	SiteURL     string               `json:"site_url"`
-	FeedURL     string               `json:"feed_url"`
-	Description string               `json:"description,omitempty"`
-	FaviconURL  string               `json:"favicon_url,omitempty"`
-	Items       []PreviewFeedItem    `json:"items"`
+	ID          int                     `json:"id,omitempty"`
+	Title       string                  `json:"title"`
+	SiteURL     string                  `json:"site_url"`
+	FeedURL     string                  `json:"feed_url"`
+	Description string                  `json:"description,omitempty"`
+	FaviconURL  string                  `json:"favicon_url,omitempty"`
+	Items       []PreviewFeedItem       `json:"items"`
 	Subscribers *FeedSubscribersSummary `json:"subscribers,omitempty"`
 }
 

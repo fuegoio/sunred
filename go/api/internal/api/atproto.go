@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -234,19 +235,7 @@ func (a *API) ATProtoSyncProfile(userID int, displayName, bio string, createdAt 
 	// Read the existing record so avatar/banner (which Sunred doesn't manage)
 	// survive the putRecord replace. A missing record means we're creating it
 	// fresh, so there's nothing to preserve.
-	var avatar, banner *atproto.BlobRef
-	did, pdsURL, _ := a.store.GetUserDIDAndPDS(ctx, userID)
-	if did != "" && pdsURL != "" {
-		rc := atproto.NewClient(pdsURL, "")
-		if out, err := rc.GetRecord(ctx, did, atproto.CollectionProfile, atproto.ProfileRkey); err == nil {
-			var rec atproto.ProfileRecord
-			if err := json.Unmarshal(out.Value, &rec); err == nil {
-				avatar, banner = rec.Avatar, rec.Banner
-			} else {
-				slog.Warn("atproto: unmarshal existing profile for preserve", "user_id", userID, "err", err)
-			}
-		}
-	}
+	avatar, banner := a.existingProfileBlobRefs(ctx, userID)
 
 	slog.Info("atproto: writing profile to PDS", "user_id", userID)
 	if err := w.PutProfile(ctx, displayName, bio, avatar, banner, createdAt); err != nil {
@@ -254,6 +243,88 @@ func (a *API) ATProtoSyncProfile(userID int, displayName, bio string, createdAt 
 		return
 	}
 	slog.Info("atproto: profile written", "user_id", userID)
+}
+
+// existingProfileBlobRefs reads the user's app.bsky.actor.profile record from
+// their PDS and returns the avatar and banner blob refs currently embedded
+// there. They are preserved across a putRecord replace (which overwrites the
+// whole record) so a local edit to one field doesn't wipe the other images.
+// Both are nil when the record is missing, the user has no PDS URL, or the
+// read fails (logged at debug).
+func (a *API) existingProfileBlobRefs(ctx context.Context, userID int) (avatar, banner *atproto.BlobRef) {
+	did, pdsURL, _ := a.store.GetUserDIDAndPDS(ctx, userID)
+	if did == "" || pdsURL == "" {
+		return nil, nil
+	}
+	rc := atproto.NewClient(pdsURL, "")
+	out, err := rc.GetRecord(ctx, did, atproto.CollectionProfile, atproto.ProfileRkey)
+	if err != nil {
+		slog.Debug("atproto: read existing profile for preserve", "user_id", userID, "err", err)
+		return nil, nil
+	}
+	var rec atproto.ProfileRecord
+	if err := json.Unmarshal(out.Value, &rec); err != nil {
+		slog.Warn("atproto: unmarshal existing profile for preserve", "user_id", userID, "err", err)
+		return nil, nil
+	}
+	return rec.Avatar, rec.Banner
+}
+
+// ATProtoUploadAvatar uploads an avatar image to the user's PDS, embeds the
+// resulting blob ref in their app.bsky.actor.profile record (preserving the
+// existing banner), and returns the public getBlob URL for caching locally.
+// Unlike the fire-and-forget sync helpers, it returns errors: an avatar
+// upload is a direct user action and the caller must surface failures. It
+// returns an error when the user has no AT Proto writer available.
+func (a *API) ATProtoUploadAvatar(ctx context.Context, userID int, mimeType string, r io.Reader) (string, error) {
+	w, err := a.writerForUserOrFallback(ctx, userID)
+	if err != nil {
+		return "", fmt.Errorf("atproto: avatar upload, writer error: %w", err)
+	}
+	if w == nil {
+		return "", fmt.Errorf("atproto: avatar upload requires a connected Bluesky account")
+	}
+
+	blob, err := w.UploadBlob(ctx, mimeType, r)
+	if err != nil {
+		return "", fmt.Errorf("atproto: upload avatar blob: %w", err)
+	}
+
+	// Preserve the banner; replace the avatar.
+	_, banner := a.existingProfileBlobRefs(ctx, userID)
+	user, err := a.store.GetUserByID(ctx, userID)
+	if err != nil || user == nil {
+		return "", fmt.Errorf("atproto: avatar upload, load user: %w", err)
+	}
+	if err := w.PutProfile(ctx, user.DisplayName, user.Bio, blob, banner, user.CreatedAt); err != nil {
+		return "", fmt.Errorf("atproto: put profile with avatar: %w", err)
+	}
+
+	did, pdsURL, _ := a.store.GetUserDIDAndPDS(ctx, userID)
+	return blob.BlobURL(pdsURL, did), nil
+}
+
+// ATProtoDeleteAvatar removes the avatar from the user's app.bsky.actor.profile
+// record on the PDS (preserving the banner). Like ATProtoUploadAvatar it
+// returns errors rather than logging and dropping them.
+func (a *API) ATProtoDeleteAvatar(ctx context.Context, userID int) error {
+	w, err := a.writerForUserOrFallback(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("atproto: avatar delete, writer error: %w", err)
+	}
+	if w == nil {
+		return fmt.Errorf("atproto: avatar delete requires a connected Bluesky account")
+	}
+
+	_, banner := a.existingProfileBlobRefs(ctx, userID)
+	user, err := a.store.GetUserByID(ctx, userID)
+	if err != nil || user == nil {
+		return fmt.Errorf("atproto: avatar delete, load user: %w", err)
+	}
+	if err := w.PutProfile(ctx, user.DisplayName, user.Bio, nil, banner, user.CreatedAt); err != nil {
+		return fmt.Errorf("atproto: put profile without avatar: %w", err)
+	}
+	return nil
 }
 
 // ATProtoSyncFeedSubscription writes or deletes a feed subscription record on
