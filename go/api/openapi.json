@@ -97,6 +97,32 @@
                 ],
                 "type": "object"
             },
+            "ArticleStarCountResponse": {
+                "additionalProperties": false,
+                "properties": {
+                    "$schema": {
+                        "description": "A URL to the JSON Schema for this object.",
+                        "examples": [
+                            "https://example.com/schemas/ArticleStarCountResponse.json"
+                        ],
+                        "format": "uri",
+                        "readOnly": true,
+                        "type": "string"
+                    },
+                    "article_url": {
+                        "type": "string"
+                    },
+                    "count": {
+                        "format": "int64",
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "article_url",
+                    "count"
+                ],
+                "type": "object"
+            },
             "CreateFeedInputBody": {
                 "additionalProperties": false,
                 "properties": {
@@ -420,6 +446,10 @@
                         "format": "date-time",
                         "type": "string"
                     },
+                    "repost_count": {
+                        "format": "int64",
+                        "type": "integer"
+                    },
                     "share_id": {
                         "format": "int64",
                         "type": "integer"
@@ -429,6 +459,10 @@
                     },
                     "shared_by_name": {
                         "type": "string"
+                    },
+                    "star_count": {
+                        "format": "int64",
+                        "type": "integer"
                     },
                     "starred": {
                         "type": "boolean"
@@ -461,7 +495,9 @@
                     "status",
                     "starred",
                     "published_at",
-                    "changed_at"
+                    "changed_at",
+                    "repost_count",
+                    "star_count"
                 ],
                 "type": "object"
             },
@@ -1880,6 +1916,48 @@
                     }
                 },
                 "summary": "Remove a shared article",
+                "tags": [
+                    "social"
+                ]
+            }
+        },
+        "/api/v1/social/star-count": {
+            "get": {
+                "operationId": "article-star-count",
+                "parameters": [
+                    {
+                        "explode": false,
+                        "in": "query",
+                        "name": "article_url",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ArticleStarCountResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "default": {
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        },
+                        "description": "Error"
+                    }
+                },
+                "summary": "Get the global star count for an article URL",
                 "tags": [
                     "social"
                 ]

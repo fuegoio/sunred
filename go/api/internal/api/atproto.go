@@ -604,3 +604,23 @@ func (a *API) relayGetArticleShareCount(ctx context.Context, articleURL string) 
 	}
 	return out.Count
 }
+
+// relayGetArticleStarCount queries the relay for the globally accurate star
+// count of an article URL (unique DIDs across all tracked repos).
+// Returns 0 if no relay is configured or the request fails.
+func (a *API) relayGetArticleStarCount(ctx context.Context, articleURL string) int64 {
+	if a.cfg.RelayURL == "" || articleURL == "" {
+		return 0
+	}
+	rc := atproto.NewClient(a.cfg.RelayURL, "")
+	var out struct {
+		Count int64 `json:"count"`
+	}
+	if err := rc.Query(ctx, "io.sunred.relay.getArticleStarCount", map[string]string{
+		"articleUrl": articleURL,
+	}, &out); err != nil {
+		slog.Warn("relay: get article star count", "article_url", articleURL, "err", err)
+		return 0
+	}
+	return out.Count
+}

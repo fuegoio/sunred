@@ -33,6 +33,15 @@ export type ArticleShareCountResponse = {
     count: number;
 };
 
+export type ArticleStarCountResponse = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    article_url: string;
+    count: number;
+};
+
 export type CreateFeedInputBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -138,9 +147,11 @@ export type Entry = {
     hash: string;
     id: number;
     published_at: string;
+    repost_count: number;
     share_id?: number;
     shared_by?: string;
     shared_by_name?: string;
+    star_count: number;
     starred: boolean;
     status: string;
     tags?: Array<string> | null;
@@ -488,6 +499,11 @@ export type ArticleShareCountResponseWritable = {
     count: number;
 };
 
+export type ArticleStarCountResponseWritable = {
+    article_url: string;
+    count: number;
+};
+
 export type CreateFeedInputBodyWritable = {
     feed_url: string;
     folder_id?: number;
@@ -545,9 +561,11 @@ export type EntryWritable = {
     hash: string;
     id: number;
     published_at: string;
+    repost_count: number;
     share_id?: number;
     shared_by?: string;
     shared_by_name?: string;
+    star_count: number;
     starred: boolean;
     status: string;
     tags?: Array<string> | null;
@@ -1001,6 +1019,33 @@ export type UnshareArticleResponses = {
 };
 
 export type UnshareArticleResponse = UnshareArticleResponses[keyof UnshareArticleResponses];
+
+export type ArticleStarCountData = {
+    body?: never;
+    path?: never;
+    query: {
+        article_url: string;
+    };
+    url: '/api/v1/social/star-count';
+};
+
+export type ArticleStarCountErrors = {
+    /**
+     * Error
+     */
+    default: ErrorModel;
+};
+
+export type ArticleStarCountError = ArticleStarCountErrors[keyof ArticleStarCountErrors];
+
+export type ArticleStarCountResponses = {
+    /**
+     * OK
+     */
+    200: ArticleStarCountResponse;
+};
+
+export type ArticleStarCountResponse2 = ArticleStarCountResponses[keyof ArticleStarCountResponses];
 
 export type SocialTimelineData = {
     body?: never;
