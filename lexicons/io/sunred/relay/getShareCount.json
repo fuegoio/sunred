@@ -1,0 +1,36 @@
+{
+  "lexicon": 1,
+  "id": "io.sunred.relay.getShareCount",
+  "defs": {
+    "main": {
+      "type": "query",
+      "description": "Returns the globally accurate share count for a DID (number of article share records authored by this DID across all tracked repos).",
+      "parameters": {
+        "type": "params",
+        "required": ["did"],
+        "properties": {
+          "did": {
+            "type": "string",
+            "description": "The DID to query the share count for."
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["did", "count"],
+          "properties": {
+            "did": {
+              "type": "string"
+            },
+            "count": {
+              "type": "integer",
+              "description": "Total number of article share records authored by this DID across all tracked repos."
+            }
+          }
+        }
+      }
+    }
+  }
+}

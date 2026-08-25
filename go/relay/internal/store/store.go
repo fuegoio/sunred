@@ -267,6 +267,15 @@ func (s *Store) CountFeedSubscriptions(ctx context.Context, feedURL string) (int
 	return n, err
 }
 
+// CountFeedSubscriptionsByDID returns the number of feed subscription records
+// authored by a DID across all tracked repos.
+func (s *Store) CountFeedSubscriptionsByDID(ctx context.Context, did string) (int64, error) {
+	var n int64
+	err := s.DB.QueryRowContext(ctx, `
+		SELECT COUNT(*) FROM observed_subscriptions WHERE did=$1`, did).Scan(&n)
+	return n, err
+}
+
 // RecordStar inserts an observed star record. Idempotent on (did, rkey).
 func (s *Store) RecordStar(ctx context.Context, did, rkey, articleURL, pdsURL string) (bool, error) {
 	res, err := s.DB.ExecContext(ctx, `
@@ -291,18 +300,6 @@ func (s *Store) DeleteStar(ctx context.Context, did, rkey string) (bool, error) 
 	}
 	n, _ := res.RowsAffected()
 	return n > 0, nil
-}
-
-// GetCounts returns the global follower, share, and feed subscription counts for a DID.
-func (s *Store) GetCounts(ctx context.Context, did string) (followers, shares, feedSubs int64, err error) {
-	err = s.DB.QueryRowContext(ctx, `
-		SELECT
-		  (SELECT COUNT(*) FROM observed_follows WHERE followee_did=$1),
-		  (SELECT COUNT(*) FROM observed_shares WHERE did=$1),
-		  (SELECT COUNT(*) FROM observed_subscriptions WHERE did=$1)`,
-		did,
-	).Scan(&followers, &shares, &feedSubs)
-	return
 }
 
 // --- Relay event log ---
