@@ -80,6 +80,7 @@ func (p *Processor) ProcessFeed(ctx context.Context, feed *store.Feed) error {
 		return fmt.Errorf("parse feed %d: %w", feed.ID, err)
 	}
 
+	var newEntries int
 	for _, item := range parsed.Items {
 		content := item.Content
 		if content == "" {
@@ -106,10 +107,18 @@ func (p *Processor) ProcessFeed(ctx context.Context, feed *store.Feed) error {
 		}
 
 		if entryID > 0 {
+			newEntries++
+			slog.Info("entry created", "feed_id", feed.ID, "entry_id", entryID, "url", item.Link, "title", item.Title)
 			for _, enc := range item.Enclosures {
 				if err := p.store.CreateEnclosure(ctx, entryID, enc.URL, enc.MimeType, enc.Size); err != nil {
 					slog.Warn("create enclosure failed", "entry_id", entryID, "err", err)
 				}
+			}
+			// Fan out an 'unread' row to each subscriber so the new article
+			// surfaces in their unread feed (absence = read). Best-effort:
+			// re-fetches won't resurrect an article a subscriber already read.
+			if err := p.store.MarkEntryUnreadForSubscribers(ctx, feed.ID, item.Link, entryID); err != nil {
+				slog.Warn("mark entry unread for subscribers failed", "feed_id", feed.ID, "entry_id", entryID, "err", err)
 			}
 		}
 	}
@@ -118,7 +127,7 @@ func (p *Processor) ProcessFeed(ctx context.Context, feed *store.Feed) error {
 	if uerr := p.store.UpdateFeedFetchState(ctx, feed.ID, result.ETag, result.LastModified, "", 0, nextCheck, parsed.Description); uerr != nil {
 		slog.Warn("processor: persist refresh state", "feed_id", feed.ID, "err", uerr)
 	}
-	slog.Info("feed refreshed", "feed_id", feed.ID, "url", feed.FeedURL, "items", len(parsed.Items))
+	slog.Info("feed refreshed", "feed_id", feed.ID, "url", feed.FeedURL, "items", len(parsed.Items), "new", newEntries)
 
 	return nil
 }

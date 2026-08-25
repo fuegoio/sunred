@@ -707,6 +707,23 @@ func (s *Store) MarkShareUnreadForFollowers(ctx context.Context, sharerID int, a
 	return err
 }
 
+// MarkEntryUnreadForSubscribers inserts an 'unread' entry_read_status row for
+// every user subscribed to the entry's feed. Called by the feed processor
+// when a new entry is materialized so subscribers see it as unread (absent
+// rows still mean read). Subscribers who already have a row (e.g. the
+// article was shared to them and marked unread) are not overwritten.
+func (s *Store) MarkEntryUnreadForSubscribers(ctx context.Context, feedID int, articleURL string, entryID int64) error {
+	articleURL = urlnorm.URL(articleURL)
+	_, err := s.DB.ExecContext(ctx,
+		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
+		 SELECT sub.user_id, $2, $3, 'unread', NOW()
+		 FROM subscriptions sub
+		 WHERE sub.feed_id = $1
+		 ON CONFLICT (user_id, article_url) DO NOTHING`,
+		feedID, articleURL, sql.NullInt64{Int64: entryID, Valid: entryID > 0})
+	return err
+}
+
 // --- Enclosures ---
 
 // CreateEnclosure inserts a media attachment for an entry.
