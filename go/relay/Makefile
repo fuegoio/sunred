@@ -10,9 +10,9 @@ migrate: build
 	./sunred-relay --migrate
 
 test:
-	go test ./... -count=1
+	go test ./... -count=1 -p 1
 cover:
-	go test ./... -count=1 -coverprofile=coverage.out
+	go test ./... -count=1 -p 1 -coverprofile=coverage.out
 	go tool cover -func=coverage.out | tail -1
 	@echo "coverage.out written; run 'go tool cover -html=coverage.out' for a detailed view"
 
