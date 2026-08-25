@@ -68,12 +68,16 @@ func (c *RelayConsumer) AnnounceTrackedDIDs(ctx context.Context) {
 
 // Start connects to the relay and processes events until ctx is cancelled.
 // Reconnects automatically on disconnection with a backoff delay.
+//
+// Tracked DIDs are re-announced on every (re)connect attempt, not only at
+// startup: if the API boots before the relay is reachable the initial announce
+// fails silently and the relay would stay empty forever, logging
+// tracked_dids=0 and never backfilling/fetching profiles. Re-announcing is
+// safe — the relay's announceUser is idempotent (already-tracked DIDs are
+// no-ops) — so this also recovers a relay whose tracked_dids table was wiped
+// while the API kept running.
 func (c *RelayConsumer) Start(ctx context.Context) {
 	slog.Info("relay consumer: starting", "relay", c.relayURL, "instance", c.instanceURL)
-	// Re-announce every locally-known AT Proto user so a fresh or swapped
-	// relay (empty tracked_dids) backfills them. The relay treats already-
-	// tracked DIDs as a no-op, so this is safe on every boot.
-	c.AnnounceTrackedDIDs(ctx)
 	for {
 		select {
 		case <-ctx.Done():
@@ -81,6 +85,7 @@ func (c *RelayConsumer) Start(ctx context.Context) {
 			return
 		default:
 		}
+		c.AnnounceTrackedDIDs(ctx)
 		if err := c.connect(ctx); err != nil && ctx.Err() == nil {
 			slog.Warn("relay consumer: disconnected, reconnecting", "err", err, "backoff", "5s")
 		}
