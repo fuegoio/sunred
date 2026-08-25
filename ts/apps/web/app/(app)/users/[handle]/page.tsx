@@ -3,12 +3,12 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Users, UserCheck, UserPlus, ChevronRight, Rss } from "lucide-react";
+import { Users, UserCheck, UserPlus, Menu as MenuIcon, ChevronRight, Rss } from "lucide-react";
 import { toast } from "sonner";
 import { EntryCard } from "@/components/entry-card";
 import { EntryCardSkeleton } from "@/components/entry-card-skeleton";
 import { FeedIcon } from "@/components/feed-icon";
-import { PageHeader } from "@/components/page-header";
+import { useShell } from "@/components/shell-context";
 import { UserAvatar } from "@/components/user-avatar";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Button } from "@workspace/ui/components/button";
@@ -117,10 +117,14 @@ function FollowButton({
 }
 
 /**
- * Profile masthead — renders the shared `PageHeader` (title, avatar, follow
- * action) with the handle, follower/following counts, and bio carried in the
- * header's metadata slot, so the profile reads as the same chrome as the
- * unread/starred/follows timelines and feed detail pages.
+ * Profile masthead — a Twitter-style header specific to the user profile page.
+ *
+ * A prominent avatar sits at the top-left. Below it, the display name (bold,
+ * serif) shares a row with the follow action on the right; the mobile sidebar
+ * toggle leads that row so navigation stays reachable without a separate top
+ * bar. Underneath stack the @handle, the follower/following counts, and the
+ * bio. The content rows align with the avatar via a left indent that matches
+ * the menu button width on mobile and collapses on desktop.
  */
 function ProfileMasthead({
   displayName,
@@ -147,70 +151,101 @@ function ProfileMasthead({
   isFollowing: boolean;
   onFollowToggle: (next: boolean) => void;
 }) {
+  const shell = useShell();
+  // pl-11 (44px) = menu button width (size-9 = 36px) + gap-2 (8px), so the
+  // name/handle/stats/bio align under the avatar on mobile. Collapses to 0
+  // on desktop where the menu button is hidden (lg:hidden).
+  const bodyIndent = "pl-11 lg:pl-0";
+
   return (
-    <PageHeader
-      className="static"
-      title={displayName}
-      icon={
+    <header className="px-4 pb-3 pt-4 lg:pl-[48px]">
+      <div className="flex items-center gap-2">
+        {shell && (
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Toggle sidebar"
+            onClick={shell.openSidebar}
+            className="shrink-0 lg:hidden"
+          >
+            <MenuIcon className="size-4" />
+          </Button>
+        )}
         <UserAvatar
           displayName={hasDisplayName ? displayName : undefined}
           handle={handle}
-          className="size-8 shrink-0 rounded-md text-sm font-medium"
+          className="size-16 text-2xl font-semibold"
         />
-      }
-      actions={
-        <>
-          {!isOwnProfile && (
-            <FollowButton
-              handle={handle}
-              isFollowing={isFollowing}
-              onToggle={onFollowToggle}
-            />
+      </div>
+
+      <div className={`mt-3 flex items-start justify-between gap-3 ${bodyIndent}`}>
+        <h1 className="truncate font-serif text-xl font-bold tracking-tight">
+          {displayName}
+        </h1>
+        {!isOwnProfile && (
+          <FollowButton
+            handle={handle}
+            isFollowing={isFollowing}
+            onToggle={onFollowToggle}
+          />
+        )}
+      </div>
+
+      {hasDisplayName && (
+        <p className={`mt-0.5 truncate text-sm text-muted-foreground ${bodyIndent}`}>
+          @{handle}
+        </p>
+      )}
+
+      <div className={`mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm ${bodyIndent}`}>
+        <span className="inline-flex items-baseline gap-1">
+          <span className="font-semibold tabular-nums text-foreground">{followerTotal}</span>
+          <span className="text-muted-foreground">
+            {followerTotal === 1 ? "follower" : "followers"}
+          </span>
+          {showFederatedSplit && (
+            <span className="text-muted-foreground/70">
+              ({localFollowerCount} here)
+            </span>
           )}
-        </>
-      }
-      metadata={
-        <>
-          {hasDisplayName && <p className="truncate">@{handle}</p>}
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-            <span>
-              <span className="font-medium text-foreground">{followerTotal}</span>{" "}
-              {followerTotal === 1 ? "follower" : "followers"}
-              {showFederatedSplit && (
-                <span className="ml-1 text-muted-foreground/70">
-                  ({localFollowerCount} here)
-                </span>
-              )}
-            </span>
-            <span>
-              <span className="font-medium text-foreground">{followingCount}</span>{" "}
-              following
-            </span>
-          </div>
-          {bio && <p className="mt-1.5">{bio}</p>}
-        </>
-      }
-    />
+        </span>
+        <span className="inline-flex items-baseline gap-1">
+          <span className="font-semibold tabular-nums text-foreground">{followingCount}</span>
+          <span className="text-muted-foreground">following</span>
+        </span>
+      </div>
+
+      {bio && (
+        <p className={`mt-2 text-pretty text-sm text-foreground/80 ${bodyIndent}`}>
+          {bio}
+        </p>
+      )}
+    </header>
   );
 }
 
 function MastheadSkeleton() {
+  // Same indent + vertical rhythm as ProfileMasthead so the load state
+  // doesn't shift when the real data resolves.
+  const bodyIndent = "pl-11 lg:pl-0";
   return (
-    <PageHeader
-      className="static"
-      title={<Skeleton className="h-5 w-32" />}
-      icon={<Skeleton className="size-8 shrink-0 rounded-md" />}
-      actions={null}
-      metadata={
+    <header className="px-4 pb-3 pt-4 lg:pl-[48px]">
+      <Skeleton className="size-16 rounded-full" />
+      <div className={`mt-3 flex items-start justify-between gap-3 ${bodyIndent}`}>
         <div className="flex flex-col gap-1.5">
-          <Skeleton className="h-3.5 w-24" />
-          <div className="flex items-center gap-4">
-            <Skeleton className="h-3.5 w-20" />
-            <Skeleton className="h-3.5 w-20" />
-          </div>
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-24" />
         </div>
-      }
-    />
+      </div>
+      <div className={`mt-2 flex items-center gap-4 ${bodyIndent}`}>
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-4 w-20" />
+      </div>
+      <div className={`mt-2 space-y-1.5 ${bodyIndent}`}>
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-2/3" />
+      </div>
+    </header>
   );
 }
 
@@ -350,7 +385,7 @@ export default function UserProfilePage({
         />
       </div>
       <Tabs value={tab} onValueChange={handleTabChange} className="flex min-h-0 flex-1 flex-col gap-0">
-        <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 pt-1.5 pl-[52px] lg:pl-[48px]">
+        <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 pt-2 pl-[60px] lg:pl-[48px]">
           <TabsList variant="line" className="h-8! px-0">
             <TabsTrigger value="articles">
               Articles
