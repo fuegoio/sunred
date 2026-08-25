@@ -10,6 +10,7 @@
 //	GET   /xrpc/io.sunred.relay.getFeedSubscriberCount — global subscriber count for a feed URL
 //	GET   /xrpc/io.sunred.relay.getArticleShareCount   — global share count for an article URL
 //	GET   /xrpc/io.sunred.relay.getArticleStarCount    — global star count for an article URL
+//	POST  /xrpc/io.sunred.relay.getArticleCounts        — batch share+star counts for many article URLs
 //	GET   /xrpc/io.sunred.relay.subscribeEvents — WebSocket event stream for instances
 //	GET   /health
 package server
@@ -54,6 +55,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("/xrpc/io.sunred.relay.getFeedSubscriberCount", s.handleGetFeedSubscriberCount)
 	mux.HandleFunc("/xrpc/io.sunred.relay.getArticleShareCount", s.handleGetArticleShareCount)
 	mux.HandleFunc("/xrpc/io.sunred.relay.getArticleStarCount", s.handleGetArticleStarCount)
+	mux.HandleFunc("/xrpc/io.sunred.relay.getArticleCounts", s.handleGetArticleCounts)
 	mux.HandleFunc("/xrpc/io.sunred.relay.searchDIDs", s.handleSearchDIDs)
 	mux.HandleFunc("/xrpc/io.sunred.relay.resolveHandle", s.handleResolveHandle)
 	mux.Handle("/xrpc/io.sunred.relay.subscribeEvents", websocket.Handler(s.handleSubscribeEvents))
@@ -397,6 +399,50 @@ func (s *Server) handleGetArticleStarCount(w http.ResponseWriter, r *http.Reques
 	}
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(getArticleStarCountOutput{ArticleURL: articleURL, Count: count})
+}
+
+// --- getArticleCounts (batch) ---
+
+type getArticleCountsInput struct {
+	ArticleURLs []string `json:"article_urls"`
+}
+
+type getArticleCountsOutput struct {
+	Counts map[string]store.ArticleCounts `json:"counts"`
+}
+
+// handleGetArticleCounts returns repost and star counts for a batch of
+// article URLs in a single response, so the API can enrich a page of entries
+// with one relay round-trip instead of one per entry.
+func (s *Server) handleGetArticleCounts(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var in getArticleCountsInput
+	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+		http.Error(w, "bad request: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	if len(in.ArticleURLs) == 0 {
+		http.Error(w, "article_urls must be non-empty", http.StatusBadRequest)
+		return
+	}
+	if len(in.ArticleURLs) > 500 {
+		http.Error(w, "article_urls exceeds 500 entries", http.StatusBadRequest)
+		return
+	}
+	counts, err := s.store.GetArticleCountsBatch(r.Context(), in.ArticleURLs)
+	if err != nil {
+		slog.Error("relay: get article counts batch", "n", len(in.ArticleURLs), "err", err)
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	if counts == nil {
+		counts = map[string]store.ArticleCounts{}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(getArticleCountsOutput{Counts: counts})
 }
 
 // --- searchDIDs ---

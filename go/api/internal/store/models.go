@@ -74,12 +74,13 @@ type Entry struct {
 	// list/get so clients can render the share toggle's initial state and
 	// resolve the unshare DELETE target without a separate bulk fetch.
 	ShareID *int64 `json:"share_id,omitempty"`
-	// RepostCount is the number of distinct users on this instance who have
-	// shared the entry's article_url. Derived locally from shared_articles
-	// (no relay round-trip) so the list response carries it inline.
+	// RepostCount is the number of distinct users across the network who have
+	// shared the entry's article_url, sourced from the relay (0 when no relay
+	// is configured). Populated by the list/get handlers, not the store query.
 	RepostCount int `json:"repost_count"`
-	// StarCount is the number of distinct users on this instance who have
-	// starred the entry's article_url. Derived locally from entry_stars.
+	// StarCount is the number of distinct users across the network who have
+	// starred the entry's article_url, sourced from the relay (0 when no relay
+	// is configured). Populated by the list/get handlers, not the store query.
 	StarCount int `json:"star_count"`
 }
 
