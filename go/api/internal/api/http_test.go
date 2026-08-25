@@ -3,13 +3,11 @@ package api
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -19,8 +17,8 @@ import (
 
 	"github.com/fuegoio/sunred/go/api/internal/auth"
 	"github.com/fuegoio/sunred/go/api/internal/config"
-	"github.com/fuegoio/sunred/go/api/internal/migrations"
 	"github.com/fuegoio/sunred/go/api/internal/store"
+	"github.com/fuegoio/sunred/go/api/internal/testdb"
 
 	_ "github.com/lib/pq"
 )
@@ -43,22 +41,7 @@ type testEnv struct {
 // fire-and-forget ATProto sync goroutines spawned by handlers are no-ops.
 func newTestEnv(t *testing.T) *testEnv {
 	t.Helper()
-	dsn := os.Getenv("SUNRED_DATABASE_URL")
-	if dsn == "" {
-		dsn = "postgres://sunred:sunred@localhost:5432/sunred?sslmode=disable"
-	}
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		t.Skipf("could not open database: %v", err)
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	if err := db.PingContext(ctx); err != nil {
-		t.Skipf("database not reachable, skipping integration test: %v", err)
-	}
-	if err := migrations.Run(db); err != nil {
-		t.Fatalf("apply migrations: %v", err)
-	}
+	db := testdb.Connect(t)
 
 	st := store.New(db)
 	cfg := &config.Config{BaseURL: "http://test.local", WebURL: "http://test.local"}
