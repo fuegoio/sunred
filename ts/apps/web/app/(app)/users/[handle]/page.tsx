@@ -195,7 +195,7 @@ function ProfileMasthead({
       </div>
 
       <div className={`mt-3 flex items-start justify-between gap-3 ${bodyIndent}`}>
-        <h1 className="truncate font-serif text-xl font-bold tracking-tight">
+        <h1 className="truncate font-serif text-xl font-bold tracking-tight lg:text-2xl">
           {displayName}
         </h1>
         {!isOwnProfile && (
@@ -208,7 +208,7 @@ function ProfileMasthead({
       </div>
 
       {hasDisplayName && (
-        <p className={`mt-0.5 truncate text-sm text-muted-foreground ${bodyIndent}`}>
+        <p className={`mt-0 truncate text-sm text-muted-foreground ${bodyIndent}`}>
           @{handle}
         </p>
       )}
