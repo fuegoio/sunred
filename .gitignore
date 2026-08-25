@@ -12,6 +12,8 @@ node_modules
 
 # testing
 coverage
+coverage.out
+*.coverprofile
 
 # next.js
 .next/

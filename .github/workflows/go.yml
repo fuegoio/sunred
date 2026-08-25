@@ -116,6 +116,23 @@ jobs:
   check:
     name: Lint, Test & Build
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sunred
+          POSTGRES_PASSWORD: sunred
+          POSTGRES_DB: sunred
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sunred -d sunred"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      SUNRED_DATABASE_URL: postgres://sunred:sunred@localhost:5432/sunred?sslmode=disable
+      RELAY_DATABASE_URL: postgres://sunred:sunred@localhost:5432/sunred_relay_test?sslmode=disable
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -127,6 +144,11 @@ jobs:
 
       - name: Install golangci-lint
         run: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+
+      - name: Create relay test database
+        run: |
+          psql "$SUNRED_DATABASE_URL" -c "CREATE DATABASE sunred_relay_test;" \
+            || echo "sunred_relay_test already exists"
 
       - name: Lint API
         working-directory: go/api
@@ -144,13 +166,29 @@ jobs:
         working-directory: go/cli
         run: go vet ./...
 
-      - name: Test API
+      - name: Test API (coverage)
         working-directory: go/api
-        run: make test
+        run: make cover
 
-      - name: Test Relay
+      - name: Test Relay (coverage)
         working-directory: go/relay
-        run: make test
+        run: make cover
+
+      - name: Upload API coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-api
+          path: go/api/coverage.out
+          if-no-files-found: warn
+
+      - name: Upload Relay coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-relay
+          path: go/relay/coverage.out
+          if-no-files-found: warn
 
       - name: Build CLI
         working-directory: go/cli

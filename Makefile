@@ -1,4 +1,4 @@
-.PHONY: gen gen-openapi gen-sdk gen-ts build api cli web docs lint test dev fmt clean
+.PHONY: gen gen-openapi gen-sdk gen-ts build api cli web docs lint test cover dev fmt clean
 
 # --- Code generation ---
 
@@ -44,9 +44,18 @@ test: test-go test-ts
 
 test-go:
 	cd go/api && make test
+	cd go/relay && make test
 
 test-ts:
 	cd ts && pnpm typecheck
+
+# --- Coverage ---
+
+cover: cover-go
+
+cover-go:
+	cd go/api && make cover
+	cd go/relay && make cover
 
 # --- Dev ---
 

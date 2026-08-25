@@ -1,4 +1,4 @@
-.PHONY: build run migrate gen-openapi test fmt fmt-check vet lint clean db-up db-down db-reset
+.PHONY: build run migrate gen-openapi test cover fmt fmt-check vet lint clean db-up db-down db-reset
 
 build:
 	go build -o sunred ./cmd/sunred/
@@ -16,6 +16,10 @@ gen-openapi: build
 
 test: build
 	go test ./... -count=1
+cover: build
+	go test ./... -count=1 -coverprofile=coverage.out
+	go tool cover -func=coverage.out | tail -1
+	@echo "coverage.out written; run 'go tool cover -html=coverage.out' for a detailed view"
 
 fmt:
 	@gofmt -w -s $$(find . -name '*.go')
