@@ -1,17 +1,17 @@
 {
   "lexicon": 1,
-  "id": "io.sunred.relay.getShareCount",
+  "id": "io.sunred.relay.getUserSubscriptionCount",
   "defs": {
     "main": {
       "type": "query",
-      "description": "Returns the globally accurate share count for a DID (number of article share records authored by this DID across all tracked repos).",
+      "description": "Returns the globally accurate subscription count for a DID (number of feed subscription records authored by this DID across all tracked repos).",
       "parameters": {
         "type": "params",
         "required": ["did"],
         "properties": {
           "did": {
             "type": "string",
-            "description": "The DID to query the share count for."
+            "description": "The DID to query the subscription count for."
           }
         }
       },
@@ -26,7 +26,7 @@
             },
             "count": {
               "type": "integer",
-              "description": "Total number of article share records authored by this DID across all tracked repos."
+              "description": "Total number of feed subscription records authored by this DID across all tracked repos."
             }
           }
         }

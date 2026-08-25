@@ -194,7 +194,7 @@ func TestServer_Health(t *testing.T) {
 	}
 }
 
-func TestServer_GetFollowerCount(t *testing.T) {
+func TestServer_GetUserFollowerCount(t *testing.T) {
 	ts, st := newServer(t)
 	ctx := context.Background()
 
@@ -204,7 +204,7 @@ func TestServer_GetFollowerCount(t *testing.T) {
 	now := time.Now()
 	_, _ = st.RecordFollow(ctx, "did:plc:follower", did, "rf1", "https://pds.example.com", now)
 
-	resp := do(t, ts, http.MethodGet, "/xrpc/io.sunred.relay.getFollowerCount?did="+did, nil)
+	resp := do(t, ts, http.MethodGet, "/xrpc/io.sunred.relay.getUserFollowerCount?did="+did, nil)
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("status = %d, want 200", resp.StatusCode)
 	}
@@ -221,7 +221,7 @@ func TestServer_GetFollowerCount(t *testing.T) {
 	}
 }
 
-func TestServer_GetShareCount(t *testing.T) {
+func TestServer_GetUserShareCount(t *testing.T) {
 	ts, st := newServer(t)
 	ctx := context.Background()
 
@@ -231,7 +231,7 @@ func TestServer_GetShareCount(t *testing.T) {
 	now := time.Now()
 	_, _ = st.RecordShare(ctx, did, "rs1", "https://art.example.com/a", "https://feed.example.com/rss", "T", "https://pds.example.com", &now)
 
-	resp := do(t, ts, http.MethodGet, "/xrpc/io.sunred.relay.getShareCount?did="+did, nil)
+	resp := do(t, ts, http.MethodGet, "/xrpc/io.sunred.relay.getUserShareCount?did="+did, nil)
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("status = %d, want 200", resp.StatusCode)
 	}
@@ -248,7 +248,7 @@ func TestServer_GetShareCount(t *testing.T) {
 	}
 }
 
-func TestServer_GetFeedSubscriptionCount(t *testing.T) {
+func TestServer_GetUserSubscriptionCount(t *testing.T) {
 	ts, st := newServer(t)
 	ctx := context.Background()
 
@@ -258,7 +258,7 @@ func TestServer_GetFeedSubscriptionCount(t *testing.T) {
 	now := time.Now()
 	_, _ = st.RecordFeedSubscription(ctx, did, "rsub1", "https://feed.example.com/rss", "https://pds.example.com", &now)
 
-	resp := do(t, ts, http.MethodGet, "/xrpc/io.sunred.relay.getFeedSubscriptionCount?did="+did, nil)
+	resp := do(t, ts, http.MethodGet, "/xrpc/io.sunred.relay.getUserSubscriptionCount?did="+did, nil)
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("status = %d, want 200", resp.StatusCode)
 	}
@@ -275,13 +275,13 @@ func TestServer_GetFeedSubscriptionCount(t *testing.T) {
 	}
 }
 
-func TestServer_Counts_MissingDID(t *testing.T) {
+func TestServer_UserCounts_MissingDID(t *testing.T) {
 	ts, _ := newServer(t)
 
 	for _, path := range []string{
-		"/xrpc/io.sunred.relay.getFollowerCount",
-		"/xrpc/io.sunred.relay.getShareCount",
-		"/xrpc/io.sunred.relay.getFeedSubscriptionCount",
+		"/xrpc/io.sunred.relay.getUserFollowerCount",
+		"/xrpc/io.sunred.relay.getUserShareCount",
+		"/xrpc/io.sunred.relay.getUserSubscriptionCount",
 	} {
 		resp := do(t, ts, http.MethodGet, path, nil)
 		if resp.StatusCode != http.StatusBadRequest {

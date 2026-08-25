@@ -150,7 +150,7 @@ func (a *API) registerSocialRoutes() {
 
 		return &PublicProfileOutput{Body: PublicProfileResponse{
 			Profile:             *profile,
-			GlobalFollowerCount: int(a.relayGetFollowerCount(ctx, profile.DID)),
+			GlobalFollowerCount: int(a.relayGetUserFollowerCount(ctx, profile.DID)),
 			SharedArticles:      shared,
 			Feeds:               feeds,
 		}}, nil
