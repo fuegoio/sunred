@@ -296,7 +296,7 @@ export function EntryCard({
         </div>
         <h3
           className={cn(
-            "mt-1 line-clamp-2 text-sm",
+            "mt-1 line-clamp-1 text-sm",
             unread ? "font-semibold text-foreground" : "font-medium text-foreground/80",
           )}
         >
