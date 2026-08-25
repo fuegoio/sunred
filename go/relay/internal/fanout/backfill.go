@@ -19,6 +19,7 @@ var backfillCollections = []string{
 	"io.sunred.graph.follow",
 	"io.sunred.feed.subscription",
 	"io.sunred.share.article",
+	"io.sunred.entry.star",
 }
 
 // BackfillAndSubscribe crawls existing records from the user's PDS repo and
@@ -134,6 +135,8 @@ func (f *Fanout) processBackfillRecord(ctx context.Context, did, pdsURL, collect
 		f.processShareRecord(ctx, did, pdsURL, rkey, rec)
 	case "io.sunred.feed.subscription":
 		f.processFeedSubRecord(ctx, did, pdsURL, rkey, rec)
+	case "io.sunred.entry.star":
+		f.processStarRecord(ctx, did, pdsURL, rkey, rec)
 	default:
 		slog.Warn("backfill: unknown collection", "did", did, "collection", collection, "rkey", rkey)
 	}

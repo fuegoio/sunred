@@ -322,6 +322,95 @@ func TestProcessOp_FeedSub_Delete(t *testing.T) {
 	}
 }
 
+func TestProcessOp_Star_Create(t *testing.T) {
+	st := newStubStore()
+
+	records := map[string]map[string]any{
+		"io.sunred.entry.star/rkeystar001": {
+			"articleUrl":  "https://example.com/starred",
+			"title":       "Starred Article",
+			"description": "A starred article",
+			"feedUrl":     "https://feed.example.com/rss",
+			"feedTitle":   "Feed",
+			"feedSiteUrl": "https://feed.example.com",
+			"author":      "Author",
+			"publishedAt": "2024-12-01T00:00:00Z",
+			"createdAt":   "2025-06-01T12:00:00Z",
+		},
+	}
+
+	f := fanoutWithStub(t, st, records)
+	f.processOp(context.Background(), "did:plc:alice", f.testPDSURL, repoOp{
+		Action: "create",
+		Path:   "io.sunred.entry.star/rkeystar001",
+	})
+
+	if st.stars["did:plc:alice/rkeystar001"] != "https://example.com/starred" {
+		t.Errorf("star not recorded: %v", st.stars)
+	}
+	if len(st.events) != 1 || st.events[0].EventType != "star" {
+		t.Errorf("expected 1 star event, got %+v", st.events)
+	}
+	// The star event must carry the full article metadata, not just articleUrl,
+	// so remote instances can materialize the entry from the event alone.
+	var p map[string]any
+	if err := json.Unmarshal(st.events[0].Payload, &p); err != nil {
+		t.Fatalf("unmarshal star event: %v", err)
+	}
+	if p["title"] != "Starred Article" {
+		t.Errorf("star event title=%v, want 'Starred Article'", p["title"])
+	}
+	if p["description"] != "A starred article" {
+		t.Errorf("star event description=%v, want 'A starred article'", p["description"])
+	}
+	if p["feedTitle"] != "Feed" {
+		t.Errorf("star event feedTitle=%v, want 'Feed'", p["feedTitle"])
+	}
+	if p["author"] != "Author" {
+		t.Errorf("star event author=%v, want 'Author'", p["author"])
+	}
+	if p["publishedAt"] != "2024-12-01T00:00:00Z" {
+		t.Errorf("star event publishedAt=%v, want '2024-12-01T00:00:00Z'", p["publishedAt"])
+	}
+}
+
+func TestProcessOp_Star_Delete(t *testing.T) {
+	st := newStubStore()
+	ctx := context.Background()
+	_, _ = st.RecordStar(ctx, "did:plc:alice", "rkeystar002", "https://example.com/gone", "pds")
+
+	f := fanoutWithStub(t, st, nil)
+	f.processOp(ctx, "did:plc:alice", f.testPDSURL, repoOp{
+		Action: "delete",
+		Path:   "io.sunred.entry.star/rkeystar002",
+	})
+
+	if _, exists := st.stars["did:plc:alice/rkeystar002"]; exists {
+		t.Error("expected star to be removed")
+	}
+	if len(st.events) != 1 || st.events[0].EventType != "unstar" {
+		t.Errorf("expected 1 unstar event, got %+v", st.events)
+	}
+}
+
+func TestHandleStar_MissingArticleUrl_Ignored(t *testing.T) {
+	st := newStubStore()
+	records := map[string]map[string]any{
+		"io.sunred.entry.star/badstar": {
+			"articleUrl": "", // empty — should be dropped
+			"createdAt":  "2025-01-01T00:00:00Z",
+		},
+	}
+	f := fanoutWithStub(t, st, records)
+	f.handleStar(context.Background(), "did:plc:alice", f.testPDSURL, "badstar", "create")
+	if len(st.events) != 0 {
+		t.Errorf("expected 0 events for empty articleUrl, got %d", len(st.events))
+	}
+	if len(st.stars) != 0 {
+		t.Errorf("expected 0 stars recorded")
+	}
+}
+
 func TestProcessOp_UnknownCollection_Ignored(t *testing.T) {
 	st := newStubStore()
 	f := fanoutWithStub(t, st, nil)

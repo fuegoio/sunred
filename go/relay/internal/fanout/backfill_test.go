@@ -195,6 +195,77 @@ func TestBackfillDID_Shares(t *testing.T) {
 	}
 }
 
+func TestBackfillDID_Stars(t *testing.T) {
+	st := newStubStore()
+	pds := mockPDSServer(t, map[string][]map[string]any{
+		"io.sunred.entry.star": {
+			{
+				"articleUrl":  "https://example.com/starred1",
+				"title":       "Starred One",
+				"description": "Description one",
+				"feedUrl":     "https://feed.example.com/rss",
+				"feedTitle":   "Feed",
+				"feedSiteUrl": "https://feed.example.com",
+				"author":      "Author",
+				"publishedAt": "2024-12-01T00:00:00Z",
+				"createdAt":   "2025-01-01T00:00:00Z",
+			},
+			{
+				"articleUrl": "https://example.com/starred2",
+				"title":      "Starred Two",
+				"createdAt":  "2025-02-01T00:00:00Z",
+			},
+		},
+	})
+
+	f := &Fanout{
+		store:       st,
+		httpClient:  &http.Client{},
+		subscribers: make(map[string]chan *store.RelayEvent),
+		workers:     make(map[string]context.CancelFunc),
+		testPDSURL:  pds.URL,
+	}
+
+	f.backfillDID(context.Background(), "did:plc:starrer", pds.URL)
+
+	// Two stars should be recorded.
+	if len(st.stars) != 2 {
+		t.Errorf("expected 2 stars, got %d: %v", len(st.stars), st.stars)
+	}
+
+	// Two star events should be emitted with full metadata.
+	starEvents := 0
+	for _, evt := range st.events {
+		if evt.EventType != "star" {
+			continue
+		}
+		starEvents++
+		var p map[string]any
+		_ = json.Unmarshal(evt.Payload, &p)
+		if articleURL, _ := p["articleUrl"].(string); articleURL == "" {
+			t.Error("star event missing articleUrl")
+		}
+		// The first record carries the full metadata; verify it round-trips.
+		if title, _ := p["title"].(string); title == "Starred One" {
+			if p["description"] != "Description one" {
+				t.Errorf("star event description=%v, want 'Description one'", p["description"])
+			}
+			if p["author"] != "Author" {
+				t.Errorf("star event author=%v, want 'Author'", p["author"])
+			}
+			if p["feedTitle"] != "Feed" {
+				t.Errorf("star event feedTitle=%v, want 'Feed'", p["feedTitle"])
+			}
+			if p["publishedAt"] != "2024-12-01T00:00:00Z" {
+				t.Errorf("star event publishedAt=%v, want '2024-12-01T00:00:00Z'", p["publishedAt"])
+			}
+		}
+	}
+	if starEvents != 2 {
+		t.Errorf("expected 2 star events, got %d", starEvents)
+	}
+}
+
 func TestBackfillAndSubscribe_EmitsBackfillComplete(t *testing.T) {
 	st := newStubStore()
 	pds := mockPDSServer(t, map[string][]map[string]any{})
