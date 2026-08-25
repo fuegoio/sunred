@@ -1,11 +1,20 @@
 import { z } from "zod";
 
+// ATProto handle syntax (https://atproto.com/specs/handle#handle-identifier-syntax).
+// Dot-separated labels (at least two segments), each 1-63 chars of ASCII
+// letters/digits/hyphens (no leading/trailing hyphen); the final segment (TLD)
+// must start with a letter. Case-insensitive; normalize to lowercase on submit.
+const HANDLE_RE =
+  /^([a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/;
+
 export const handleSchema = z.object({
   handle: z
     .string()
+    .trim()
     .min(1, "Enter your AT Proto handle")
     .max(253, "Handle is too long")
-    .refine((v) => !v.includes(" "), "Handle cannot contain spaces"),
+    .refine((v) => !v.includes(" "), "Handle cannot contain spaces")
+    .refine((v) => HANDLE_RE.test(v), "Enter a valid handle (e.g. alice.bsky.social)"),
 });
 
 export type HandleValues = z.infer<typeof handleSchema>;
