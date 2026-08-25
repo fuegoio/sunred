@@ -45,3 +45,22 @@ export async function getClient(cookieHeader?: string): Promise<SunredClient> {
 }
 
 export * from "@sunred/api-client";
+
+/**
+ * Build the proxy URL for a user's avatar or banner. The API proxies and
+ * caches the PDS blob so the browser never touches the PDS directly.
+ * Returns "" when the user has no image (caller should fall back to initials).
+ */
+export function avatarUrl(handle: string, hasAvatar?: boolean): string {
+  if (!hasAvatar) return "";
+  return `${publicApiBase()}/api/v1/users/${encodeURIComponent(handle)}/avatar`;
+}
+
+export function bannerUrl(handle: string, hasBanner?: boolean): string {
+  if (!hasBanner) return "";
+  return `${publicApiBase()}/api/v1/users/${encodeURIComponent(handle)}/banner`;
+}
+
+function publicApiBase(): string {
+  return env.NEXT_PUBLIC_SUNRED_API_URL;
+}

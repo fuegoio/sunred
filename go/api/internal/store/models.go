@@ -128,14 +128,21 @@ type User struct {
 	DID         string    `json:"did,omitempty"`
 	DisplayName string    `json:"display_name,omitempty"`
 	Bio         string    `json:"bio,omitempty"`
-	Avatar      string    `json:"avatar,omitempty"`
-	Banner      string    `json:"banner,omitempty"`
+	// Avatar/Banner are the public PDS getBlob URLs, kept for the image
+	// proxy to fetch from. They are never serialized; clients use the
+	// /users/{handle}/avatar|banner endpoints, gated by HasAvatar/HasBanner.
+	Avatar string `json:"-"`
+	Banner string `json:"-"`
 	CreatedAt   time.Time `json:"created_at"`
 	// PDSSyncStatus tracks the post-login backfill from the user's PDS:
 	// "syncing" while in progress, "idle" once done, "failed" on error.
 	// The web UI polls this to show a waiting state on first login.
 	PDSSyncStatus string     `json:"pds_sync_status"`
 	PDSSyncedAt   *time.Time `json:"pds_synced_at,omitempty"`
+	// HasAvatar/HasBanner tell the client an image exists without leaking
+	// the PDS URL; the client fetches the bytes via the proxy endpoints.
+	HasAvatar bool `json:"has_avatar,omitempty"`
+	HasBanner bool `json:"has_banner,omitempty"`
 }
 
 // UserProfile holds the public profile data for a user, with denormalised
@@ -145,11 +152,17 @@ type UserProfile struct {
 	Handle      string    `json:"handle"`
 	DisplayName string    `json:"display_name,omitempty"`
 	Bio         string    `json:"bio,omitempty"`
-	Avatar      string    `json:"avatar,omitempty"`
-	Banner      string    `json:"banner,omitempty"`
+	// Avatar/Banner are the public PDS getBlob URLs, kept for the image
+	// proxy to fetch from. Never serialized; see User for details.
+	Avatar string `json:"-"`
+	Banner string `json:"-"`
 	DID         string    `json:"did,omitempty"`
 	PDSUrl      string    `json:"pds_url,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`
+	// HasAvatar/HasBanner tell the client an image exists without leaking
+	// the PDS URL; the client fetches the bytes via the proxy endpoints.
+	HasAvatar bool `json:"has_avatar,omitempty"`
+	HasBanner bool `json:"has_banner,omitempty"`
 	// Denormalised fields set by query joins.
 	FollowerCount  int  `json:"follower_count"`
 	FollowingCount int  `json:"following_count"`
@@ -201,4 +214,17 @@ type Store struct {
 // New returns a Store backed by the given database.
 func New(db *sql.DB) *Store {
 	return &Store{DB: db}
+}
+
+// setHasImages derives the HasAvatar/HasBanner flags from the cached PDS URLs.
+// Called by queries after scanning Avatar/Banner so the boolean is consistent
+// with the column values without a separate SQL expression.
+func (p *UserProfile) setHasImages() {
+	p.HasAvatar = p.Avatar != ""
+	p.HasBanner = p.Banner != ""
+}
+
+func (u *User) setHasImages() {
+	u.HasAvatar = u.Avatar != ""
+	u.HasBanner = u.Banner != ""
 }

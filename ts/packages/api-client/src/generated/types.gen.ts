@@ -444,13 +444,13 @@ export type User = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    avatar?: string;
-    banner?: string;
     bio?: string;
     created_at: string;
     did?: string;
     display_name?: string;
     handle: string;
+    has_avatar?: boolean;
+    has_banner?: boolean;
     id: number;
     pds_sync_status: string;
     pds_synced_at?: string;
@@ -461,8 +461,6 @@ export type UserProfile = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    avatar?: string;
-    banner?: string;
     bio?: string;
     created_at: string;
     did?: string;
@@ -470,6 +468,8 @@ export type UserProfile = {
     follower_count: number;
     following_count: number;
     handle: string;
+    has_avatar?: boolean;
+    has_banner?: boolean;
     is_following?: boolean;
     pds_url?: string;
     user_id: number;
@@ -737,21 +737,19 @@ export type UpdateMeInputBodyWritable = {
 };
 
 export type UserWritable = {
-    avatar?: string;
-    banner?: string;
     bio?: string;
     created_at: string;
     did?: string;
     display_name?: string;
     handle: string;
+    has_avatar?: boolean;
+    has_banner?: boolean;
     id: number;
     pds_sync_status: string;
     pds_synced_at?: string;
 };
 
 export type UserProfileWritable = {
-    avatar?: string;
-    banner?: string;
     bio?: string;
     created_at: string;
     did?: string;
@@ -759,6 +757,8 @@ export type UserProfileWritable = {
     follower_count: number;
     following_count: number;
     handle: string;
+    has_avatar?: boolean;
+    has_banner?: boolean;
     is_following?: boolean;
     pds_url?: string;
     user_id: number;
@@ -1052,6 +1052,56 @@ export type GetUserProfileResponses = {
 };
 
 export type GetUserProfileResponse = GetUserProfileResponses[keyof GetUserProfileResponses];
+
+export type GetUserAvatarData = {
+    body?: never;
+    path: {
+        handle: string;
+    };
+    query?: never;
+    url: '/api/v1/users/{handle}/avatar';
+};
+
+export type GetUserAvatarErrors = {
+    /**
+     * Error
+     */
+    default: ErrorModel;
+};
+
+export type GetUserAvatarError = GetUserAvatarErrors[keyof GetUserAvatarErrors];
+
+export type GetUserAvatarResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type GetUserBannerData = {
+    body?: never;
+    path: {
+        handle: string;
+    };
+    query?: never;
+    url: '/api/v1/users/{handle}/banner';
+};
+
+export type GetUserBannerErrors = {
+    /**
+     * Error
+     */
+    default: ErrorModel;
+};
+
+export type GetUserBannerError = GetUserBannerErrors[keyof GetUserBannerErrors];
+
+export type GetUserBannerResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
 
 export type UnfollowUserData = {
     body?: never;

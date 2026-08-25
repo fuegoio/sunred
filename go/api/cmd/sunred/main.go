@@ -154,6 +154,11 @@ func run() (int, error) {
 	mux.Handle("/auth/device/confirm", authInst.Middleware(humaMux))
 	mux.Handle("/auth/device/status", authInst.Middleware(humaMux))
 	mux.Handle("/v1/health", humaMux)
+	// Public image proxy: avatar/banner are fetched by <img> tags which don't
+	// send cookies cross-origin, so they must be reachable without a session.
+	// Profile images aren't sensitive — the handle is already public.
+	mux.Handle("GET /api/v1/users/{handle}/avatar", humaMux)
+	mux.Handle("GET /api/v1/users/{handle}/banner", humaMux)
 	mux.Handle("/", authInst.Middleware(humaMux))
 	mux.Handle("/.well-known/atproto-did", apiHandler.WellKnownATProtoDIDHandler())
 	mux.Handle("/docs", humaRouter.Adapter())

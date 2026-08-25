@@ -949,6 +949,7 @@ func (s *Store) UpdateUser(ctx context.Context, id int, displayName string) (*Us
 	if err != nil {
 		return nil, err
 	}
+	u.setHasImages()
 	return &u, nil
 }
 
@@ -991,6 +992,7 @@ func (s *Store) GetUserByID(ctx context.Context, id int) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
+	u.setHasImages()
 	return &u, nil
 }
 

@@ -17,7 +17,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { UserAvatar } from "@/components/user-avatar";
-import { getClient, searchUsers, followUser, unfollowUser, unwrap } from "@/lib/sunred";
+import { getClient, searchUsers, followUser, unfollowUser, unwrap, avatarUrl } from "@/lib/sunred";
 import { getApiErrorMessage } from "@/lib/errors";
 import type { UserProfile } from "@/lib/types";
 
@@ -70,6 +70,7 @@ function SearchRow({
         <UserAvatar
           displayName={profile.display_name}
           handle={profile.handle}
+          src={avatarUrl(profile.handle, profile.has_avatar)}
           className="size-9 text-sm font-medium"
         />
         <div className="min-w-0 flex-1">

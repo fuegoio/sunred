@@ -90,6 +90,7 @@ func (a *API) RegisterRoutes() {
 	a.registerTokenRoutes()
 	a.registerOPMLRoutes()
 	a.registerSocialRoutes()
+	a.registerImageRoutes()
 	a.registerATProtoRoutes()
 	a.registerDeviceRoutes()
 }

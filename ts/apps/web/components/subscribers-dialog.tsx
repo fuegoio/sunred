@@ -14,6 +14,7 @@ import {
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { UserAvatar } from "@/components/user-avatar";
+import { avatarUrl } from "@/lib/sunred";
 import type { UserProfile } from "@/lib/types";
 
 const PAGE_SIZE = 10;
@@ -45,6 +46,7 @@ function SubscriberRow({ profile, query }: { profile: UserProfile; query: string
       <UserAvatar
         displayName={profile.display_name}
         handle={profile.handle}
+        src={avatarUrl(profile.handle, profile.has_avatar)}
         className="size-9 text-sm font-medium"
       />
       <div className="min-w-0 flex-1">

@@ -7,7 +7,7 @@ import { LayoutList, Circle, Star, Plus, Settings, LogOut, Sun, Moon, User } fro
 import { useTheme } from "next-themes";
 import { Menu } from "@base-ui/react/menu";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import { getClient, listFeeds, listFolders, listFollowing, unwrap } from "@/lib/sunred";
+import { getClient, listFeeds, listFolders, listFollowing, unwrap, avatarUrl } from "@/lib/sunred";
 import { signout } from "@/lib/auth";
 import { Logo } from "@/components/logo";
 import { OfflineBadge } from "@/components/offline-badge";
@@ -62,7 +62,7 @@ function SidebarNav() {
   );
 }
 
-export function AccountButton({ userHandle }: { userHandle: string }) {
+export function AccountButton({ userHandle, userDisplayName, userHasAvatar }: { userHandle: string; userDisplayName?: string; userHasAvatar?: boolean }) {
   const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
 
@@ -88,7 +88,7 @@ export function AccountButton({ userHandle }: { userHandle: string }) {
         )}
         aria-label="Account menu"
       >
-        <UserAvatar handle={userHandle} className="size-7 text-xs font-medium" />
+        <UserAvatar displayName={userDisplayName} handle={userHandle} src={avatarUrl(userHandle, userHasAvatar)} className="size-7 text-xs font-medium" />
         <span className="truncate text-sm font-medium">@{userHandle}</span>
       </Menu.Trigger>
       <Menu.Portal>
@@ -129,7 +129,7 @@ export function AccountButton({ userHandle }: { userHandle: string }) {
   );
 }
 
-function SidebarContent({ userHandle }: { userHandle: string }) {
+function SidebarContent({ userHandle, userDisplayName, userHasAvatar }: { userHandle: string; userDisplayName?: string; userHasAvatar?: boolean }) {
   const pathname = usePathname();
   const { data: feeds, isLoading: feedsLoading } = useQuery<Feed[]>({
     queryKey: ["feeds"],
@@ -254,6 +254,7 @@ function SidebarContent({ userHandle }: { userHandle: string }) {
                     <UserAvatar
                       displayName={p.display_name}
                       handle={p.handle}
+                      src={avatarUrl(p.handle, p.has_avatar)}
                       className="size-5 text-[10px] font-medium"
                     />
                     <span className="truncate">@{p.handle}</span>
@@ -266,7 +267,7 @@ function SidebarContent({ userHandle }: { userHandle: string }) {
       </div>
 
       <div className="shrink-0 p-3">
-        <AccountButton userHandle={userHandle} />
+        <AccountButton userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
       </div>
     </div>
   );
@@ -276,15 +277,19 @@ export function AppSidebar({
   open,
   onClose,
   userHandle,
+  userDisplayName,
+  userHasAvatar,
 }: {
   open: boolean;
   onClose: () => void;
   userHandle: string;
+  userDisplayName?: string;
+  userHasAvatar?: boolean;
 }) {
   return (
     <>
       <aside className="hidden w-64 shrink-0 border-r border-sidebar-border bg-sidebar lg:flex lg:flex-col">
-        <SidebarContent userHandle={userHandle} />
+        <SidebarContent userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
       </aside>
 
       {open && (
@@ -300,7 +305,7 @@ export function AppSidebar({
               if ((e.target as HTMLElement).closest("a")) onClose();
             }}
           >
-            <SidebarContent userHandle={userHandle} />
+            <SidebarContent userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
           </aside>
         </div>
       )}

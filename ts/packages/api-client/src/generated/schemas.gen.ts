@@ -1436,12 +1436,6 @@ export const UserSchema = {
             readOnly: true,
             type: 'string'
         },
-        avatar: {
-            type: 'string'
-        },
-        banner: {
-            type: 'string'
-        },
         bio: {
             type: 'string'
         },
@@ -1457,6 +1451,12 @@ export const UserSchema = {
         },
         handle: {
             type: 'string'
+        },
+        has_avatar: {
+            type: 'boolean'
+        },
+        has_banner: {
+            type: 'boolean'
         },
         id: {
             format: 'int64',
@@ -1491,12 +1491,6 @@ export const UserProfileSchema = {
             readOnly: true,
             type: 'string'
         },
-        avatar: {
-            type: 'string'
-        },
-        banner: {
-            type: 'string'
-        },
         bio: {
             type: 'string'
         },
@@ -1520,6 +1514,12 @@ export const UserProfileSchema = {
         },
         handle: {
             type: 'string'
+        },
+        has_avatar: {
+            type: 'boolean'
+        },
+        has_banner: {
+            type: 'boolean'
         },
         is_following: {
             type: 'boolean'
@@ -2537,12 +2537,6 @@ export const UpdateMeInputBodyWritableSchema = {
 export const UserWritableSchema = {
     additionalProperties: false,
     properties: {
-        avatar: {
-            type: 'string'
-        },
-        banner: {
-            type: 'string'
-        },
         bio: {
             type: 'string'
         },
@@ -2558,6 +2552,12 @@ export const UserWritableSchema = {
         },
         handle: {
             type: 'string'
+        },
+        has_avatar: {
+            type: 'boolean'
+        },
+        has_banner: {
+            type: 'boolean'
         },
         id: {
             format: 'int64',
@@ -2583,12 +2583,6 @@ export const UserWritableSchema = {
 export const UserProfileWritableSchema = {
     additionalProperties: false,
     properties: {
-        avatar: {
-            type: 'string'
-        },
-        banner: {
-            type: 'string'
-        },
         bio: {
             type: 'string'
         },
@@ -2612,6 +2606,12 @@ export const UserProfileWritableSchema = {
         },
         handle: {
             type: 'string'
+        },
+        has_avatar: {
+            type: 'boolean'
+        },
+        has_banner: {
+            type: 'boolean'
         },
         is_following: {
             type: 'boolean'

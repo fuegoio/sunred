@@ -59,6 +59,7 @@ func (s *Store) UpsertHandle(ctx context.Context, userID int, handle, bio string
 		}
 		return nil, fmt.Errorf("upsert handle: %w", err)
 	}
+	p.setHasImages()
 	return &p, nil
 }
 
@@ -97,6 +98,7 @@ func (s *Store) GetProfileByHandle(ctx context.Context, handle string, viewerID 
 	if err != nil {
 		return nil, fmt.Errorf("get profile: %w", err)
 	}
+	p.setHasImages()
 	return &p, nil
 }
 
@@ -114,6 +116,23 @@ func (s *Store) GetProfileByUserID(ctx context.Context, userID int) (*UserProfil
 		return nil, fmt.Errorf("get profile by user id: %w", err)
 	}
 	return &p, nil
+}
+
+// GetAvatarBannerByHandle returns the cached PDS getBlob URLs for the user's
+// avatar and banner by handle. Empty strings mean the user has no image set
+// (or the user does not exist). Used by the image proxy endpoints.
+func (s *Store) GetAvatarBannerByHandle(ctx context.Context, handle string) (avatar, banner string, err error) {
+	err = s.DB.QueryRowContext(ctx,
+		`SELECT COALESCE(avatar, ''), COALESCE(banner, '') FROM users WHERE handle = $1`,
+		handle,
+	).Scan(&avatar, &banner)
+	if err == sql.ErrNoRows {
+		return "", "", nil
+	}
+	if err != nil {
+		return "", "", fmt.Errorf("get avatar banner: %w", err)
+	}
+	return avatar, banner, nil
 }
 
 // --- Follows ---
@@ -199,6 +218,7 @@ func (s *Store) ListFollowing(ctx context.Context, followerID int) ([]UserProfil
 			return nil, err
 		}
 		p.IsFollowing = true
+		p.setHasImages()
 		out = append(out, p)
 	}
 	return out, rows.Err()
@@ -235,6 +255,7 @@ func (s *Store) ListFollowers(ctx context.Context, userID, viewerID int) ([]User
 		); err != nil {
 			return nil, err
 		}
+		p.setHasImages()
 		out = append(out, p)
 	}
 	return out, rows.Err()
@@ -289,6 +310,7 @@ func (s *Store) SearchUsers(ctx context.Context, q string, viewerID, limit int) 
 		); err != nil {
 			return nil, err
 		}
+		p.setHasImages()
 		out = append(out, p)
 	}
 	return out, rows.Err()
@@ -564,6 +586,7 @@ func (s *Store) ListFeedSubscribers(ctx context.Context, feedID int) ([]UserProf
 		); err != nil {
 			return nil, err
 		}
+		p.setHasImages()
 		out = append(out, p)
 	}
 	return out, rows.Err()

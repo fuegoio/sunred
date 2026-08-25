@@ -1400,12 +1400,6 @@
                         "readOnly": true,
                         "type": "string"
                     },
-                    "avatar": {
-                        "type": "string"
-                    },
-                    "banner": {
-                        "type": "string"
-                    },
                     "bio": {
                         "type": "string"
                     },
@@ -1421,6 +1415,12 @@
                     },
                     "handle": {
                         "type": "string"
+                    },
+                    "has_avatar": {
+                        "type": "boolean"
+                    },
+                    "has_banner": {
+                        "type": "boolean"
                     },
                     "id": {
                         "format": "int64",
@@ -1454,12 +1454,6 @@
                         "readOnly": true,
                         "type": "string"
                     },
-                    "avatar": {
-                        "type": "string"
-                    },
-                    "banner": {
-                        "type": "string"
-                    },
                     "bio": {
                         "type": "string"
                     },
@@ -1483,6 +1477,12 @@
                     },
                     "handle": {
                         "type": "string"
+                    },
+                    "has_avatar": {
+                        "type": "boolean"
+                    },
+                    "has_banner": {
+                        "type": "boolean"
                     },
                     "is_following": {
                         "type": "boolean"
@@ -1977,6 +1977,74 @@
                 "summary": "Get a public user profile",
                 "tags": [
                     "social"
+                ]
+            }
+        },
+        "/api/v1/users/{handle}/avatar": {
+            "get": {
+                "operationId": "get-user-avatar",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "handle",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "default": {
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        },
+                        "description": "Error"
+                    }
+                },
+                "summary": "Get a user's avatar image (proxied from their PDS)",
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/api/v1/users/{handle}/banner": {
+            "get": {
+                "operationId": "get-user-banner",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "handle",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "default": {
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        },
+                        "description": "Error"
+                    }
+                },
+                "summary": "Get a user's banner image (proxied from their PDS)",
+                "tags": [
+                    "users"
                 ]
             }
         },

@@ -20,7 +20,7 @@ const settingsNavItems = [
   { href: "/settings/opml", label: "OPML", icon: FileText },
 ];
 
-function SettingsSidebarContent({ userHandle }: { userHandle: string }) {
+function SettingsSidebarContent({ userHandle, userDisplayName, userHasAvatar }: { userHandle: string; userDisplayName?: string; userHasAvatar?: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -67,7 +67,7 @@ function SettingsSidebarContent({ userHandle }: { userHandle: string }) {
       </div>
 
       <div className="shrink-0 p-3">
-        <AccountButton userHandle={userHandle} />
+        <AccountButton userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
       </div>
     </div>
   );
@@ -77,15 +77,19 @@ export function SettingsSidebar({
   open,
   onClose,
   userHandle,
+  userDisplayName,
+  userHasAvatar,
 }: {
   open: boolean;
   onClose: () => void;
   userHandle: string;
+  userDisplayName?: string;
+  userHasAvatar?: boolean;
 }) {
   return (
     <>
       <aside className="hidden w-64 shrink-0 border-r border-sidebar-border bg-sidebar lg:flex lg:flex-col">
-        <SettingsSidebarContent userHandle={userHandle} />
+        <SettingsSidebarContent userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
       </aside>
 
       {open && (
@@ -101,7 +105,7 @@ export function SettingsSidebar({
               if ((e.target as HTMLElement).closest("a")) onClose();
             }}
           >
-            <SettingsSidebarContent userHandle={userHandle} />
+            <SettingsSidebarContent userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
           </aside>
         </div>
       )}

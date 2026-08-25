@@ -14,7 +14,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { UserAvatar } from "@/components/user-avatar";
-import { getClient, getMe, updateMe, deleteMe, updateHandle, unwrap } from "@/lib/sunred";
+import { getClient, getMe, updateMe, deleteMe, updateHandle, unwrap, avatarUrl } from "@/lib/sunred";
 import { signout } from "@/lib/auth";
 import { getApiErrorMessage } from "@/lib/errors";
 import { cn } from "@workspace/ui/lib/utils";
@@ -35,11 +35,12 @@ type ProfileValues = z.infer<typeof profileSchema>;
 // Avatar
 // ---------------------------------------------------------------------------
 
-function AvatarDisplay({ displayName, handle }: { displayName?: string; handle?: string }) {
+function AvatarDisplay({ displayName, handle, hasAvatar }: { displayName?: string; handle?: string; hasAvatar?: boolean }) {
   return (
     <UserAvatar
       displayName={displayName}
       handle={handle ?? "?"}
+      src={avatarUrl(handle ?? "", hasAvatar)}
       className="size-16 text-xl font-semibold"
     />
   );
@@ -86,7 +87,7 @@ function ProfileForm({ user }: { user: UserType }) {
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
       {/* Avatar + identity */}
       <div className="flex items-center gap-4">
-        <AvatarDisplay displayName={user.display_name} handle={user.handle} />
+        <AvatarDisplay displayName={user.display_name} handle={user.handle} hasAvatar={user.has_avatar} />
         <div className="min-w-0">
           <p className="truncate font-medium">
             {user.display_name?.trim() || `@${user.handle}`}

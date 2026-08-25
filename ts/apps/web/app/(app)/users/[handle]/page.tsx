@@ -29,6 +29,8 @@ import {
   unfollowUser,
   getMe,
   unwrap,
+  avatarUrl,
+  bannerUrl,
 } from "@/lib/sunred";
 import { getApiErrorMessage } from "@/lib/errors";
 import { siteDomain, htmlSnippet } from "@/lib/format";
@@ -130,8 +132,8 @@ function ProfileMasthead({
   displayName,
   handle,
   bio,
-  avatar,
-  banner,
+  hasAvatar,
+  hasBanner,
   hasDisplayName,
   followerTotal,
   localFollowerCount,
@@ -144,8 +146,8 @@ function ProfileMasthead({
   displayName: string;
   handle: string;
   bio?: string;
-  avatar?: string;
-  banner?: string;
+  hasAvatar?: boolean;
+  hasBanner?: boolean;
   hasDisplayName: boolean;
   followerTotal: number;
   localFollowerCount: number;
@@ -164,13 +166,14 @@ function ProfileMasthead({
   // layout stable. The avatar overlaps its bottom edge (Twitter style);
   // pull it up by a third of its size so it sits on the banner.
   const avatarOverlap = "-mt-10";
+  const bannerSrc = bannerUrl(handle, hasBanner);
 
   return (
     <header className="px-4 pb-3 pt-4 lg:pl-[48px]">
       <div className="h-28 w-full overflow-hidden rounded-lg bg-muted sm:h-32">
-        {banner ? (
+        {bannerSrc ? (
           /* eslint-disable-next-line @next/next/no-img-element */
-          <img src={banner} alt="" className="h-full w-full object-cover" />
+          <img src={bannerSrc} alt="" className="h-full w-full object-cover" />
         ) : null}
       </div>
 
@@ -189,7 +192,7 @@ function ProfileMasthead({
         <UserAvatar
           displayName={hasDisplayName ? displayName : undefined}
           handle={handle}
-          src={avatar}
+          src={avatarUrl(handle, hasAvatar)}
           className="size-16 shrink-0 border-2 border-background text-2xl font-semibold"
         />
       </div>
@@ -393,8 +396,8 @@ export default function UserProfilePage({
           displayName={displayName}
           handle={user.handle}
           bio={user.bio}
-          avatar={user.avatar}
-          banner={user.banner}
+          hasAvatar={user.has_avatar}
+          hasBanner={user.has_banner}
           hasDisplayName={hasDisplayName}
           followerTotal={followerTotal}
           localFollowerCount={user.follower_count}
