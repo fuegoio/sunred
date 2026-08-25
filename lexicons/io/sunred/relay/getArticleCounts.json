@@ -1,0 +1,55 @@
+{
+  "lexicon": 1,
+  "id": "io.sunred.relay.getArticleCounts",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Returns repost (share) and star counts for a batch of article URLs in a single call, computed from all tracked repos. Designed for enriching a page of entries with one relay round-trip instead of one per entry. URLs with no observations are omitted from the response (treat a missing key as zero).",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["article_urls"],
+          "properties": {
+            "article_urls": {
+              "type": "array",
+              "maxItems": 500,
+              "items": { "type": "string" },
+              "description": "Article URLs to query. At most 500 per call."
+            }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["counts"],
+          "properties": {
+            "counts": {
+              "type": "object",
+              "description": "Map of article URL to its counts. Keys with no share or star observations are omitted.",
+              "additionalProperties": {
+                "type": "object",
+                "required": ["share_count", "star_count"],
+                "properties": {
+                  "share_count": {
+                    "type": "integer",
+                    "description": "Number of unique DIDs with a share record for this article URL."
+                  },
+                  "star_count": {
+                    "type": "integer",
+                    "description": "Number of unique DIDs with a star record for this article URL."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "errors": [
+        { "name": "TooManyUrls", "description": "The article_urls array exceeds 500 entries." }
+      ]
+    }
+  }
+}
