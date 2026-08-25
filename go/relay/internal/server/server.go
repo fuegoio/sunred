@@ -126,10 +126,10 @@ type announceUserInput struct {
 
 type announceUserOutput struct {
 	Tracked bool `json:"tracked"`
-	// New is true when the relay started tracking this DID for the first time
-	// (and thus kicked off a backfill that will emit a backfillComplete event).
-	// False on re-announce of an already-tracked DID — the API uses this to
-	// avoid waiting for a backfill event that will never come.
+	// New is true when the relay will backfill this DID and emit a backfillComplete
+	// event — either a brand-new DID or one recovered from 'error' status. False
+	// on re-announce of an already-active DID — the API uses this to avoid waiting
+	// for a backfill event that will never come.
 	New bool `json:"new"`
 }
 
@@ -158,15 +158,15 @@ func (s *Server) handleAnnounceUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, isNew, err := s.store.UpsertTrackedDID(ctx, in.DID, in.PDSUrl, in.Handle, instanceID)
+	_, needsBackfill, err := s.store.UpsertTrackedDID(ctx, in.DID, in.PDSUrl, in.Handle, instanceID)
 	if err != nil {
 		slog.Error("relay: upsert tracked did", "did", in.DID, "pds", in.PDSUrl, "err", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 
-	if isNew {
-		slog.Info("relay: tracking new DID", "did", in.DID, "pds", in.PDSUrl, "instance", in.InstanceURL)
+	if needsBackfill {
+		slog.Info("relay: tracking DID (backfill)", "did", in.DID, "pds", in.PDSUrl, "instance", in.InstanceURL)
 		// Backfill existing records from the PDS, then start the live
 		// firehose subscription (tap-style backfill-then-cutover).
 		go func() {
@@ -180,10 +180,26 @@ func (s *Server) handleAnnounceUser(w http.ResponseWriter, r *http.Request) {
 		}()
 	} else {
 		slog.Debug("relay: re-announce of already-tracked DID", "did", in.DID, "pds", in.PDSUrl, "instance", in.InstanceURL)
+		// Already tracked and active: ensure the firehose worker is running
+		// (it may have stopped if the relay was restarted) and refresh the
+		// cached profile so display name/avatar/etc. stay current.
+		s.fanout.EnsureSubscribed(context.Background(), in.DID, in.PDSUrl, 0)
+		go func() {
+			defer func() {
+				if r := recover(); r != nil {
+					slog.Error("relay: profile refresh panic",
+						"did", in.DID, "pds", in.PDSUrl, "panic", r)
+				}
+			}()
+			if err := s.fanout.RefreshProfile(context.Background(), in.DID, in.PDSUrl); err != nil {
+				slog.Warn("relay: refresh profile on re-announce",
+					"did", in.DID, "pds", in.PDSUrl, "err", err)
+			}
+		}()
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(announceUserOutput{Tracked: true, New: isNew})
+	_ = json.NewEncoder(w).Encode(announceUserOutput{Tracked: true, New: needsBackfill})
 }
 
 // --- getCounts ---

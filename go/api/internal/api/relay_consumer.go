@@ -61,7 +61,7 @@ func (c *RelayConsumer) AnnounceTrackedDIDs(ctx context.Context) {
 			continue // already logged in announceUserToRelay
 		}
 		if isNew {
-			slog.Info("relay consumer: relay started tracking DID", "did", u.DID)
+			slog.Info("relay consumer: relay backfilling DID", "did", u.DID)
 		}
 	}
 }

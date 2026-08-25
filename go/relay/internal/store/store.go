@@ -41,9 +41,16 @@ func (s *Store) UpsertInstance(ctx context.Context, url string) (int, error) {
 	return id, err
 }
 
-// UpsertTrackedDID registers a new DID with the relay.
-// If the DID already exists, updates pds_url and handle.
-// Returns the row id and whether the DID is newly inserted.
+// UpsertTrackedDID registers a new DID with the relay or re-announces an
+// existing one. If the DID already exists, updates pds_url, handle, and
+// resets status to 'active' (clearing any error from a failed subscription).
+// Returns the row id and whether the DID needs a full backfill — true for a
+// newly inserted DID or a DID that was in 'error' status (recovered).
+//
+// The needsBackfill flag tells the caller to kick off BackfillAndSubscribe,
+// which will emit a backfillComplete event. An already-active re-announce
+// returns false — no backfill event is emitted, so the caller must not wait
+// for one.
 //
 // A handle resolves to at most one DID: before upserting, any other row that
 // currently holds the same non-empty handle has its handle cleared. This
@@ -61,6 +68,16 @@ func (s *Store) UpsertTrackedDID(ctx context.Context, did, pdsURL, handle string
 		}
 	}()
 
+	// Check whether this DID already exists and, if so, whether it was in
+	// 'error' status. A DID in 'error' (from a failed PDS subscription) needs
+	// a full backfill on re-announce, just like a brand-new DID.
+	var oldStatus string
+	if serr := tx.QueryRowContext(ctx,
+		`SELECT status FROM tracked_dids WHERE did = $1`, did).Scan(&oldStatus); serr != nil && serr != sql.ErrNoRows {
+		err = serr
+		return 0, false, err
+	}
+
 	if handle != "" {
 		if _, err := tx.ExecContext(ctx,
 			`UPDATE tracked_dids SET handle = '' WHERE handle = $1 AND did <> $2`,
@@ -77,7 +94,9 @@ func (s *Store) UpsertTrackedDID(ctx context.Context, did, pdsURL, handle string
 		ON CONFLICT (did) DO UPDATE
 		  SET pds_url     = EXCLUDED.pds_url,
 		      handle      = EXCLUDED.handle,
-		      instance_id = COALESCE(tracked_dids.instance_id, EXCLUDED.instance_id)
+		      instance_id = COALESCE(tracked_dids.instance_id, EXCLUDED.instance_id),
+		      status      = 'active',
+		      error_msg   = ''
 		RETURNING id, (xmax = 0)`,
 		did, pdsURL, handle, instanceID,
 	).Scan(&id, &isNew)
@@ -88,7 +107,8 @@ func (s *Store) UpsertTrackedDID(ctx context.Context, did, pdsURL, handle string
 	if err := tx.Commit(); err != nil {
 		return 0, false, err
 	}
-	return id, isNew, nil
+	needsBackfill := isNew || oldStatus == "error"
+	return id, needsBackfill, nil
 }
 
 // ListActiveTrackedDIDs returns all DIDs with status='active'.

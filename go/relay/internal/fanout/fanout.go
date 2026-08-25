@@ -117,7 +117,7 @@ func (f *Fanout) refreshProfiles(ctx context.Context, dids []store.TrackedDID) {
 		go func(d store.TrackedDID) {
 			defer wg.Done()
 			defer func() { <-sem }()
-			if err := f.refreshProfile(ctx, d.DID, d.PDSUrl); err != nil {
+			if err := f.RefreshProfile(ctx, d.DID, d.PDSUrl); err != nil {
 				slog.Warn("fanout: refresh profile", "did", d.DID, "pds", d.PDSUrl, "err", err)
 				atomic.AddInt32(&failed, 1)
 				return
@@ -331,7 +331,7 @@ func (f *Fanout) handleProfile(ctx context.Context, did, pdsURL, rkey, action st
 	f.processProfileRecord(ctx, did, pdsURL, rec)
 }
 
-// refreshProfile re-fetches the single app.bsky.actor.profile record (rkey
+// RefreshProfile re-fetches the single app.bsky.actor.profile record (rkey
 // "self") for a tracked DID and re-processes it, emitting a "profile" event.
 // Unlike backfill it does not touch the io.sunred.* collections — those are
 // append-mostly and covered by the live firehose. Profile is a single record
@@ -340,7 +340,7 @@ func (f *Fanout) handleProfile(ctx context.Context, did, pdsURL, rkey, action st
 // the whole social graph. A missing record (no profile set) clears the
 // cached fields and is reported as success (the cache is now correct).
 // Safe to call concurrently per DID.
-func (f *Fanout) refreshProfile(ctx context.Context, did, pdsURL string) error {
+func (f *Fanout) RefreshProfile(ctx context.Context, did, pdsURL string) error {
 	rec, err := f.fetchRecord(ctx, pdsURL, did, "app.bsky.actor.profile", "self")
 	if err != nil {
 		// A 404 means no profile record exists; clear the cache so stale
