@@ -418,7 +418,7 @@ export default function UserProfilePage({
         <div className="mx-auto w-full max-w-3xl shrink-0 border-b border-border pr-4 pt-2 pl-[56px] lg:pl-[48px]">
           <TabsList variant="line" className="h-8! px-0">
             <TabsTrigger value="articles">
-              Shares
+              Reposts
               {articles.length > 0 && (
                 <span className="rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums text-foreground/70">
                   {articles.length}
@@ -456,9 +456,9 @@ export default function UserProfilePage({
                       <EmptyMedia variant="icon">
                         <Users className="size-6 text-primary" />
                       </EmptyMedia>
-                      <EmptyTitle>Nothing shared yet</EmptyTitle>
+                      <EmptyTitle>Nothing reposted yet</EmptyTitle>
                       <EmptyDescription>
-                        {displayName}{" "}hasn&apos;t shared any articles. When they do,
+                        {displayName}{" "}hasn&apos;t reposted any articles. When they do,
                         they&apos;ll land here in reverse-chronological order.
                       </EmptyDescription>
                     </EmptyHeader>
