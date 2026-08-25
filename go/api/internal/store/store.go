@@ -360,7 +360,7 @@ func (s *Store) ListEntries(ctx context.Context, userID int, feedID *int, folder
 	             e.author, '' AS content, LEFT(e.description, 400) AS description,
 	             COALESCE(rs.status, 'read'), (es.article_url IS NOT NULL),
 	             e.published_at, GREATEST(COALESCE(rs.changed_at, e.created_at), COALESCE(es.starred_at, e.created_at)), e.tags,
-	             f.id, f.feed_url, f.site_url, f.title, f.description,
+	             f.id, f.feed_url, f.site_url, COALESCE(s.title_override, f.title), f.description,
 	             f.etag_header, f.last_modified_header, f.parsing_error, f.parsing_error_count,
 	             f.disabled, f.scraper_rules, f.rewrite_rules, f.crawler,
 	             f.next_check_at, f.last_fetch_at, f.created_at, f.updated_at,
@@ -368,6 +368,7 @@ func (s *Store) ListEntries(ctx context.Context, userID int, feedID *int, folder
 	             my_sa.id
 	      FROM entries e
 	      JOIN feeds f ON f.id = e.feed_id
+	      LEFT JOIN subscriptions s ON s.feed_id = f.id AND s.user_id = $1
 	      LEFT JOIN entry_read_status rs ON rs.user_id = $1 AND rs.article_url = e.url
 	      LEFT JOIN entry_stars es ON es.user_id = $1 AND es.article_url = e.url
 	      LEFT JOIN LATERAL (
@@ -462,7 +463,7 @@ func (s *Store) GetEntryByID(ctx context.Context, id int64, userID int) (*Entry,
 		        e.author, '' AS content, LEFT(e.description, 400) AS description,
 		        COALESCE(rs.status, 'read'), (es.article_url IS NOT NULL),
 		        e.published_at, GREATEST(COALESCE(rs.changed_at, e.created_at), COALESCE(es.starred_at, e.created_at)), e.tags,
-		        f.id, f.feed_url, f.site_url, f.title, f.description,
+		        f.id, f.feed_url, f.site_url, COALESCE(s.title_override, f.title), f.description,
 		        f.etag_header, f.last_modified_header, f.parsing_error, f.parsing_error_count,
 		        f.disabled, f.scraper_rules, f.rewrite_rules, f.crawler,
 		        f.next_check_at, f.last_fetch_at, f.created_at, f.updated_at,
@@ -470,6 +471,7 @@ func (s *Store) GetEntryByID(ctx context.Context, id int64, userID int) (*Entry,
 		        my_sa.id
 		 FROM entries e
 		 JOIN feeds f ON f.id = e.feed_id
+		 LEFT JOIN subscriptions s ON s.feed_id = f.id AND s.user_id = $2
 		 LEFT JOIN entry_read_status rs ON rs.user_id = $2 AND rs.article_url = e.url
 		 LEFT JOIN entry_stars es ON es.user_id = $2 AND es.article_url = e.url
 		 LEFT JOIN LATERAL (
