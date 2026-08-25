@@ -2,42 +2,22 @@ package api
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
 	"golang.org/x/net/websocket"
 
-	"github.com/fuegoio/sunred/go/api/internal/migrations"
 	"github.com/fuegoio/sunred/go/api/internal/store"
+	"github.com/fuegoio/sunred/go/api/internal/testdb"
 )
 
 func testDB(t *testing.T) *store.Store {
 	t.Helper()
-	dsn := os.Getenv("SUNRED_DATABASE_URL")
-	if dsn == "" {
-		dsn = "postgres://sunred:sunred@localhost:5432/sunred?sslmode=disable"
-	}
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		t.Skipf("could not open database: %v", err)
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	if err := db.PingContext(ctx); err != nil {
-		t.Skipf("database not reachable, skipping integration test: %v", err)
-	}
-	// Apply migrations so the schema exists on a fresh database (CI runs
-	// against a pristine Postgres). Idempotent via the schema_migrations table.
-	if err := migrations.Run(db); err != nil {
-		t.Fatalf("apply migrations: %v", err)
-	}
-	return store.New(db)
+	return store.New(testdb.Connect(t))
 }
 
 // mockRelayServer creates a test relay that serves subscribeEvents over

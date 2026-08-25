@@ -2,39 +2,19 @@ package store
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
-	_ "github.com/lib/pq"
-
-	"github.com/fuegoio/sunred/go/api/internal/migrations"
+	"github.com/fuegoio/sunred/go/api/internal/testdb"
 )
 
 // testDB returns a Store backed by a real PostgreSQL instance, or skips
-// the test if the database is not reachable. Migrations are applied inline so
-// the test database stays current without a manual server run.
+// the test if the database is not reachable. Uses the isolated sunred_test
+// database by default (see internal/testdb) so the dev database is untouched.
 func testDB(t *testing.T) *Store {
 	t.Helper()
-	dsn := os.Getenv("SUNRED_DATABASE_URL")
-	if dsn == "" {
-		dsn = "postgres://sunred:sunred@localhost:5432/sunred?sslmode=disable"
-	}
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		t.Skipf("could not open database: %v", err)
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	if err := db.PingContext(ctx); err != nil {
-		t.Skipf("database not reachable, skipping integration test: %v", err)
-	}
-	if err := migrations.Run(db); err != nil {
-		t.Fatalf("apply migrations: %v", err)
-	}
-	return New(db)
+	return New(testdb.Connect(t))
 }
 
 // seedUser creates a test user and returns its ID. Cleans up via t.Cleanup.
