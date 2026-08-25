@@ -988,6 +988,10 @@ export const PublicProfileResponseSchema = {
             format: 'int64',
             type: 'integer'
         },
+        global_following_count: {
+            format: 'int64',
+            type: 'integer'
+        },
         profile: {
             $ref: '#/components/schemas/UserProfile'
         },
@@ -1004,6 +1008,7 @@ export const PublicProfileResponseSchema = {
     required: [
         'profile',
         'global_follower_count',
+        'global_following_count',
         'shared_articles',
         'feeds'
     ],
@@ -2205,6 +2210,10 @@ export const PublicProfileResponseWritableSchema = {
             format: 'int64',
             type: 'integer'
         },
+        global_following_count: {
+            format: 'int64',
+            type: 'integer'
+        },
         profile: {
             $ref: '#/components/schemas/UserProfileWritable'
         },
@@ -2221,6 +2230,7 @@ export const PublicProfileResponseWritableSchema = {
     required: [
         'profile',
         'global_follower_count',
+        'global_following_count',
         'shared_articles',
         'feeds'
     ],

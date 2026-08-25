@@ -190,6 +190,15 @@ func (s *Store) CountFollowers(ctx context.Context, did string) (int64, error) {
 	return n, err
 }
 
+// CountFollowing returns the number of accounts a DID follows across all
+// tracked repos.
+func (s *Store) CountFollowing(ctx context.Context, did string) (int64, error) {
+	var n int64
+	err := s.DB.QueryRowContext(ctx, `
+		SELECT COUNT(*) FROM observed_follows WHERE follower_did=$1`, did).Scan(&n)
+	return n, err
+}
+
 // RecordShare inserts or updates an observed share record.
 func (s *Store) RecordShare(ctx context.Context, did, rkey, articleURL, feedURL, title, pdsURL string, sharedAt *time.Time) (bool, error) {
 	res, err := s.DB.ExecContext(ctx, `

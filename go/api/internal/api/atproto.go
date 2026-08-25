@@ -564,6 +564,27 @@ func (a *API) relayGetUserFollowerCount(ctx context.Context, did string) int64 {
 	return out.Count
 }
 
+// relayGetUserFollowingCount queries the relay for the globally accurate
+// following count of a DID (number of accounts this DID follows across all
+// tracked repos). Returns 0 if no relay is configured, the user has no DID,
+// or the request fails.
+func (a *API) relayGetUserFollowingCount(ctx context.Context, did string) int64 {
+	if a.cfg.RelayURL == "" || did == "" {
+		return 0
+	}
+	rc := atproto.NewClient(a.cfg.RelayURL, "")
+	var out struct {
+		Count int64 `json:"count"`
+	}
+	if err := rc.Query(ctx, "io.sunred.relay.getUserFollowingCount", map[string]string{
+		"did": did,
+	}, &out); err != nil {
+		slog.Warn("relay: get following count", "did", did, "err", err)
+		return 0
+	}
+	return out.Count
+}
+
 // relayGetFeedSubscriberCount queries the relay for the globally accurate
 // subscriber count of a feed URL (unique DIDs across all tracked repos).
 // Returns 0 if no relay is configured or the request fails.

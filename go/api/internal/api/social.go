@@ -56,10 +56,11 @@ type SharedArticleListOutput struct {
 }
 
 type PublicProfileResponse struct {
-	Profile             store.UserProfile     `json:"profile"`
-	GlobalFollowerCount int                   `json:"global_follower_count"`
-	SharedArticles      []store.SharedArticle `json:"shared_articles"`
-	Feeds               []store.Feed          `json:"feeds"`
+	Profile              store.UserProfile     `json:"profile"`
+	GlobalFollowerCount  int                   `json:"global_follower_count"`
+	GlobalFollowingCount int                   `json:"global_following_count"`
+	SharedArticles       []store.SharedArticle `json:"shared_articles"`
+	Feeds                []store.Feed          `json:"feeds"`
 }
 
 type PublicProfileOutput struct {
@@ -149,10 +150,11 @@ func (a *API) registerSocialRoutes() {
 		}
 
 		return &PublicProfileOutput{Body: PublicProfileResponse{
-			Profile:             *profile,
-			GlobalFollowerCount: int(a.relayGetUserFollowerCount(ctx, profile.DID)),
-			SharedArticles:      shared,
-			Feeds:               feeds,
+			Profile:              *profile,
+			GlobalFollowerCount:  int(a.relayGetUserFollowerCount(ctx, profile.DID)),
+			GlobalFollowingCount: int(a.relayGetUserFollowingCount(ctx, profile.DID)),
+			SharedArticles:       shared,
+			Feeds:                feeds,
 		}}, nil
 	})
 

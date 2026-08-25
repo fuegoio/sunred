@@ -221,6 +221,33 @@ func TestServer_GetUserFollowerCount(t *testing.T) {
 	}
 }
 
+func TestServer_GetUserFollowingCount(t *testing.T) {
+	ts, st := newServer(t)
+	ctx := context.Background()
+
+	did := fmt.Sprintf("did:plc:following-%d", time.Now().UnixNano())
+	t.Cleanup(func() { _, _ = st.DB.Exec(`DELETE FROM observed_follows WHERE follower_did=$1`, did) })
+
+	now := time.Now()
+	_, _ = st.RecordFollow(ctx, did, "did:plc:followee", "rf1", "https://pds.example.com", now)
+
+	resp := do(t, ts, http.MethodGet, "/xrpc/io.sunred.relay.getUserFollowingCount?did="+did, nil)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+	var out struct {
+		DID   string `json:"did"`
+		Count int64  `json:"count"`
+	}
+	decode(t, resp, &out)
+	if out.DID != did {
+		t.Errorf("did = %q, want %q", out.DID, did)
+	}
+	if out.Count != 1 {
+		t.Errorf("count = %d, want 1", out.Count)
+	}
+}
+
 func TestServer_GetUserShareCount(t *testing.T) {
 	ts, st := newServer(t)
 	ctx := context.Background()
@@ -280,6 +307,7 @@ func TestServer_UserCounts_MissingDID(t *testing.T) {
 
 	for _, path := range []string{
 		"/xrpc/io.sunred.relay.getUserFollowerCount",
+		"/xrpc/io.sunred.relay.getUserFollowingCount",
 		"/xrpc/io.sunred.relay.getUserShareCount",
 		"/xrpc/io.sunred.relay.getUserSubscriptionCount",
 	} {

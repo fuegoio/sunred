@@ -137,8 +137,10 @@ function ProfileMasthead({
   hasDisplayName,
   followerTotal,
   localFollowerCount,
-  followingCount,
+  followingTotal,
+  localFollowingCount,
   showFederatedSplit,
+  showFollowingFederatedSplit,
   isOwnProfile,
   isFollowing,
   onFollowToggle,
@@ -151,8 +153,10 @@ function ProfileMasthead({
   hasDisplayName: boolean;
   followerTotal: number;
   localFollowerCount: number;
-  followingCount: number;
+  followingTotal: number;
+  localFollowingCount: number;
   showFederatedSplit: boolean;
+  showFollowingFederatedSplit: boolean;
   isOwnProfile: boolean;
   isFollowing: boolean;
   onFollowToggle: (next: boolean) => void;
@@ -230,8 +234,13 @@ function ProfileMasthead({
         </span>
         <span aria-hidden className="h-4 w-px self-center bg-border" />
         <span className="inline-flex items-baseline gap-1">
-          <span className="font-semibold tabular-nums text-foreground">{followingCount}</span>
+          <span className="font-semibold tabular-nums text-foreground">{followingTotal}</span>
           <span className="text-muted-foreground">following</span>
+          {showFollowingFederatedSplit && (
+            <span className="text-muted-foreground/70">
+              ({localFollowingCount} here)
+            </span>
+          )}
         </span>
       </div>
 
@@ -383,15 +392,24 @@ export default function UserProfilePage({
     );
   }
 
-  const { profile: user, shared_articles, feeds, global_follower_count } = profile;
+  const {
+    profile: user,
+    shared_articles,
+    feeds,
+    global_follower_count,
+    global_following_count,
+  } = profile;
   const hasDisplayName = !!(user.display_name?.trim());
   const displayName = hasDisplayName ? user.display_name!.trim() : `@${user.handle}`;
   const isOwnProfile = !!me?.handle && me.handle === user.handle;
-  // Federated total from the relay aggregates; fall back to the local count
-  // when no relay is configured (global_follower_count == 0).
+  // Federated totals from the relay aggregates; fall back to the local count
+  // when no relay is configured (global_*_count == 0).
   const followerTotal = global_follower_count > 0 ? global_follower_count : user.follower_count;
   const showFederatedSplit =
     global_follower_count > 0 && global_follower_count !== user.follower_count;
+  const followingTotal = global_following_count > 0 ? global_following_count : user.following_count;
+  const showFollowingFederatedSplit =
+    global_following_count > 0 && global_following_count !== user.following_count;
   const articles = shared_articles ?? [];
   const userFeeds = feeds ?? [];
 
@@ -407,8 +425,10 @@ export default function UserProfilePage({
           hasDisplayName={hasDisplayName}
           followerTotal={followerTotal}
           localFollowerCount={user.follower_count}
-          followingCount={user.following_count}
+          followingTotal={followingTotal}
+          localFollowingCount={user.following_count}
           showFederatedSplit={showFederatedSplit}
+          showFollowingFederatedSplit={showFollowingFederatedSplit}
           isOwnProfile={isOwnProfile}
           isFollowing={user.is_following ?? false}
           onFollowToggle={handleFollowToggle}
