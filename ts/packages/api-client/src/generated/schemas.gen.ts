@@ -1417,6 +1417,10 @@ export const UpdateMeInputBodySchema = {
             readOnly: true,
             type: 'string'
         },
+        bio: {
+            maxLength: 500,
+            type: 'string'
+        },
         display_name: {
             maxLength: 255,
             type: 'string'
@@ -2531,6 +2535,10 @@ export const UpdateHandleInputBodyWritableSchema = {
 export const UpdateMeInputBodyWritableSchema = {
     additionalProperties: false,
     properties: {
+        bio: {
+            maxLength: 500,
+            type: 'string'
+        },
         display_name: {
             maxLength: 255,
             type: 'string'

@@ -602,3 +602,87 @@ func hashItemTest(link string) string {
 	h := sha256.Sum256([]byte(urlnorm.URL(link)))
 	return hex.EncodeToString(h[:])
 }
+
+// --- UpdateUser / UpdateUserAvatar ---
+
+func TestUpdateUser_SetsBioWhenProvided(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	userID := seedUser(t, s, fmt.Sprintf("update-bio-%d@example.com", time.Now().UnixNano()))
+
+	bio := "hello world"
+	u, err := s.UpdateUser(ctx, userID, "Alice", &bio)
+	if err != nil || u == nil {
+		t.Fatalf("UpdateUser: %v", err)
+	}
+	if u.DisplayName != "Alice" {
+		t.Errorf("display_name=%q, want Alice", u.DisplayName)
+	}
+	if u.Bio != "hello world" {
+		t.Errorf("bio=%q, want 'hello world'", u.Bio)
+	}
+}
+
+func TestUpdateUser_PreservesBioWhenNil(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	userID := seedUser(t, s, fmt.Sprintf("keep-bio-%d@example.com", time.Now().UnixNano()))
+
+	bio := "keep me"
+	if _, err := s.UpdateUser(ctx, userID, "Alice", &bio); err != nil {
+		t.Fatalf("first UpdateUser: %v", err)
+	}
+	// A display-name-only edit (bio == nil) must not clobber the bio.
+	u, err := s.UpdateUser(ctx, userID, "Bob", nil)
+	if err != nil || u == nil {
+		t.Fatalf("second UpdateUser: %v", err)
+	}
+	if u.DisplayName != "Bob" {
+		t.Errorf("display_name=%q, want Bob", u.DisplayName)
+	}
+	if u.Bio != "keep me" {
+		t.Errorf("bio=%q, want 'keep me' (should be preserved)", u.Bio)
+	}
+}
+
+func TestUpdateUser_ClearsBioWithEmptyString(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	userID := seedUser(t, s, fmt.Sprintf("clear-bio-%d@example.com", time.Now().UnixNano()))
+
+	bio := "then remove"
+	if _, err := s.UpdateUser(ctx, userID, "Alice", &bio); err != nil {
+		t.Fatalf("first UpdateUser: %v", err)
+	}
+	empty := ""
+	u, err := s.UpdateUser(ctx, userID, "Alice", &empty)
+	if err != nil || u == nil {
+		t.Fatalf("second UpdateUser: %v", err)
+	}
+	if u.Bio != "" {
+		t.Errorf("bio=%q, want '' (cleared)", u.Bio)
+	}
+}
+
+func TestUpdateUserAvatar_SetsAndClears(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	userID := seedUser(t, s, fmt.Sprintf("avatar-%d@example.com", time.Now().UnixNano()))
+
+	const url = "https://pds.example/xrpc/com.atproto.sync.getBlob?did=did:plc:x&cid=abc"
+	u, err := s.UpdateUserAvatar(ctx, userID, url)
+	if err != nil || u == nil {
+		t.Fatalf("UpdateUserAvatar set: %v", err)
+	}
+	if !u.HasAvatar {
+		t.Errorf("HasAvatar=false, want true")
+	}
+
+	u, err = s.UpdateUserAvatar(ctx, userID, "")
+	if err != nil || u == nil {
+		t.Fatalf("UpdateUserAvatar clear: %v", err)
+	}
+	if u.HasAvatar {
+		t.Errorf("HasAvatar=true, want false after clear")
+	}
+}

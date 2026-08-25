@@ -955,15 +955,38 @@ func (s *Store) PurgeExpiredDeviceCodes(ctx context.Context, retention time.Dura
 
 // --- Users (Limen-managed table, read-only from here) ---
 
-// UpdateUser updates the display_name of the user with the given id.
-func (s *Store) UpdateUser(ctx context.Context, id int, displayName string) (*User, error) {
+// UpdateUser updates the display_name of the user with the given id, and the
+// bio when bio is non-nil (a nil bio leaves the existing value untouched, so
+// display-name-only edits don't clobber the bio).
+func (s *Store) UpdateUser(ctx context.Context, id int, displayName string, bio *string) (*User, error) {
 	var u User
 	err := s.DB.QueryRowContext(ctx,
-		`UPDATE users SET display_name = $2 WHERE id = $1
+		`UPDATE users SET display_name = $2, bio = COALESCE($3, bio) WHERE id = $1
 		 RETURNING id, COALESCE(handle, ''), COALESCE(did, ''), COALESCE(display_name, ''), COALESCE(bio, ''),
 		           COALESCE(avatar, ''), COALESCE(banner, ''),
 		           created_at, pds_sync_status, pds_synced_at`,
-		id, displayName,
+		id, displayName, bio,
+	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.Avatar, &u.Banner, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	u.setHasImages()
+	return &u, nil
+}
+
+// UpdateUserAvatar caches the PDS getBlob URL for the user's avatar. Pass an
+// empty string to clear the avatar. The banner is left unchanged.
+func (s *Store) UpdateUserAvatar(ctx context.Context, id int, avatar string) (*User, error) {
+	var u User
+	err := s.DB.QueryRowContext(ctx,
+		`UPDATE users SET avatar = $2 WHERE id = $1
+		 RETURNING id, COALESCE(handle, ''), COALESCE(did, ''), COALESCE(display_name, ''), COALESCE(bio, ''),
+		           COALESCE(avatar, ''), COALESCE(banner, ''),
+		           created_at, pds_sync_status, pds_synced_at`,
+		id, avatar,
 	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.Avatar, &u.Banner, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
