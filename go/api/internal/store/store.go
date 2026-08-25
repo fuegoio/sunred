@@ -365,9 +365,7 @@ func (s *Store) ListEntries(ctx context.Context, userID int, feedID *int, folder
 	             f.disabled, f.scraper_rules, f.rewrite_rules, f.crawler,
 	             f.next_check_at, f.last_fetch_at, f.created_at, f.updated_at,
 	             COALESCE(sh.handle, ''), COALESCE(sh.display_name, ''),
-	             my_sa.id,
-	             (SELECT COUNT(DISTINCT sa2.user_id) FROM shared_articles sa2 WHERE sa2.article_url = e.url),
-	             (SELECT COUNT(DISTINCT es2.user_id) FROM entry_stars es2 WHERE es2.article_url = e.url)
+	             my_sa.id
 	      FROM entries e
 	      JOIN feeds f ON f.id = e.feed_id
 	      LEFT JOIN subscriptions s ON s.feed_id = f.id AND s.user_id = $1
@@ -446,7 +444,7 @@ func (s *Store) ListEntries(ctx context.Context, userID int, feedID *int, folder
 			&f.EtagHeader, &f.LastModified, &f.ParsingError, &f.ParsingErrorCount,
 			&f.Disabled, &f.ScraperRules, &f.RewriteRules, &f.Crawler,
 			&f.NextCheckAt, &f.LastFetchAt, &f.CreatedAt, &f.UpdatedAt,
-			&e.SharedBy, &e.SharedByName, &e.ShareID, &e.RepostCount, &e.StarCount); err != nil {
+			&e.SharedBy, &e.SharedByName, &e.ShareID); err != nil {
 			return nil, err
 		}
 		e.Feed = &f
@@ -470,9 +468,7 @@ func (s *Store) GetEntryByID(ctx context.Context, id int64, userID int) (*Entry,
 		        f.disabled, f.scraper_rules, f.rewrite_rules, f.crawler,
 		        f.next_check_at, f.last_fetch_at, f.created_at, f.updated_at,
 		        COALESCE(sh.handle, ''), COALESCE(sh.display_name, ''),
-		        my_sa.id,
-		        (SELECT COUNT(DISTINCT sa2.user_id) FROM shared_articles sa2 WHERE sa2.article_url = e.url),
-		        (SELECT COUNT(DISTINCT es2.user_id) FROM entry_stars es2 WHERE es2.article_url = e.url)
+		        my_sa.id
 		 FROM entries e
 		 JOIN feeds f ON f.id = e.feed_id
 		 LEFT JOIN subscriptions s ON s.feed_id = f.id AND s.user_id = $2
@@ -493,7 +489,7 @@ func (s *Store) GetEntryByID(ctx context.Context, id int64, userID int) (*Entry,
 		&f.EtagHeader, &f.LastModified, &f.ParsingError, &f.ParsingErrorCount,
 		&f.Disabled, &f.ScraperRules, &f.RewriteRules, &f.Crawler,
 		&f.NextCheckAt, &f.LastFetchAt, &f.CreatedAt, &f.UpdatedAt,
-		&e.SharedBy, &e.SharedByName, &e.ShareID, &e.RepostCount, &e.StarCount)
+		&e.SharedBy, &e.SharedByName, &e.ShareID)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}

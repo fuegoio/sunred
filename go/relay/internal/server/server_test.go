@@ -326,6 +326,50 @@ func TestServer_GetArticleStarCount(t *testing.T) {
 	}
 }
 
+func TestServer_GetArticleCounts(t *testing.T) {
+	ts, st := newServer(t)
+	ctx := context.Background()
+
+	art1 := fmt.Sprintf("https://batch-%d.example.com/a", time.Now().UnixNano())
+	art2 := fmt.Sprintf("https://batch-%d.example.com/b", time.Now().UnixNano())
+	t.Cleanup(func() {
+		_, _ = st.DB.Exec(`DELETE FROM observed_shares WHERE article_url IN ($1,$2)`, art1, art2)
+		_, _ = st.DB.Exec(`DELETE FROM observed_stars WHERE article_url IN ($1,$2)`, art1, art2)
+	})
+
+	now := time.Now()
+	// art1: 2 shares, 1 star. art2: 0 shares, 1 star.
+	_, _ = st.RecordShare(ctx, "did:plc:a", "s1", art1, "", "T", "https://pds.example.com", &now)
+	_, _ = st.RecordShare(ctx, "did:plc:b", "s2", art1, "", "T", "https://pds.example.com", &now)
+	_, _ = st.RecordStar(ctx, "did:plc:a", "st1", art1, "https://pds.example.com")
+	_, _ = st.RecordStar(ctx, "did:plc:c", "st2", art2, "https://pds.example.com")
+
+	resp := do(t, ts, http.MethodPost, "/xrpc/io.sunred.relay.getArticleCounts",
+		map[string]any{"article_urls": []string{art1, art2, "https://absent.example.com/none"}})
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+	var out struct {
+		Counts map[string]struct {
+			ShareCount int64 `json:"share_count"`
+			StarCount  int64 `json:"star_count"`
+		} `json:"counts"`
+	}
+	decode(t, resp, &out)
+	if out.Counts == nil {
+		t.Fatal("counts map is nil")
+	}
+	if c := out.Counts[art1]; c.ShareCount != 2 || c.StarCount != 1 {
+		t.Errorf("art1 counts = %+v, want {2 1}", c)
+	}
+	if c := out.Counts[art2]; c.ShareCount != 0 || c.StarCount != 1 {
+		t.Errorf("art2 counts = %+v, want {0 1}", c)
+	}
+	if _, ok := out.Counts["https://absent.example.com/none"]; ok {
+		t.Error("absent URL should be omitted from the map (treated as zero by callers)")
+	}
+}
+
 func TestServer_SearchDIDs(t *testing.T) {
 	ts, st := newServer(t)
 	ctx := context.Background()

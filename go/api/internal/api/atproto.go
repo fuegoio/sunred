@@ -624,3 +624,40 @@ func (a *API) relayGetArticleStarCount(ctx context.Context, articleURL string) i
 	}
 	return out.Count
 }
+
+// ArticleCount is the repost (share) and star count pair for one article URL,
+// as aggregated across the network by the relay.
+type ArticleCount struct {
+	ShareCount int64
+	StarCount  int64
+}
+
+// relayGetArticleCounts queries the relay for repost and star counts of a
+// batch of article URLs in a single call (the relay's getArticleCounts
+// procedure). Returns a map keyed by article URL; URLs the relay has no
+// observations for are absent (callers treat a missing key as zero).
+// Returns an empty map if no relay is configured, the input is empty, or the
+// request fails — never an error, so the entries endpoint never fails on a
+// relay outage.
+func (a *API) relayGetArticleCounts(ctx context.Context, urls []string) map[string]ArticleCount {
+	out := make(map[string]ArticleCount, len(urls))
+	if a.cfg.RelayURL == "" || len(urls) == 0 {
+		return out
+	}
+	rc := atproto.NewClient(a.cfg.RelayURL, "")
+	var resp struct {
+		Counts map[string]struct {
+			ShareCount int64 `json:"share_count"`
+			StarCount  int64 `json:"star_count"`
+		} `json:"counts"`
+	}
+	if err := rc.Procedure(ctx, "io.sunred.relay.getArticleCounts",
+		map[string]any{"article_urls": urls}, &resp); err != nil {
+		slog.Warn("relay: get article counts batch", "n", len(urls), "err", err)
+		return out
+	}
+	for u, c := range resp.Counts {
+		out[u] = ArticleCount{ShareCount: c.ShareCount, StarCount: c.StarCount}
+	}
+	return out
+}

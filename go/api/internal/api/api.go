@@ -730,6 +730,45 @@ type EntryOutput struct {
 	Body store.Entry
 }
 
+// enrichEntryCounts populates RepostCount and StarCount on each entry from
+// the relay's globally-accurate aggregates, fetched in a single batch call
+// per page. The store query leaves both fields at their zero value; this is
+// the only place they're set. When no relay is configured (or the batch
+// call fails), the map is empty and the counts stay zero — entries are still
+// returned, never failed, matching how other relay-backed counts behave.
+func (a *API) enrichEntryCounts(ctx context.Context, entries []store.Entry) {
+	if len(entries) == 0 {
+		return
+	}
+	// Collect unique article URLs in a stable order (dedup), capping at the
+	// relay's per-request limit so an unusually large page can't overflow it.
+	seen := make(map[string]struct{}, len(entries))
+	urls := make([]string, 0, len(entries))
+	for i := range entries {
+		if u := entries[i].URL; u != "" {
+			if _, ok := seen[u]; !ok {
+				seen[u] = struct{}{}
+				urls = append(urls, u)
+			}
+		}
+	}
+	if len(urls) == 0 {
+		return
+	}
+	if len(urls) > 500 {
+		urls = urls[:500]
+	}
+	counts := a.relayGetArticleCounts(ctx, urls)
+	for i := range entries {
+		c, ok := counts[entries[i].URL]
+		if !ok {
+			continue
+		}
+		entries[i].RepostCount = int(c.ShareCount)
+		entries[i].StarCount = int(c.StarCount)
+	}
+}
+
 func (a *API) registerEntryRoutes() {
 	huma.Register(a.huma, huma.Operation{
 		OperationID: "list-entries",
@@ -770,6 +809,7 @@ func (a *API) registerEntryRoutes() {
 		if entries == nil {
 			entries = []store.Entry{}
 		}
+		a.enrichEntryCounts(ctx, entries)
 		return &EntryListOutput{Body: entries}, nil
 	})
 
@@ -790,6 +830,7 @@ func (a *API) registerEntryRoutes() {
 		if entry == nil {
 			return nil, huma.Error404NotFound("entry not found")
 		}
+		a.enrichEntryCounts(ctx, []store.Entry{*entry})
 		return &EntryOutput{Body: *entry}, nil
 	})
 

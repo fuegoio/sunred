@@ -42,10 +42,27 @@ type testEnv struct {
 // fire-and-forget ATProto sync goroutines spawned by handlers are no-ops.
 func newTestEnv(t *testing.T) *testEnv {
 	t.Helper()
+	return buildTestEnv(t, &config.Config{BaseURL: "http://test.local", WebURL: "http://test.local"})
+}
+
+// newTestEnvWithRelay builds a test environment whose API is wired to a fake
+// relay at relayURL (so relay-backed enrichments like the entries repost/star
+// counts can be exercised end-to-end).
+func newTestEnvWithRelay(t *testing.T, relayURL string) *testEnv {
+	t.Helper()
+	return buildTestEnv(t, &config.Config{
+		BaseURL:  "http://test.local",
+		WebURL:   "http://test.local",
+		RelayURL: relayURL,
+	})
+}
+
+// buildTestEnv is the shared wiring behind newTestEnv / newTestEnvWithRelay.
+func buildTestEnv(t *testing.T, cfg *config.Config) *testEnv {
+	t.Helper()
 	db := testdb.Connect(t)
 
 	st := store.New(db)
-	cfg := &config.Config{BaseURL: "http://test.local", WebURL: "http://test.local"}
 	authInst, err := auth.New(cfg, db, st)
 	if err != nil {
 		t.Fatalf("auth.New: %v", err)
@@ -576,5 +593,133 @@ func TestHTTP_ArticleStarCount(t *testing.T) {
 	}
 	if body.Count != 0 {
 		t.Errorf("count = %d, want 0 (no relay configured)", body.Count)
+	}
+}
+
+// fakeCountsRelay stands up a relay that answers the batch getArticleCounts
+// procedure with canned counts keyed by article URL. Used to verify the
+// /entries response is enriched with relay-sourced repost/star counts.
+func fakeCountsRelay(t *testing.T, counts map[string]struct{ ShareCount, StarCount int64 }) string {
+	t.Helper()
+	mux := http.NewServeMux()
+	mux.HandleFunc("/xrpc/io.sunred.relay.getArticleCounts", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		var in struct {
+			ArticleURLs []string `json:"article_urls"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+			http.Error(w, "bad request", http.StatusBadRequest)
+			return
+		}
+		out := map[string]struct {
+			ShareCount int64 `json:"share_count"`
+			StarCount  int64 `json:"star_count"`
+		}{}
+		for _, u := range in.ArticleURLs {
+			if c, ok := counts[u]; ok {
+				out[u] = struct {
+					ShareCount int64 `json:"share_count"`
+					StarCount  int64 `json:"star_count"`
+				}{ShareCount: c.ShareCount, StarCount: c.StarCount}
+			}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(struct {
+			Counts any `json:"counts"`
+		}{Counts: out})
+	})
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+	return srv.URL
+}
+
+// TestHTTP_EntriesRelayCounts verifies that the /entries response carries
+// relay-sourced repost_count and star_count on each entry. A fake relay
+// answers the batch getArticleCounts procedure; the API should make one call
+// and merge the counts into the page.
+func TestHTTP_EntriesRelayCounts(t *testing.T) {
+	article := fmt.Sprintf("https://counts-entry-%d.example.com/post", time.Now().UnixNano())
+	relayURL := fakeCountsRelay(t, map[string]struct{ ShareCount, StarCount int64 }{
+		article: {ShareCount: 4, StarCount: 9},
+	})
+	e := newTestEnvWithRelay(t, relayURL)
+
+	feed, err := e.store.GetOrCreateFeed(context.Background(),
+		"https://countsfeed.example.com/rss", "https://countsfeed.example.com", "Counts Feed", "")
+	if err != nil {
+		t.Fatalf("seed feed: %v", err)
+	}
+	if _, err := e.store.CreateSubscription(context.Background(), e.userID, feed.ID, nil, ""); err != nil {
+		t.Fatalf("seed sub: %v", err)
+	}
+	entryHash := fmt.Sprintf("hash-counts-%d", time.Now().UnixNano())
+	if _, err := e.store.DB.Exec(
+		`INSERT INTO entries (feed_id, hash, title, url, content, published_at) VALUES ($1,$2,$3,$4,$5,NOW())`,
+		feed.ID, entryHash, "Counts Entry", article, "body",
+	); err != nil {
+		t.Fatalf("seed entry: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = e.store.DB.Exec(`DELETE FROM entries WHERE feed_id=$1 AND hash=$2`, feed.ID, entryHash)
+	})
+
+	resp := e.do(t, http.MethodGet, "/v1/entries", nil)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+	var entries []store.Entry
+	readJSON(t, resp, &entries)
+	var got *store.Entry
+	for i := range entries {
+		if entries[i].URL == article {
+			got = &entries[i]
+			break
+		}
+	}
+	if got == nil {
+		t.Fatalf("entry for %q not found in /v1/entries", article)
+	}
+	if got.RepostCount != 4 {
+		t.Errorf("repost_count = %d, want 4 (from relay)", got.RepostCount)
+	}
+	if got.StarCount != 9 {
+		t.Errorf("star_count = %d, want 9 (from relay)", got.StarCount)
+	}
+
+	// Without a relay configured, the same endpoint leaves counts at zero.
+	noRelay := newTestEnv(t)
+	feed2, err := noRelay.store.GetOrCreateFeed(context.Background(),
+		"https://countsfeed-nr.example.com/rss", "https://countsfeed-nr.example.com", "NR Feed", "")
+	if err != nil {
+		t.Fatalf("seed feed2: %v", err)
+	}
+	if _, err := noRelay.store.CreateSubscription(context.Background(), noRelay.userID, feed2.ID, nil, ""); err != nil {
+		t.Fatalf("seed sub2: %v", err)
+	}
+	article2 := fmt.Sprintf("https://counts-entry-nr-%d.example.com/post", time.Now().UnixNano())
+	entryHash2 := fmt.Sprintf("hash-counts-nr-%d", time.Now().UnixNano())
+	if _, err := noRelay.store.DB.Exec(
+		`INSERT INTO entries (feed_id, hash, title, url, content, published_at) VALUES ($1,$2,$3,$4,$5,NOW())`,
+		feed2.ID, entryHash2, "NR Entry", article2, "body",
+	); err != nil {
+		t.Fatalf("seed entry2: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = noRelay.store.DB.Exec(`DELETE FROM entries WHERE feed_id=$1 AND hash=$2`, feed2.ID, entryHash2)
+	})
+	resp = noRelay.do(t, http.MethodGet, "/v1/entries", nil)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("no-relay status = %d, want 200", resp.StatusCode)
+	}
+	var noRelayEntries []store.Entry
+	readJSON(t, resp, &noRelayEntries)
+	for i := range noRelayEntries {
+		if noRelayEntries[i].RepostCount != 0 || noRelayEntries[i].StarCount != 0 {
+			t.Errorf("entry %q without relay: repost_count=%d star_count=%d, want 0/0",
+				noRelayEntries[i].URL, noRelayEntries[i].RepostCount, noRelayEntries[i].StarCount)
+		}
 	}
 }

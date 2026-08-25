@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 // Store wraps a *sql.DB with relay query helpers.
@@ -240,6 +242,64 @@ func (s *Store) CountArticleStars(ctx context.Context, articleURL string) (int64
 	err := s.DB.QueryRowContext(ctx, `
 		SELECT COUNT(DISTINCT did) FROM observed_stars WHERE article_url=$1`, articleURL).Scan(&n)
 	return n, err
+}
+
+// ArticleCounts holds the repost (share) and star counts for a single
+// article URL, as aggregated across all DIDs the relay tracks.
+type ArticleCounts struct {
+	ShareCount int64 `json:"share_count"`
+	StarCount  int64 `json:"star_count"`
+}
+
+// GetArticleCountsBatch returns repost and star counts for a batch of article
+// URLs in two set-based queries (one over observed_shares, one over
+// observed_stars). URLs not present in either table are absent from the
+// returned map (callers treat a missing key as zero). Designed for the API's
+// /entries enrichment: one relay round-trip per page instead of one per
+// entry.
+func (s *Store) GetArticleCountsBatch(ctx context.Context, urls []string) (map[string]ArticleCounts, error) {
+	out := make(map[string]ArticleCounts, len(urls))
+	if len(urls) == 0 {
+		return out, nil
+	}
+
+	rows, err := s.DB.QueryContext(ctx, `
+		SELECT article_url, COUNT(DISTINCT did) FROM observed_shares
+		WHERE article_url = ANY($1) GROUP BY article_url`, pq.Array(urls))
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var u string
+		var n int64
+		if err := rows.Scan(&u, &n); err != nil {
+			_ = rows.Close()
+			return nil, err
+		}
+		out[u] = ArticleCounts{ShareCount: n}
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+
+	rows, err = s.DB.QueryContext(ctx, `
+		SELECT article_url, COUNT(DISTINCT did) FROM observed_stars
+		WHERE article_url = ANY($1) GROUP BY article_url`, pq.Array(urls))
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+	for rows.Next() {
+		var u string
+		var n int64
+		if err := rows.Scan(&u, &n); err != nil {
+			return nil, err
+		}
+		c := out[u]
+		c.StarCount = n
+		out[u] = c
+	}
+	return out, rows.Err()
 }
 
 // RecordFeedSubscription inserts an observed feed subscription.
