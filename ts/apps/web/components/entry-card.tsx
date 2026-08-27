@@ -81,10 +81,6 @@ export function EntryCard({
   const isRead = preview ? previewRead : readOptimistic;
   const unread = !isRead;
   const snippet = htmlSnippet(entry.description, 200);
-  // Whether this entry carries any social signal — drives the mobile exit-
-  // animation height, since the mobile counts footer adds a line only when
-  // there's something to show.
-  const hasCounts = (entry.repost_count ?? 0) > 0 || (entry.star_count ?? 0) > 0;
 
   // The entry carries its source feed on `entry.feed`, with the viewer's
   // title override already applied by the API. The `feed` prop is the same
@@ -205,8 +201,9 @@ export function EntryCard({
         opacity: { duration: 0.3, ease: EASE },
         y: { duration: 0.22, ease: EASE, delay: Math.min(staggerIndex ?? 0, 8) * 0.03 },
       }}
-      className="group flex gap-3 px-4 py-3 hover:bg-muted/50"
+      className="group flex flex-col px-4 py-3 hover:bg-muted/50"
     >
+      <div className="flex gap-3">
       {preview ? (
         <button
           type="button"
@@ -289,14 +286,6 @@ export function EntryCard({
           )}
           <span aria-hidden>·</span>
           <time className="shrink-0">{formatRelative(entry.published_at)}</time>
-          {/* Inline in the metadata row on >= sm, where horizontal space exists.
-           * On mobile this instance is hidden; a footer instance below the
-           * snippet carries the counts so they don't crowd the feed title. */}
-          <EntryCounts
-            repostCount={entry.repost_count}
-            starCount={entry.star_count}
-            className="hidden sm:inline-flex"
-          />
         </div>
         <h3
           className={cn(
@@ -314,15 +303,6 @@ export function EntryCard({
         >
           {snippet}
         </p>
-        {/* Mobile-only social-proof footer: on narrow screens the metadata row
-         * is too dense for the counts, so they breathe on their own line here,
-         * right-aligned toward the action buttons. Hidden on >= sm where the
-         * inline instance in the metadata row is shown instead. EntryCounts
-         * returns null when both counts are zero, so this line is absent for
-         * entries with no social signal — no empty space. */}
-        <div className="mt-1 flex justify-end sm:hidden">
-          <EntryCounts repostCount={entry.repost_count} starCount={entry.star_count} />
-        </div>
       </div>
       <div className="flex shrink-0 items-start gap-0.5" onClick={(e) => e.stopPropagation()}>
         {entry.comments_url && (
@@ -338,6 +318,20 @@ export function EntryCard({
             <MessageSquare className="size-3.5" />
           </button>
         )}
+      </div>
+      </div>
+      {/* Footer: counts sit next to the repost/star actions at the bottom
+       * right of the card. pl-8 (32px = read-dot 20 + gap 12) aligns the
+       * counts under the content above, and justify-end pushes the actions
+       * flush with the right edge, beneath the comments button which stays
+       * in its own top-right column. EntryCounts renders null when both
+       * counts are zero, so the footer stays quiet for entries with no
+       * social signal. */}
+      <div
+        className="mt-2 flex items-center justify-end gap-1 pl-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <EntryCounts repostCount={entry.repost_count} starCount={entry.star_count} />
         <ShareToggle entry={entry} feed={feed} shareId={shareId} size="icon-sm" />
         <StarToggle
           entryId={entry.id}
@@ -355,11 +349,11 @@ export function EntryCard({
   // On filtered views (unread, starred) wrap in a container that animates
   // both height and opacity simultaneously so the card collapses while fading
   // and siblings translate up in the same motion. The fixed height matches
-  // the card's natural row height: 4 snippet lines on mobile, 2 on >= sm.
-  // On mobile, entries with social counts have an extra footer line (~18px);
-  // without that allowance the overflow:hidden wrapper would permanently clip
-  // the counts on the starred view.
-  const rowHeight = isMobile ? (hasCounts ? 186 : 168) : 108;
+  // the card's natural row height: a top row (dot + metadata + title +
+  // snippet — 4 snippet lines on mobile, 2 on >= sm) plus a bottom footer
+  // row (counts + repost/star, ~40px). The footer is always present now, so
+  // the height no longer depends on whether the entry has social counts.
+  const rowHeight = isMobile ? 188 : 148;
   return (
     <motion.div
       initial={{ height: rowHeight, opacity: 0 }}
