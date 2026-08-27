@@ -16,6 +16,7 @@ import {
   EmptyTitle,
 } from "@workspace/ui/components/empty";
 import { getClient, listEntries } from "@/lib/sunred";
+import { getReadSessionEntries } from "@/lib/entry-read-session";
 import type { Entry } from "@/lib/types";
 import { buttonVariants } from "@workspace/ui/components/button";
 import type { ReactNode } from "react";
@@ -33,6 +34,21 @@ export type EntryFilter = {
 };
 
 const PAGE_SIZE = 50;
+
+/**
+ * Re-insert entries marked read this session back into the fresh unread list,
+ * in their original chronological position. Without this, the just-read row
+ * would vanish on the next background refetch (30s interval or returning to
+ * the tab) instead of staying visible and dimmed until a full page reload.
+ */
+function mergeSessionRead(fresh: Entry[]): Entry[] {
+  const sessionRead = getReadSessionEntries();
+  if (sessionRead.length === 0) return fresh;
+  const freshIds = new Set(fresh.map((e) => e.id));
+  const kept = sessionRead.filter((e) => !freshIds.has(e.id));
+  if (kept.length === 0) return fresh;
+  return [...fresh, ...kept].sort((a, b) => b.published_at.localeCompare(a.published_at));
+}
 
 /**
  * Filtered, paginated entry list with infinite scroll. Each entry carries its
@@ -96,7 +112,15 @@ export function EntryTimeline({
     return () => obs.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const entries = data?.pages.flat() ?? [];
+  const fresh = data?.pages.flat() ?? [];
+  // The Unread view is server-filtered to unread entries, so background
+  // refetches (the 30s interval and refetch-on-window-focus) drop any row the
+  // user just marked read by clicking its link. Merge those session-read
+  // entries back in — dimmed, still actionable — so they stay until a real
+  // page reload (which wipes the session store). Other views have no status
+  // filter, so read entries are fetched normally and need no merge.
+  const entries =
+    filter.status === "unread" ? mergeSessionRead(fresh) : fresh;
 
   if (isLoading) {
     return (
