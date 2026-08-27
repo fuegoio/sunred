@@ -12,6 +12,7 @@ import { FeedIcon } from "@/components/feed-icon";
 import { EntryCounts } from "@/components/entry-counts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getClient, updateEntries, updateEntryStatusByUrl } from "@/lib/sunred";
+import { markReadSession, removeReadSession } from "@/lib/entry-read-session";
 import { getApiErrorMessage } from "@/lib/errors";
 import { formatRelative, htmlSnippet } from "@/lib/format";
 import { cn } from "@workspace/ui/lib/utils";
@@ -131,6 +132,8 @@ export function EntryCard({
       setReadOptimistic(next === "read");
       setPending(true);
     });
+    if (next === "read") markReadSession(entry);
+    else removeReadSession(entry.id);
     // Patch the cache in place so the base value matches the optimistic
     // state. Without this, invalidating would revert useOptimistic to the
     // stale server value mid-refetch and the dot would flash back to its
@@ -170,6 +173,7 @@ export function EntryCard({
       return;
     }
     startTransition(() => setReadOptimistic(true));
+    markReadSession(entry);
     void (async () => {
       const { error } = await updateEntries({
         client: await getClient(),
