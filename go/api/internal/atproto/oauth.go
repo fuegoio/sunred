@@ -66,6 +66,7 @@ func NewOAuthApp(db *sql.DB, clientID, callbackURL string) (*oauth.ClientApp, er
 		"repo:io.sunred.graph.follow",
 		"repo:io.sunred.share.article",
 		"repo:io.sunred.feed.subscription",
+		"repo:io.sunred.entry.star",
 	}
 
 	var config oauth.ClientConfig
