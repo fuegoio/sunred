@@ -325,7 +325,7 @@ export function EntryCard({
        * own top-right column. Counts render only when > 0 so the footer
        * stays quiet for entries with no social signal. */}
       <div
-        className="mt-2 flex items-center justify-start gap-0.5 pl-8"
+        className="mt-2 flex items-center justify-start gap-0.5 pl-7"
         onClick={(e) => e.stopPropagation()}
       >
         <ShareToggle entry={entry} feed={feed} shareId={shareId} size="icon-sm" />
