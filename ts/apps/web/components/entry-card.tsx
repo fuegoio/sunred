@@ -9,7 +9,6 @@ import { MessageSquare } from "lucide-react";
 import { StarToggle } from "@/components/star-toggle";
 import { ShareToggle } from "@/components/share-toggle";
 import { FeedIcon } from "@/components/feed-icon";
-import { EntryCounts } from "@/components/entry-counts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getClient, updateEntries, updateEntryStatusByUrl } from "@/lib/sunred";
 import { markReadSession, removeReadSession } from "@/lib/entry-read-session";
@@ -320,17 +319,19 @@ export function EntryCard({
         )}
       </div>
       </div>
-      {/* Footer: counts sit next to the repost/star actions at the bottom
+      {/* Footer: each count sits right next to its action button, bottom
        * left of the card. pl-8 (32px = read-dot 20 + gap 12) aligns the
        * actions under the content above; the comments button stays in its
-       * own top-right column. EntryCounts renders null when both counts are
-       * zero, so the footer stays quiet for entries with no social signal. */}
+       * own top-right column. Counts render only when > 0 so the footer
+       * stays quiet for entries with no social signal. */}
       <div
-        className="mt-2 flex items-center justify-start gap-1 pl-8"
+        className="mt-2 flex items-center justify-start gap-0.5 pl-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <EntryCounts repostCount={entry.repost_count} starCount={entry.star_count} />
         <ShareToggle entry={entry} feed={feed} shareId={shareId} size="icon-sm" />
+        {(entry.repost_count ?? 0) > 0 && (
+          <span className="px-1 text-xs text-muted-foreground">{entry.repost_count}</span>
+        )}
         <StarToggle
           entryId={entry.id}
           starred={entry.starred}
@@ -338,6 +339,9 @@ export function EntryCard({
           feed={feed}
           size="icon-sm"
         />
+        {(entry.star_count ?? 0) > 0 && (
+          <span className="px-1 text-xs text-muted-foreground">{entry.star_count}</span>
+        )}
       </div>
     </motion.a>
   );
