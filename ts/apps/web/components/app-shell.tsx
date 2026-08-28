@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SettingsSidebar } from "@/components/settings-sidebar";
 import { ShellContext } from "@/components/shell-context";
 import { SyncStatusBar } from "@/components/sync-status-bar";
-import { clearReadSession } from "@/lib/entry-read-session";
 
 export function AppShell({
   children,
@@ -24,13 +23,6 @@ export function AppShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const isSettings = pathname.startsWith("/settings");
-
-  // Wipe the read-temp store on navigation so rows marked read by opening an
-  // article don't follow the user across views — they should leave once the
-  // user leaves the page.
-  useEffect(() => {
-    clearReadSession();
-  }, [pathname]);
 
   const Sidebar = isSettings ? SettingsSidebar : AppSidebar;
   const openSidebar = useCallback(() => setSidebarOpen(true), []);

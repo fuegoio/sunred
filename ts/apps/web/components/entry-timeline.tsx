@@ -16,7 +16,7 @@ import {
   EmptyTitle,
 } from "@workspace/ui/components/empty";
 import { getClient, listEntries } from "@/lib/sunred";
-import { getReadSessionEntries } from "@/lib/entry-read-session";
+import { clearReadSession, getReadSessionEntries } from "@/lib/entry-read-session";
 import type { Entry } from "@/lib/types";
 import { buttonVariants } from "@workspace/ui/components/button";
 import type { ReactNode } from "react";
@@ -111,6 +111,14 @@ export function EntryTimeline({
     obs.observe(el);
     return () => obs.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // The read-temp session is only relevant to the Unread view. When that view
+  // unmounts (navigation away) or stops being the unread filter, drop the
+  // session so read rows don't bleed into other views.
+  useEffect(() => {
+    if (filter.status !== "unread") return;
+    return () => clearReadSession();
+  }, [filter.status]);
 
   const fresh = data?.pages.flat() ?? [];
   // The Unread view is server-filtered to unread entries, so background
