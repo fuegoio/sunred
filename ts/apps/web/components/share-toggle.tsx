@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Repeat } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
@@ -30,13 +31,31 @@ export function ShareToggle({
   size?: "icon-xs" | "icon-sm" | "icon";
   className?: string;
 }) {
+  const queryClient = useQueryClient();
   const [shareId, setShareId] = useState<number | null>(initialShareId);
   const [pending, setPending] = useState(false);
 
   const shared = shareId !== null;
 
+  function patchRepostCount(nextShared: boolean, count: number) {
+    queryClient.setQueriesData<InfiniteData<Entry[]>>({ queryKey: ["entries"] }, (data) => {
+      if (!data?.pages) return data;
+      return {
+        ...data,
+        pages: data.pages.map((page) =>
+          page.map((e) => (e.id === entry.id ? { ...e, repost_count: count } : e)),
+        ),
+      };
+    });
+  }
+
   async function handleToggle() {
     setPending(true);
+    // Optimistically patch repost_count so the inline count next to the
+    // repost button flips immediately; reverted on error below.
+    const baseCount = entry.repost_count ?? 0;
+    const nextCount = Math.max(0, baseCount + (shared ? -1 : 1));
+    patchRepostCount(!shared, nextCount);
     try {
       if (shared && shareId !== null) {
         const { error } = await unshareArticle({
@@ -64,7 +83,9 @@ export function ShareToggle({
         setShareId(data?.id ?? null);
         toast.success("Reposted to your timeline");
       }
+      await queryClient.invalidateQueries({ queryKey: ["entries"] });
     } catch (err) {
+      patchRepostCount(shared, baseCount);
       toast.error(getApiErrorMessage(err, "Could not update repost"));
     } finally {
       setPending(false);
