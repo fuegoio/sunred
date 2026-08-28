@@ -40,8 +40,8 @@ export function EntryCardSkeleton() {
           <Skeleton className="size-8 rounded-md" />
         </div>
       </div>
-      {/* footer: counts + repost + star, aligned bottom-right */}
-      <div className="mt-2 flex items-center justify-end gap-1 pl-8">
+      {/* footer: counts + repost + star, aligned bottom-left */}
+      <div className="mt-2 flex items-center justify-start gap-1 pl-8">
         <Skeleton className="size-8 rounded-md" />
         <Skeleton className="size-8 rounded-md" />
       </div>

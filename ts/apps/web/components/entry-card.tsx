@@ -321,14 +321,12 @@ export function EntryCard({
       </div>
       </div>
       {/* Footer: counts sit next to the repost/star actions at the bottom
-       * right of the card. pl-8 (32px = read-dot 20 + gap 12) aligns the
-       * counts under the content above, and justify-end pushes the actions
-       * flush with the right edge, beneath the comments button which stays
-       * in its own top-right column. EntryCounts renders null when both
-       * counts are zero, so the footer stays quiet for entries with no
-       * social signal. */}
+       * left of the card. pl-8 (32px = read-dot 20 + gap 12) aligns the
+       * actions under the content above; the comments button stays in its
+       * own top-right column. EntryCounts renders null when both counts are
+       * zero, so the footer stays quiet for entries with no social signal. */}
       <div
-        className="mt-2 flex items-center justify-end gap-1 pl-8"
+        className="mt-2 flex items-center justify-start gap-1 pl-8"
         onClick={(e) => e.stopPropagation()}
       >
         <EntryCounts repostCount={entry.repost_count} starCount={entry.star_count} />
