@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useOptimistic, startTransition } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Star } from "lucide-react";
 import { motion, useAnimationControls } from "motion/react";
@@ -52,6 +52,20 @@ export function StarToggle({
       setOptimistic(next);
       setPending(true);
     });
+    // Optimistically patch star_count alongside `starred` so the inline
+    // count next to the star button flips immediately. The base value is
+    // captured before the patch so the catch block can revert cleanly.
+    const baseCount = entry?.star_count ?? 0;
+    const nextCount = Math.max(0, baseCount + (next ? 1 : -1));
+    queryClient.setQueriesData<InfiniteData<Entry[]>>({ queryKey: ["entries"] }, (data) => {
+      if (!data?.pages) return data;
+      return {
+        ...data,
+        pages: data.pages.map((page) =>
+          page.map((e) => (e.id === entryId ? { ...e, starred: next, star_count: nextCount } : e)),
+        ),
+      };
+    });
     try {
       if (isByUrl && entry) {
         const { error } = await toggleEntryStarredByUrl({
@@ -79,6 +93,17 @@ export function StarToggle({
       }
       await queryClient.invalidateQueries({ queryKey: ["entries"] });
     } catch (err) {
+      // Revert the optimistic cache patch so the count and star state
+      // fall back to the server value.
+      queryClient.setQueriesData<InfiniteData<Entry[]>>({ queryKey: ["entries"] }, (data) => {
+        if (!data?.pages) return data;
+        return {
+          ...data,
+          pages: data.pages.map((page) =>
+            page.map((e) => (e.id === entryId ? { ...e, starred: starredProp, star_count: baseCount } : e)),
+          ),
+        };
+      });
       toast.error(getApiErrorMessage(err, "Could not update entry"));
     } finally {
       setPending(false);
