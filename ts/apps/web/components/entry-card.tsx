@@ -203,121 +203,121 @@ export function EntryCard({
       className="group flex flex-col px-4 py-3 hover:bg-muted/50"
     >
       <div className="flex gap-3">
-      {preview ? (
-        <button
-          type="button"
-          onClick={toggleRead}
-          disabled={pending}
-          aria-label={unread ? "Mark as read" : "Mark as unread"}
-          aria-pressed={unread}
-          className="flex size-5 shrink-0 items-start justify-center pt-1"
-        >
-          <motion.span
-            animate={{
-              scale: unread ? 1 : 0.75,
-              opacity: unread ? 1 : 0,
-              backgroundColor: unread ? "var(--color-primary)" : "var(--color-muted-foreground)",
-            }}
-            variants={unread ? undefined : { "row-hover": { scale: 1, opacity: 0.4 } }}
-            transition={{ duration: 0.15, ease: EASE }}
-            className="size-2 rounded-full"
-          />
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={toggleRead}
-          disabled={pending}
-          aria-label={unread ? "Mark as read" : "Mark as unread"}
-          aria-pressed={unread}
-          className="flex size-5 shrink-0 items-start justify-center pt-1"
-        >
-          <motion.span
-            animate={{
-              scale: unread ? 1 : 0.75,
-              opacity: unread ? 1 : 0,
-              backgroundColor: unread ? "var(--color-primary)" : "var(--color-muted-foreground)",
-            }}
-            // When the row is hovered and the entry is read, show a ghost dot
-            // so users know they can click to mark it unread again.
-            variants={unread ? undefined : { "row-hover": { scale: 1, opacity: 0.4 } }}
-            transition={{ duration: 0.15, ease: EASE }}
-            className="size-2 rounded-full"
-          />
-        </button>
-      )}
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <FeedIcon siteUrl={feedSiteUrl} className="size-3.5 rounded-sm" />
-          {feedHref ? (
+        {preview ? (
+          <button
+            type="button"
+            onClick={toggleRead}
+            disabled={pending}
+            aria-label={unread ? "Mark as read" : "Mark as unread"}
+            aria-pressed={unread}
+            className="flex size-5 shrink-0 items-start justify-center pt-1"
+          >
+            <motion.span
+              animate={{
+                scale: unread ? 1 : 0.75,
+                opacity: unread ? 1 : 0,
+                backgroundColor: unread ? "var(--color-primary)" : "var(--color-muted-foreground)",
+              }}
+              variants={unread ? undefined : { "row-hover": { scale: 1, opacity: 0.4 } }}
+              transition={{ duration: 0.15, ease: EASE }}
+              className="size-2 rounded-full"
+            />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={toggleRead}
+            disabled={pending}
+            aria-label={unread ? "Mark as read" : "Mark as unread"}
+            aria-pressed={unread}
+            className="flex size-5 shrink-0 items-start justify-center pt-1"
+          >
+            <motion.span
+              animate={{
+                scale: unread ? 1 : 0.75,
+                opacity: unread ? 1 : 0,
+                backgroundColor: unread ? "var(--color-primary)" : "var(--color-muted-foreground)",
+              }}
+              // When the row is hovered and the entry is read, show a ghost dot
+              // so users know they can click to mark it unread again.
+              variants={unread ? undefined : { "row-hover": { scale: 1, opacity: 0.4 } }}
+              transition={{ duration: 0.15, ease: EASE }}
+              className="size-2 rounded-full"
+            />
+          </button>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <FeedIcon siteUrl={feedSiteUrl} className="size-3.5 rounded-sm" />
+            {feedHref ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  router.push(feedHref);
+                }}
+                className="truncate text-muted-foreground transition-colors hover:text-foreground hover:underline"
+              >
+                {feedTitle}
+              </button>
+            ) : (
+              <span className="truncate">{feedTitle}</span>
+            )}
+            {sharerName && entry.shared_by && (
+              <>
+                <span aria-hidden>·</span>
+                <span className="truncate">
+                  reposted by{" "}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      router.push(`/users/${entry.shared_by}`);
+                    }}
+                    className="font-medium text-foreground hover:underline"
+                  >
+                    {sharerName}
+                  </button>
+                </span>
+              </>
+            )}
+            <span aria-hidden>·</span>
+            <time className="shrink-0">{formatRelative(entry.published_at)}</time>
+          </div>
+          <h3
+            className={cn(
+              "mt-1 line-clamp-1 text-sm",
+              unread ? "font-semibold text-foreground" : "font-medium text-foreground/80",
+            )}
+          >
+            {entry.title || "Untitled"}
+          </h3>
+          <p
+            className={cn(
+              "mt-1 line-clamp-4 min-h-[5rem] text-sm sm:line-clamp-2 sm:min-h-[2.5rem]",
+              unread ? "text-muted-foreground" : "text-muted-foreground/80",
+            )}
+          >
+            {snippet}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-start gap-0.5" onClick={(e) => e.stopPropagation()}>
+          {entry.comments_url && (
             <button
               type="button"
               onClick={(e) => {
-                e.stopPropagation();
                 e.preventDefault();
-                router.push(feedHref);
+                window.open(entry.comments_url!, "_blank", "noopener,noreferrer");
               }}
-              className="truncate text-muted-foreground transition-colors hover:text-foreground hover:underline"
+              aria-label="View comments"
+              className="flex size-8 items-center justify-center rounded-4xl text-muted-foreground hover:bg-muted hover:text-foreground"
             >
-              {feedTitle}
+              <MessageSquare className="size-3.5" />
             </button>
-          ) : (
-            <span className="truncate">{feedTitle}</span>
           )}
-          {sharerName && entry.shared_by && (
-            <>
-              <span aria-hidden>·</span>
-              <span className="truncate">
-                reposted by{" "}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    router.push(`/users/${entry.shared_by}`);
-                  }}
-                  className="font-medium text-foreground hover:underline"
-                >
-                  {sharerName}
-                </button>
-              </span>
-            </>
-          )}
-          <span aria-hidden>·</span>
-          <time className="shrink-0">{formatRelative(entry.published_at)}</time>
         </div>
-        <h3
-          className={cn(
-            "mt-1 line-clamp-1 text-sm",
-            unread ? "font-semibold text-foreground" : "font-medium text-foreground/80",
-          )}
-        >
-          {entry.title || "Untitled"}
-        </h3>
-        <p
-          className={cn(
-            "mt-1 line-clamp-4 min-h-[5rem] text-sm sm:line-clamp-2 sm:min-h-[2.5rem]",
-            unread ? "text-muted-foreground" : "text-muted-foreground/80",
-          )}
-        >
-          {snippet}
-        </p>
-      </div>
-      <div className="flex shrink-0 items-start gap-0.5" onClick={(e) => e.stopPropagation()}>
-        {entry.comments_url && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              window.open(entry.comments_url!, "_blank", "noopener,noreferrer");
-            }}
-            aria-label="View comments"
-            className="flex size-8 items-center justify-center rounded-4xl text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            <MessageSquare className="size-3.5" />
-          </button>
-        )}
-      </div>
       </div>
       {/* Footer: each count sits right next to its action button, bottom
        * left of the card. pl-8 (32px = read-dot 20 + gap 12) aligns the
@@ -330,7 +330,7 @@ export function EntryCard({
       >
         <ShareToggle entry={entry} feed={feed} shareId={shareId} size="icon-sm" />
         {(entry.repost_count ?? 0) > 0 && (
-          <span className="px-1 text-xs text-muted-foreground">{entry.repost_count}</span>
+          <span className="text-sm text-muted-foreground">{entry.repost_count}</span>
         )}
         <StarToggle
           entryId={entry.id}
@@ -338,9 +338,10 @@ export function EntryCard({
           entry={entry}
           feed={feed}
           size="icon-sm"
+          className="ml-2"
         />
         {(entry.star_count ?? 0) > 0 && (
-          <span className="px-1 text-xs text-muted-foreground">{entry.star_count}</span>
+          <span className="text-sm text-muted-foreground">{entry.star_count}</span>
         )}
       </div>
     </motion.a>
