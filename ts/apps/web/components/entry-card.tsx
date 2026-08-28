@@ -303,7 +303,7 @@ export function EntryCard({
             {snippet}
           </p>
         </div>
-        <div className="flex shrink-0 items-start gap-0.5" onClick={(e) => e.stopPropagation()}>
+        <div className="hidden shrink-0 items-start gap-0.5 sm:flex" onClick={(e) => e.stopPropagation()}>
           {entry.comments_url && (
             <button
               type="button"
@@ -321,9 +321,11 @@ export function EntryCard({
       </div>
       {/* Footer: each count sits right next to its action button, bottom
        * left of the card. pl-8 (32px = read-dot 20 + gap 12) aligns the
-       * actions under the content above; the comments button stays in its
-       * own top-right column. Counts render only when > 0 so the footer
-       * stays quiet for entries with no social signal. */}
+       * actions under the content above. On desktop the comments button
+       * stays in its own top-right column; on mobile it moves here, next
+       * to the star button, so the top row gives the title and description
+       * the full width. Counts render only when > 0 so the footer stays
+       * quiet for entries with no social signal. */}
       <div
         className="mt-2 flex items-center justify-start gap-0.5 pl-7"
         onClick={(e) => e.stopPropagation()}
@@ -342,6 +344,20 @@ export function EntryCard({
         />
         {(entry.star_count ?? 0) > 0 && (
           <span className="text-sm text-muted-foreground">{entry.star_count}</span>
+        )}
+        {entry.comments_url && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.open(entry.comments_url!, "_blank", "noopener,noreferrer");
+            }}
+            aria-label="View comments"
+            className="ml-2 flex size-8 items-center justify-center rounded-4xl text-muted-foreground hover:bg-muted hover:text-foreground sm:hidden"
+          >
+            <MessageSquare className="size-3.5" />
+          </button>
         )}
       </div>
     </motion.a>
