@@ -13,8 +13,12 @@ import type { Entry, Feed } from "@/lib/types";
 
 /**
  * Toggles the starred flag on an entry. Optimistically flips the star
- * immediately and rolls back on error. Invalidates entry queries so
- * starred/unread counts stay fresh after the mutation settles.
+ * immediately and rolls back on error. The star_count is relay-aggregated
+ * and eventually consistent, so we do NOT invalidate entries after the
+ * mutation — the optimistic star_count stays until the 30s background
+ * refetch reconciles it (by then the relay has caught up). Invalidating
+ * immediately would clobber the optimistic count with the stale relay
+ * value and make it flicker back down.
  *
  * Plays a scale-pop via framer-motion on every toggle for tactile feedback.
  *
@@ -91,7 +95,6 @@ export function StarToggle({
         });
         if (error) throw error;
       }
-      await queryClient.invalidateQueries({ queryKey: ["entries"] });
     } catch (err) {
       // Revert the optimistic cache patch so the count and star state
       // fall back to the server value.
