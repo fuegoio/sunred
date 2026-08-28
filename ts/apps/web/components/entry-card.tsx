@@ -127,8 +127,11 @@ export function EntryCard({
       setReadOptimistic(next === "read");
       setPending(true);
     });
-    if (next === "read") markReadSession(entry);
-    else removeReadSession(entry.id);
+    // Manual toggle does not pin the row into the session store — only opening
+    // the article does. A manual mark-read should leave the Unread view on the
+    // next refetch instead of being merged back as visible. Removing on
+    // toggle-unread covers entries previously added by opening the article.
+    if (next === "unread") removeReadSession(entry.id);
     // Patch the cache in place so the base value matches the optimistic
     // state. Without this, invalidating would revert useOptimistic to the
     // stale server value mid-refetch and the dot would flash back to its
