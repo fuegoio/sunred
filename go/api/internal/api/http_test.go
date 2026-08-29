@@ -723,3 +723,130 @@ func TestHTTP_EntriesRelayCounts(t *testing.T) {
 		}
 	}
 }
+
+// TestHTTP_EntriesLocalCounts verifies that repost_count and star_count on the
+// /entries response fall back to this instance's own shared_articles /
+// entry_stars when no relay is configured. A viewer's own share and star must
+// show up as count 1 so the UI doesn't revert the optimistic toggle to zero on
+// the next refetch.
+func TestHTTP_EntriesLocalCounts(t *testing.T) {
+	article := fmt.Sprintf("https://local-counts-%d.example.com/post", time.Now().UnixNano())
+	// No relay configured: newTestEnv leaves RelayURL empty.
+	e := newTestEnv(t)
+
+	feed, err := e.store.GetOrCreateFeed(context.Background(),
+		"https://localcountsfeed.example.com/rss", "https://localcountsfeed.example.com", "Local Counts Feed", "")
+	if err != nil {
+		t.Fatalf("seed feed: %v", err)
+	}
+	if _, err := e.store.CreateSubscription(context.Background(), e.userID, feed.ID, nil, ""); err != nil {
+		t.Fatalf("seed sub: %v", err)
+	}
+	entryHash := fmt.Sprintf("hash-local-counts-%d", time.Now().UnixNano())
+	if _, err := e.store.DB.Exec(
+		`INSERT INTO entries (feed_id, hash, title, url, content, published_at) VALUES ($1,$2,$3,$4,$5,NOW())`,
+		feed.ID, entryHash, "Local Counts Entry", article, "body",
+	); err != nil {
+		t.Fatalf("seed entry: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = e.store.DB.Exec(`DELETE FROM entries WHERE feed_id=$1 AND hash=$2`, feed.ID, entryHash)
+		_, _ = e.store.DB.Exec(`DELETE FROM shared_articles WHERE article_url=$1`, article)
+		_, _ = e.store.DB.Exec(`DELETE FROM entry_stars WHERE article_url=$1`, article)
+	})
+
+	// The viewer shares and stars the article directly in the store (the API
+	// handlers would do the same, just with a fire-and-forget PDS sync no-op).
+	if _, err := e.store.ShareArticle(context.Background(), e.userID,
+		article, "Local Counts Entry", "", "", "", "", "", nil); err != nil {
+		t.Fatalf("ShareArticle: %v", err)
+	}
+	if err := e.store.ToggleEntryStarredByURL(context.Background(), e.userID,
+		article, "Local Counts Entry", "", "", "", "", "", nil, true); err != nil {
+		t.Fatalf("ToggleEntryStarredByURL: %v", err)
+	}
+
+	resp := e.do(t, http.MethodGet, "/v1/entries", nil)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+	var entries []store.Entry
+	readJSON(t, resp, &entries)
+	var got *store.Entry
+	for i := range entries {
+		if entries[i].URL == article {
+			got = &entries[i]
+			break
+		}
+	}
+	if got == nil {
+		t.Fatalf("entry for %q not found in /v1/entries", article)
+	}
+	if got.RepostCount != 1 {
+		t.Errorf("repost_count = %d, want 1 (local share, no relay)", got.RepostCount)
+	}
+	if got.StarCount != 1 {
+		t.Errorf("star_count = %d, want 1 (local star, no relay)", got.StarCount)
+	}
+}
+
+// TestHTTP_EntriesLocalCountsBeatsRelay verifies that a locally-shared
+// article still reports count 1 when a relay is configured but hasn't
+// observed the share yet (returns nothing for that URL). This is the
+// production scenario: relay is wired, but the fire-and-forget PDS write
+// hasn't propagated (or the relay isn't tracking the sharer's DID), so the
+// relay count is 0 while the local shared_articles row already exists.
+// The API must take the max of relay and local, not let the stale relay
+// zero clobber the local count.
+func TestHTTP_EntriesLocalCountsBeatsRelay(t *testing.T) {
+	article := fmt.Sprintf("https://relay-zero-%d.example.com/post", time.Now().UnixNano())
+	// Relay configured but knows nothing about this article: empty counts map.
+	relayURL := fakeCountsRelay(t, map[string]struct{ ShareCount, StarCount int64 }{})
+	e := newTestEnvWithRelay(t, relayURL)
+
+	feed, err := e.store.GetOrCreateFeed(context.Background(),
+		"https://relayzerofeed.example.com/rss", "https://relayzerofeed.example.com", "Relay Zero Feed", "")
+	if err != nil {
+		t.Fatalf("seed feed: %v", err)
+	}
+	if _, err := e.store.CreateSubscription(context.Background(), e.userID, feed.ID, nil, ""); err != nil {
+		t.Fatalf("seed sub: %v", err)
+	}
+	entryHash := fmt.Sprintf("hash-relay-zero-%d", time.Now().UnixNano())
+	if _, err := e.store.DB.Exec(
+		`INSERT INTO entries (feed_id, hash, title, url, content, published_at) VALUES ($1,$2,$3,$4,$5,NOW())`,
+		feed.ID, entryHash, "Relay Zero Entry", article, "body",
+	); err != nil {
+		t.Fatalf("seed entry: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = e.store.DB.Exec(`DELETE FROM entries WHERE feed_id=$1 AND hash=$2`, feed.ID, entryHash)
+		_, _ = e.store.DB.Exec(`DELETE FROM shared_articles WHERE article_url=$1`, article)
+		_, _ = e.store.DB.Exec(`DELETE FROM entry_stars WHERE article_url=$1`, article)
+	})
+
+	if _, err := e.store.ShareArticle(context.Background(), e.userID,
+		article, "Relay Zero Entry", "", "", "", "", "", nil); err != nil {
+		t.Fatalf("ShareArticle: %v", err)
+	}
+
+	resp := e.do(t, http.MethodGet, "/v1/entries", nil)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+	var entries []store.Entry
+	readJSON(t, resp, &entries)
+	var got *store.Entry
+	for i := range entries {
+		if entries[i].URL == article {
+			got = &entries[i]
+			break
+		}
+	}
+	if got == nil {
+		t.Fatalf("entry for %q not found in /v1/entries", article)
+	}
+	if got.RepostCount != 1 {
+		t.Errorf("repost_count = %d, want 1 (local share beats relay zero)", got.RepostCount)
+	}
+}

@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lib/pq"
+
 	"github.com/fuegoio/sunred/go/api/internal/urlnorm"
 )
 
@@ -622,6 +624,68 @@ func (s *Store) ListPublicFeedsByUser(ctx context.Context, userID int) ([]Feed, 
 			return nil, err
 		}
 		out = append(out, f)
+	}
+	return out, rows.Err()
+}
+
+// LocalArticleCounts holds this instance's own repost (share) and star counts
+// for a single article URL, counted from shared_articles and entry_stars. It
+// is the local counterpart to the relay's network-wide ArticleCounts.
+type LocalArticleCounts struct {
+	ShareCount int
+	StarCount  int
+}
+
+// GetLocalArticleCountsBatch returns the number of distinct users on this
+// instance who have shared / starred each article URL, for a batch of URLs in
+// two set-based queries. URLs with no local shares or stars are absent from
+// the map (callers treat a missing key as zero). shared_articles and
+// entry_stars are keyed by (user_id, article_url), so COUNT(*) per article_url
+// is already the distinct-user count. Used as a supplement/fallback to the
+// relay's network-wide counts so repost and star counts render even when no
+// relay is configured (or before it has caught up): the API takes the max of
+// the local and relay counts.
+func (s *Store) GetLocalArticleCountsBatch(ctx context.Context, urls []string) (map[string]LocalArticleCounts, error) {
+	out := make(map[string]LocalArticleCounts, len(urls))
+	if len(urls) == 0 {
+		return out, nil
+	}
+
+	rows, err := s.DB.QueryContext(ctx, `
+		SELECT article_url, COUNT(*) FROM shared_articles
+		WHERE article_url = ANY($1) GROUP BY article_url`, pq.Array(urls))
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var u string
+		var n int
+		if err := rows.Scan(&u, &n); err != nil {
+			_ = rows.Close()
+			return nil, err
+		}
+		out[u] = LocalArticleCounts{ShareCount: n}
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+
+	rows, err = s.DB.QueryContext(ctx, `
+		SELECT article_url, COUNT(*) FROM entry_stars
+		WHERE article_url = ANY($1) GROUP BY article_url`, pq.Array(urls))
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+	for rows.Next() {
+		var u string
+		var n int
+		if err := rows.Scan(&u, &n); err != nil {
+			return nil, err
+		}
+		c := out[u]
+		c.StarCount = n
+		out[u] = c
 	}
 	return out, rows.Err()
 }

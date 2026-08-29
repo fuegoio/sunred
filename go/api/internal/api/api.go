@@ -731,11 +731,18 @@ type EntryOutput struct {
 }
 
 // enrichEntryCounts populates RepostCount and StarCount on each entry from
-// the relay's globally-accurate aggregates, fetched in a single batch call
-// per page. The store query leaves both fields at their zero value; this is
-// the only place they're set. When no relay is configured (or the batch
-// call fails), the map is empty and the counts stay zero — entries are still
-// returned, never failed, matching how other relay-backed counts behave.
+// the relay's globally-accurate aggregates, supplemented by this instance's
+// own shared_articles / entry_stars. The relay count is network-wide (across
+// all tracked DIDs); the local count is this instance only. We take the max
+// of the two so counts render even when no relay is configured (or before it
+// has caught up with a just-toggled share/star): a viewer's own share or star
+// is in the local DB immediately, so its count survives the entry list
+// refetch instead of reverting to the stale relay value of zero.
+//
+// The store query leaves both fields at their zero value; this is the only
+// place they're set. When no relay is configured (or the batch call fails),
+// the relay map is empty; when the local batch fails, the local map is empty
+// — neither ever fails the entries request.
 func (a *API) enrichEntryCounts(ctx context.Context, entries []store.Entry) {
 	if len(entries) == 0 {
 		return
@@ -758,14 +765,25 @@ func (a *API) enrichEntryCounts(ctx context.Context, entries []store.Entry) {
 	if len(urls) > 500 {
 		urls = urls[:500]
 	}
-	counts := a.relayGetArticleCounts(ctx, urls)
+	relayCounts := a.relayGetArticleCounts(ctx, urls)
+	localCounts, err := a.store.GetLocalArticleCountsBatch(ctx, urls)
+	if err != nil {
+		slog.Warn("local article counts batch", "n", len(urls), "err", err)
+		localCounts = nil
+	}
 	for i := range entries {
-		c, ok := counts[entries[i].URL]
-		if !ok {
-			continue
+		rc := relayCounts[entries[i].URL]
+		lc := localCounts[entries[i].URL]
+		shareCount := int(rc.ShareCount)
+		if lc.ShareCount > shareCount {
+			shareCount = lc.ShareCount
 		}
-		entries[i].RepostCount = int(c.ShareCount)
-		entries[i].StarCount = int(c.StarCount)
+		starCount := int(rc.StarCount)
+		if lc.StarCount > starCount {
+			starCount = lc.StarCount
+		}
+		entries[i].RepostCount = shareCount
+		entries[i].StarCount = starCount
 	}
 }
 
