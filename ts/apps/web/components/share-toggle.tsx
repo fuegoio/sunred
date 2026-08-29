@@ -17,6 +17,12 @@ import type { Entry, Feed } from "@/lib/types";
  *
  * `shareId` is null when the article is not yet reposted; after a successful
  * repost it becomes the server-assigned id so subsequent clicks unrepost.
+ *
+ * The repost_count is relay-aggregated and eventually consistent, so we do
+ * NOT invalidate entries after the mutation — the optimistic repost_count
+ * stays until the 30s background refetch reconciles it (by then the relay
+ * has caught up). Invalidating immediately would clobber the optimistic
+ * count with the stale relay value and make it flicker back down.
  */
 export function ShareToggle({
   entry,
@@ -83,7 +89,6 @@ export function ShareToggle({
         setShareId(data?.id ?? null);
         toast.success("Reposted to your timeline");
       }
-      await queryClient.invalidateQueries({ queryKey: ["entries"] });
     } catch (err) {
       patchRepostCount(shared, baseCount);
       toast.error(getApiErrorMessage(err, "Could not update repost"));
