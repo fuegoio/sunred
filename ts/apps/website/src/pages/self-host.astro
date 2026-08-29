@@ -2,344 +2,196 @@
 import Base from "../layouts/Base.astro"
 import Nav from "../components/Nav.astro"
 import Footer from "../components/Footer.astro"
-import Logo from "../components/Logo.astro"
+import Cta from "../components/Cta.astro"
+import PageHero from "../components/PageHero.astro"
+import Closing from "../components/Closing.astro"
+import SectionHead from "../components/SectionHead.astro"
+import FeatureCell from "../components/FeatureCell.astro"
+import CodeSample from "../components/CodeSample.astro"
 
 const loginUrl = "/login"
 const selfHostUrl = "https://github.com/fuegoio/sunred"
+
+const section = "border-t border-rule py-[clamp(4rem,10vh,6.5rem)]"
+const inlineCode =
+  "rounded-[0.3rem] border border-rule bg-bg-sunken px-[0.35rem] py-[0.1rem] font-mono text-[0.875em] text-ink-soft"
+const tag =
+  "inline-flex items-center gap-2 rounded-full border border-rule bg-[color-mix(in_oklab,var(--color-bg-raised)_60%,transparent)] px-[0.7rem] py-[0.35rem] font-mono text-[0.75rem] font-medium text-ink-soft"
+const tagDot =
+  "h-[0.45rem] w-[0.45rem] rounded-full bg-primary shadow-[0_0_0_3px_color-mix(in_oklab,var(--primary)_22%,transparent)]"
+const githubIcon =
+  '<svg width="17" height="17" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path></svg>'
+const arrow =
+  '<svg class="h-[17px] w-[17px] shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
+
+const compareRow =
+  "grid grid-cols-[1.2fr_1fr_1fr] items-center gap-[0.3rem] border-b border-rule px-5 py-[0.85rem] text-[0.9375rem] last:border-b-0 max-[768px]:grid-cols-1 max-[768px]:py-4"
+const compareHead =
+  "bg-[color-mix(in_oklab,var(--color-bg-sunken)_50%,transparent)] font-semibold text-ink max-[768px]:hidden"
 ---
 
-<Base title="Self-host — Sunred" description="Run Sunred on your own machine with Docker. Own your data end to end, or use the hosted version and skip the setup.">
-  <a href="#main" class="skip-link">Skip to content</a>
+<Base
+  title="Self-host — Sunred"
+  description="Run Sunred on your own machine with Docker. Own your data end to end, or use the hosted version and skip the setup."
+>
+  <a
+    href="#main"
+    class="absolute -top-full left-4 z-[100] rounded-[0.5rem] bg-primary px-5 py-[0.625rem] text-sm font-semibold text-primary-foreground transition-[top] duration-200 focus:top-4"
+  >
+    Skip to content
+  </a>
   <Nav active="self-host" />
 
-  <section class="page-hero" aria-label="Self-host">
-    <div class="page-hero-glow" aria-hidden="true"></div>
-    <div class="page-hero-inner reveal">
-      <span class="tag">
-        <span class="tag-dot"></span>
-        Docker · Open source · MIT
-      </span>
-      <h1 class="page-hero-headline">
-        Own your data,<br />or skip the setup.
-      </h1>
-      <p class="page-hero-lede">
-        Sunred runs anywhere with Docker — a single command gets you a
-        server, database, and web frontend. Or use the hosted version and
-        start reading in under a minute. Same API, same interfaces, same
-        social graph either way.
-      </p>
-      <div class="cta-row">
-        <a class="cta cta-primary" href={selfHostUrl}>
-          <svg width="17" height="17" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path></svg>
-          <span>View on GitHub</span>
-        </a>
-        <a class="cta cta-ghost" href={loginUrl}>Use the hosted version</a>
-      </div>
+  <PageHero label="Self-host">
+    <span class:list={[tag, "mb-7"]}>
+      <span class={tagDot}></span>
+      Docker · Open source · MIT
+    </span>
+    <h1
+      class="mt-0 mb-6 font-display text-[clamp(2.5rem,7vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-ink [text-wrap:balance]"
+    >
+      Own your data,<br />or skip the setup.
+    </h1>
+    <p
+      class="mt-0 max-w-[38rem] text-[clamp(1.125rem,2.5vw,1.375rem)] leading-[1.55] text-ink-soft [text-wrap:pretty]"
+    >
+      Sunred runs anywhere with Docker — a single command gets you a
+      server, database, and web frontend. Or use the hosted version and
+      start reading in under a minute. Same API, same interfaces, same
+      social graph either way.
+    </p>
+    <div class="mt-10 flex flex-wrap items-center gap-3">
+      <Cta href={selfHostUrl} variant="primary">
+        <Fragment set:html={githubIcon} />
+        <span>View on GitHub</span>
+      </Cta>
+      <Cta href={loginUrl} variant="ghost">Use the hosted version</Cta>
     </div>
-  </section>
+  </PageHero>
 
   <main id="main">
     <!-- Install -->
-    <section class="install-section" aria-labelledby="install-heading">
-      <div class="section-inner section-inner-narrow">
-        <header class="section-head">
-          <span class="section-mark">/ install</span>
-          <h2 id="install-heading" class="section-headline">One command.</h2>
-          <p class="section-lede">
-            Docker Compose brings up the Sunred server, database, and web
-            frontend in one step. Point a domain at it and you're running.
-          </p>
-        </header>
+    <section class={section} aria-labelledby="install-heading">
+      <div class="mx-auto max-w-[46rem] px-[clamp(1.25rem,4vw,2.5rem)]">
+        <SectionHead
+          mark="/ install"
+          headlineId="install-heading"
+          lede="Docker Compose brings up the Sunred server, database, and web frontend in one step. Point a domain at it and you're running."
+        >
+          One command.
+        </SectionHead>
 
-        <div class="code-sample" role="region" aria-label="Docker install">
-          <div class="code-tabbar" aria-hidden="true">
-            <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
-            <span class="code-label">terminal</span>
-            <span class="code-spacer"></span>
-            <span class="code-keys">bash</span>
+        <CodeSample label="Docker install" class="mb-10">
+          <span class="font-semibold text-primary">$</span> docker run -d -p 3000:3000 \
+              -e DATABASE_URL=postgres://... \
+              -v sunred-data:/data \
+              sunred/sunred:latest
+
+          <span class="font-semibold text-primary">$</span> curl localhost:3000/api/v1/health
+          <span class="text-[oklch(0.6_0.012_50)]"># status: ok</span>
+
+          <span class="font-semibold text-primary">$</span> sunred feeds add https://example.com/feed.xml
+          <span class="text-[oklch(0.6_0.012_50)]"># Added "Example Blog" to Technology</span>
+        </CodeSample>
+
+        <div class="grid grid-cols-3 gap-5 max-[768px]:grid-cols-1">
+          <div class="rounded-[0.75rem] border border-rule bg-[color-mix(in_oklab,var(--color-bg-raised)_70%,transparent)] px-[1.6rem] py-[1.75rem]">
+            <span class="mb-3 block font-mono text-[0.875rem] font-semibold text-primary">1</span>
+            <h3 class="mt-0 mb-2 font-display text-[1.0625rem] font-semibold tracking-[-0.01em] text-ink">Run the container</h3>
+            <p class="mt-0 text-[0.9375rem] leading-[1.6] text-ink-soft">One Docker command. Provide a database URL and a volume for data persistence. The server, web frontend, and scheduler all run in the same process.</p>
           </div>
-          <pre class="code-body"><code><span class="code-prompt">$</span> docker run -d -p 3000:3000 \
-    -e DATABASE_URL=postgres://... \
-    -v sunred-data:/data \
-    sunred/sunred:latest
-
-<span class="code-prompt">$</span> curl localhost:3000/api/v1/health
-<span class="code-comment"># status: ok</span>
-
-<span class="code-prompt">$</span> sunred feeds add https://example.com/feed.xml
-<span class="code-comment"># Added "Example Blog" to Technology</span></code></pre>
-        </div>
-
-        <div class="install-grid">
-          <div class="install-step">
-            <span class="install-step-num">1</span>
-            <h3>Run the container</h3>
-            <p>One Docker command. Provide a database URL and a volume for data persistence. The server, web frontend, and scheduler all run in the same process.</p>
+          <div class="rounded-[0.75rem] border border-rule bg-[color-mix(in_oklab,var(--color-bg-raised)_70%,transparent)] px-[1.6rem] py-[1.75rem]">
+            <span class="mb-3 block font-mono text-[0.875rem] font-semibold text-primary">2</span>
+            <h3 class="mt-0 mb-2 font-display text-[1.0625rem] font-semibold tracking-[-0.01em] text-ink">Point a domain at it</h3>
+            <p class="mt-0 text-[0.9375rem] leading-[1.6] text-ink-soft">Put a reverse proxy (Caddy, nginx, Traefik) in front with TLS. The server respects <code class={inlineCode}>X-Forwarded-*</code> headers for redirects and canonical URLs.</p>
           </div>
-          <div class="install-step">
-            <span class="install-step-num">2</span>
-            <h3>Point a domain at it</h3>
-            <p>Put a reverse proxy (Caddy, nginx, Traefik) in front with TLS. The server respects <code class="inline-code">X-Forwarded-*</code> headers for redirects and canonical URLs.</p>
-          </div>
-          <div class="install-step">
-            <span class="install-step-num">3</span>
-            <h3>Add your feeds</h3>
-            <p>Open the web app, create an account, and import your existing feeds with OPML. Or use the CLI to script everything.</p>
+          <div class="rounded-[0.75rem] border border-rule bg-[color-mix(in_oklab,var(--color-bg-raised)_70%,transparent)] px-[1.6rem] py-[1.75rem]">
+            <span class="mb-3 block font-mono text-[0.875rem] font-semibold text-primary">3</span>
+            <h3 class="mt-0 mb-2 font-display text-[1.0625rem] font-semibold tracking-[-0.01em] text-ink">Add your feeds</h3>
+            <p class="mt-0 text-[0.9375rem] leading-[1.6] text-ink-soft">Open the web app, create an account, and import your existing feeds with OPML. Or use the CLI to script everything.</p>
           </div>
         </div>
       </div>
     </section>
 
     <!-- Why self-host -->
-    <section class="why-section" aria-labelledby="why-heading">
-      <div class="section-inner">
-        <header class="section-head">
-          <span class="section-mark">/ why</span>
-          <h2 id="why-heading" class="section-headline">Why self-host?</h2>
-        </header>
-        <div class="why-grid">
-          <article class="feature-cell">
-            <div class="feature-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            </div>
-            <h3>Your data, your machine</h3>
-            <p>Your feeds, read states, and stars live on your server. No third party has them. Your reading history is not a product.</p>
-          </article>
-          <article class="feature-cell">
-            <div class="feature-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-            </div>
-            <h3>No vendor lock-in</h3>
-            <p>Open source under MIT. Export your feeds with OPML anytime. Your social graph is on your PDS, not in our database.</p>
-          </article>
-          <article class="feature-cell">
-            <div class="feature-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            </div>
-            <h3>Always available</h3>
-            <p>No rate limits, no API quotas, no uptime dependency on someone else's infrastructure. Your reader is up when your server is up.</p>
-          </article>
-          <article class="feature-cell">
-            <div class="feature-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><path d="M9 12l2 2 4-4"/></svg>
-            </div>
-            <h3>Your rules</h3>
-            <p>Configure the scheduler, tune polling, set retention policies. Full control over how feeds are fetched and how long entries are kept.</p>
-          </article>
+    <section class={section} aria-labelledby="why-heading">
+      <div class="mx-auto max-w-[72rem] px-[clamp(1.25rem,4vw,2.5rem)]">
+        <SectionHead mark="/ why" headlineId="why-heading">Why self-host?</SectionHead>
+        <div class="grid grid-cols-2 gap-5 max-[768px]:grid-cols-1">
+          <FeatureCell title="Your data, your machine">
+            <span slot="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+            Your feeds, read states, and stars live on your server. No third party has them. Your reading history is not a product.
+          </FeatureCell>
+          <FeatureCell title="No vendor lock-in">
+            <span slot="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>
+            Open source under MIT. Export your feeds with OPML anytime. Your social graph is on your PDS, not in our database.
+          </FeatureCell>
+          <FeatureCell title="Always available">
+            <span slot="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+            No rate limits, no API quotas, no uptime dependency on someone else's infrastructure. Your reader is up when your server is up.
+          </FeatureCell>
+          <FeatureCell title="Your rules">
+            <span slot="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><path d="M9 12l2 2 4-4"/></svg></span>
+            Configure the scheduler, tune polling, set retention policies. Full control over how feeds are fetched and how long entries are kept.
+          </FeatureCell>
         </div>
       </div>
     </section>
 
     <!-- Hosted vs self-hosted -->
-    <section class="compare-section" aria-labelledby="compare-heading">
-      <div class="section-inner section-inner-narrow">
-        <header class="section-head">
-          <span class="section-mark">/ compare</span>
-          <h2 id="compare-heading" class="section-headline">Hosted or self-hosted?</h2>
-          <p class="section-lede">
-            Same product. Same API. Same social graph. The only difference is
-            where the data lives.
-          </p>
-        </header>
+    <section class={section} aria-labelledby="compare-heading">
+      <div class="mx-auto max-w-[46rem] px-[clamp(1.25rem,4vw,2.5rem)]">
+        <SectionHead
+          mark="/ compare"
+          headlineId="compare-heading"
+          lede="Same product. Same API. Same social graph. The only difference is where the data lives."
+        >
+          Hosted or self-hosted?
+        </SectionHead>
 
-        <div class="compare-table">
-          <div class="compare-row compare-head-row">
+        <div class="flex flex-col overflow-hidden rounded-[0.75rem] border border-rule">
+          <div class:list={[compareRow, compareHead]}>
             <span></span>
-            <span class="compare-col">Hosted</span>
-            <span class="compare-col">Self-hosted</span>
+            <span class="text-center font-display font-semibold">Hosted</span>
+            <span class="text-center font-display font-semibold">Self-hosted</span>
           </div>
-          <div class="compare-row">
-            <span class="compare-label">Setup time</span>
-            <span class="compare-val">Under a minute</span>
-            <span class="compare-val">One Docker command</span>
-          </div>
-          <div class="compare-row">
-            <span class="compare-label">Data location</span>
-            <span class="compare-val">sunred.app servers</span>
-            <span class="compare-val">Your machine</span>
-          </div>
-          <div class="compare-row">
-            <span class="compare-label">Social graph</span>
-            <span class="compare-val">Federated (AT Protocol)</span>
-            <span class="compare-val">Federated (AT Protocol)</span>
-          </div>
-          <div class="compare-row">
-            <span class="compare-label">REST API</span>
-            <span class="compare-val check">Yes</span>
-            <span class="compare-val check">Yes</span>
-          </div>
-          <div class="compare-row">
-            <span class="compare-label">CLI / TUI</span>
-            <span class="compare-val check">Yes</span>
-            <span class="compare-val check">Yes</span>
-          </div>
-          <div class="compare-row">
-            <span class="compare-label">Cost</span>
-            <span class="compare-val">Free</span>
-            <span class="compare-val">Your server</span>
-          </div>
+          {
+            [
+              { label: "Setup time", a: "Under a minute", b: "One Docker command" },
+              { label: "Data location", a: "sunred.app servers", b: "Your machine" },
+              { label: "Social graph", a: "Federated (AT Protocol)", b: "Federated (AT Protocol)" },
+              { label: "REST API", a: "Yes", b: "Yes", check: true },
+              { label: "CLI / TUI", a: "Yes", b: "Yes", check: true },
+              { label: "Cost", a: "Free", b: "Your server" },
+            ].map((row) => (
+              <div class={compareRow}>
+                <span class="font-medium text-ink-soft">{row.label}</span>
+                <span class:list={["text-center", row.check ? "font-medium text-ink" : "text-ink-soft", "max-[768px]:text-left"]}>{row.a}</span>
+                <span class:list={["text-center", row.check ? "font-medium text-ink" : "text-ink-soft", "max-[768px]:text-left"]}>{row.b}</span>
+              </div>
+            ))
+          }
         </div>
 
-        <div class="compare-cta">
-          <a class="cta cta-primary" href={loginUrl}>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <Cta href={loginUrl} variant="primary">
             <span>Try the hosted version</span>
-            <svg class="cta-arrow" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-          </a>
-          <a class="cta cta-ghost" href="https://sunred.dev/docs/self-hosting">Self-hosting docs</a>
+            <Fragment set:html={arrow} />
+          </Cta>
+          <Cta href="https://sunred.dev/docs/self-hosting" variant="ghost">Self-hosting docs</Cta>
         </div>
       </div>
     </section>
   </main>
 
-  <section class="closing" aria-label="Get started">
-    <div class="closing-glow" aria-hidden="true"></div>
-    <div class="closing-inner">
-      <Logo class="closing-mark" static />
-      <h2 class="closing-headline">Your reader, your machine.</h2>
-      <p class="closing-lede">Open source. Self-hostable. Yours.</p>
-      <div class="cta-row">
-        <a class="cta cta-primary" href={selfHostUrl}>
-          <svg width="17" height="17" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path></svg>
-          <span>View on GitHub</span>
-        </a>
-        <a class="cta cta-ghost" href={loginUrl}>Use the hosted version</a>
-      </div>
-    </div>
-  </section>
+  <Closing headline="Your reader, your machine." lede="Open source. Self-hostable. Yours." label="Get started">
+    <Cta href={selfHostUrl} variant="primary">
+      <Fragment set:html={githubIcon} />
+      <span>View on GitHub</span>
+    </Cta>
+    <Cta href={loginUrl} variant="ghost">Use the hosted version</Cta>
+  </Closing>
 
   <Footer />
 </Base>
-
-<style is:global>
-  .page-hero .cta-row { margin-top: 2.5rem; }
-  .page-hero .tag { margin-bottom: 1.75rem; }
-
-  .install-section {
-    padding: clamp(4rem, 10vh, 6.5rem) 0;
-    border-top: 1px solid var(--color-rule);
-  }
-  .install-section .code-sample {
-    margin-bottom: 2.5rem;
-  }
-  .install-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
-  }
-  .install-step {
-    padding: 1.75rem 1.6rem;
-    border: 1px solid var(--color-rule);
-    border-radius: 0.75rem;
-    background-color: color-mix(in oklab, var(--color-bg-raised) 70%, transparent);
-  }
-  .install-step-num {
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--primary);
-    display: block;
-    margin-bottom: 0.75rem;
-  }
-  .install-step h3 {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1.0625rem;
-    letter-spacing: -0.01em;
-    margin: 0 0 0.5rem;
-    color: var(--color-ink);
-  }
-  .install-step p {
-    margin: 0;
-    font-size: 0.9375rem;
-    line-height: 1.6;
-    color: var(--color-ink-soft);
-  }
-  .inline-code {
-    font-family: var(--font-mono);
-    font-size: 0.875em;
-    padding: 0.1rem 0.35rem;
-    border-radius: 0.3rem;
-    border: 1px solid var(--color-rule);
-    background-color: var(--color-bg-sunken);
-    color: var(--color-ink-soft);
-  }
-
-  .why-section {
-    padding: clamp(4rem, 10vh, 6.5rem) 0;
-    border-top: 1px solid var(--color-rule);
-  }
-  .why-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.25rem;
-  }
-
-  .compare-section {
-    padding: clamp(4rem, 10vh, 6.5rem) 0;
-    border-top: 1px solid var(--color-rule);
-  }
-  .compare-table {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--color-rule);
-    border-radius: 0.75rem;
-    overflow: hidden;
-  }
-  .compare-row {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr 1fr;
-    align-items: center;
-    padding: 0.85rem 1.25rem;
-    border-bottom: 1px solid var(--color-rule);
-    font-size: 0.9375rem;
-  }
-  .compare-row:last-child { border-bottom: none; }
-  .compare-head-row {
-    background-color: color-mix(in oklab, var(--color-bg-sunken) 50%, transparent);
-    font-weight: 600;
-    color: var(--color-ink);
-  }
-  .compare-col {
-    font-family: var(--font-display);
-    font-weight: 600;
-    text-align: center;
-  }
-  .compare-label {
-    color: var(--color-ink-soft);
-    font-weight: 500;
-  }
-  .compare-val {
-    text-align: center;
-    color: var(--color-ink-soft);
-  }
-  .compare-val.check {
-    color: var(--color-ink);
-    font-weight: 500;
-  }
-  .compare-cta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 2rem;
-  }
-
-  @media (max-width: 768px) {
-    .install-grid { grid-template-columns: 1fr; }
-    .why-grid { grid-template-columns: 1fr; }
-    .compare-row {
-      grid-template-columns: 1fr;
-      gap: 0.3rem;
-      padding: 1rem 1.25rem;
-    }
-    .compare-head-row { display: none; }
-    .compare-label::before {
-      content: attr(data-label);
-    }
-    .compare-val {
-      text-align: left;
-    }
-    .compare-row {
-      border-bottom: 1px solid var(--color-rule);
-    }
-  }
-</style>

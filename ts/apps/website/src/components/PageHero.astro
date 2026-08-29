@@ -1,0 +1,25 @@
+---
+interface Props {
+  label?: string
+  class?: string
+}
+
+const { label, class: className = "" } = Astro.props
+---
+
+<section
+  aria-label={label}
+  class:list={[
+    "relative isolate overflow-hidden border-b border-rule px-[clamp(1.25rem,4vw,2.5rem)] pt-[clamp(4rem,10vh,6rem)] pb-[clamp(3rem,7vh,4.5rem)]",
+    className,
+  ]}
+>
+  <div
+    aria-hidden="true"
+    class="absolute -top-[30%] left-1/2 h-[500px] w-[min(800px,90vw)] -translate-x-1/2 -z-10 rounded-full bg-[radial-gradient(circle_at_center,oklch(0.74_0.2_45/0.12)_0%,oklch(0.6_0.16_50/0.05)_38%,transparent_68%)] blur-[8px]"
+  >
+  </div>
+  <div class="reveal mx-auto max-w-[72rem]">
+    <slot />
+  </div>
+</section>

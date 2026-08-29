@@ -1,0 +1,46 @@
+---
+interface Props {
+  label?: string
+  lang?: string
+  class?: string
+}
+
+const {
+  label = "Sunred CLI sample",
+  lang = "bash",
+  class: className = "",
+} = Astro.props
+
+const dots = [
+  "bg-[oklch(0.7_0.14_30)]",
+  "bg-[oklch(0.72_0.15_75)]",
+  "bg-[oklch(0.68_0.16_145)]",
+]
+---
+
+<div
+  role="region"
+  aria-label={label}
+  class:list={[
+    "overflow-hidden rounded-[0.75rem] border border-rule-strong bg-bg-sunken",
+    className,
+  ]}
+>
+  <div class="flex items-center gap-2 border-b border-rule px-[0.9rem] py-[0.65rem]">
+    {
+      dots.map((d) => (
+        <span class:list={["h-[0.7rem] w-[0.7rem] rounded-full", d]}></span>
+      ))
+    }
+    <span class="ml-2 font-mono text-[0.72rem] text-ink-faint">terminal</span>
+    <span class="flex-1"></span>
+    <span
+      class="rounded-[0.3rem] border border-rule px-[0.4rem] py-[0.12rem] font-mono text-[0.65rem] text-ink-faint"
+    >
+      {lang}
+    </span>
+  </div>
+  <pre
+    class="m-0 overflow-x-auto px-[1.35rem] py-[1.15rem] font-mono text-[0.8125rem] leading-[1.75] text-[oklch(0.84_0.01_50)]"
+  ><code><slot /></code></pre>
+</div>

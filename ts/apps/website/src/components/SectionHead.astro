@@ -1,0 +1,46 @@
+---
+interface Props {
+  mark?: string
+  lede?: string
+  headlineId?: string
+  tight?: boolean
+  class?: string
+}
+
+const {
+  mark,
+  lede,
+  headlineId,
+  tight = false,
+  class: className = "",
+} = Astro.props
+---
+
+<header
+  class:list={[
+    "max-w-[44rem]",
+    tight ? "mb-[clamp(1.75rem,4vh,2.5rem)]" : "mb-[clamp(2.5rem,6vh,4rem)]",
+    className,
+  ]}
+>
+  {
+    mark && (
+      <span class="mb-5 inline-block font-mono text-[0.8125rem] font-medium text-[color-mix(in_oklab,var(--primary)_75%,var(--color-ink))]">
+        {mark}
+      </span>
+    )
+  }
+  <h2
+    id={headlineId}
+    class="mt-0 mb-5 font-display text-[clamp(2rem,5vw,3.25rem)] font-semibold leading-[1.08] tracking-[-0.035em] text-ink [text-wrap:balance]"
+  >
+    <slot />
+  </h2>
+  {
+    lede && (
+      <p class="mt-0 max-w-[38rem] text-[1.125rem] leading-[1.6] text-ink-soft [text-wrap:pretty]">
+        {lede}
+      </p>
+    )
+  }
+</header>

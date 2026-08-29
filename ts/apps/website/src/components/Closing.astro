@@ -1,0 +1,39 @@
+---
+import Logo from "./Logo.astro"
+
+interface Props {
+  headline: string
+  lede: string
+  label?: string
+  class?: string
+}
+
+const { headline, lede, label = "Get started", class: className = "" } =
+  Astro.props
+---
+
+<section
+  aria-label={label}
+  class:list={[
+    "relative isolate overflow-hidden border-t border-rule px-6 py-[clamp(6rem,16vh,10rem)] text-center",
+    className,
+  ]}
+>
+  <div
+    aria-hidden="true"
+    class="absolute top-1/2 left-1/2 h-[460px] w-[min(760px,90vw)] -translate-x-1/2 -translate-y-1/2 -z-10 rounded-full bg-[radial-gradient(circle_at_center,oklch(0.74_0.2_45/0.14)_0%,oklch(0.6_0.16_50/0.06)_40%,transparent_68%)] blur-[10px]"
+  >
+  </div>
+  <div class="mx-auto flex max-w-[40rem] flex-col items-center">
+    <Logo class="mb-6 h-[3.25rem] w-[3.25rem]" static />
+    <h2 class="mt-0 font-display text-[clamp(2.25rem,6vw,3.5rem)] font-semibold leading-[1.05] tracking-[-0.035em] text-ink [text-wrap:balance]">
+      {headline}
+    </h2>
+    <p class="mt-5 max-w-[30rem] text-[1.125rem] leading-[1.55] text-ink-soft">
+      {lede}
+    </p>
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+      <slot />
+    </div>
+  </div>
+</section>
