@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.svg" alt="Sunred logo" width="120" />
+</p>
+
 # Sunred
 
 A self-hosted RSS reader.
