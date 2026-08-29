@@ -28,19 +28,41 @@ function sectionUrls(tabUrl: string): Set<string> | undefined {
   const folder = source.pageTree.children.find(
     (c): c is Folder =>
       c.type === "folder" &&
-      (c.index?.url ?? c.children.find((n): n is Extract<Node, { type: "page" }> => n.type === "page")?.url) === tabUrl,
+      (c.index?.url ??
+        c.children.find((n): n is Extract<Node, { type: "page" }> => n.type === "page")?.url) ===
+        tabUrl,
   );
   return folder ? collectPageUrls(folder) : undefined;
 }
 
 const DocsIcon = (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
     <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
   </svg>
 );
 const SelfHostIcon = (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect width="20" height="8" x="2" y="2" rx="2" ry="2" />
     <rect width="20" height="8" x="2" y="14" rx="2" ry="2" />
     <line x1="6" x2="6.01" y1="6" y2="6" />
@@ -48,7 +70,17 @@ const SelfHostIcon = (
   </svg>
 );
 const ApiRefIcon = (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polyline points="16 18 22 12 16 6" />
     <polyline points="8 6 2 12 8 18" />
   </svg>
@@ -82,12 +114,13 @@ export function baseOptions(props: BaseLayoutProps = {}): BaseLayoutProps {
   return {
     nav: {
       title: (
-        <span className="flex items-center gap-2 font-semibold">
+        <span className="flex items-center gap-2 font-semibold font-serif px-1.5">
           <Logo className="size-5" />
           Sunred
         </span>
       ),
     },
+    githubUrl: "https://github.com/fuegoio/sunred",
     ...props,
   };
 }
