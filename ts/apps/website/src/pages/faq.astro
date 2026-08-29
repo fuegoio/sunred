@@ -2,187 +2,240 @@
 import Base from "../layouts/Base.astro"
 import Nav from "../components/Nav.astro"
 import Footer from "../components/Footer.astro"
-import Logo from "../components/Logo.astro"
+import Cta from "../components/Cta.astro"
+import PageHero from "../components/PageHero.astro"
+import Closing from "../components/Closing.astro"
 
 const loginUrl = "/login"
 const selfHostUrl = "https://github.com/fuegoio/sunred"
+
+const inlineCode =
+  "rounded-[0.3rem] border border-rule bg-bg-sunken px-[0.35rem] py-[0.1rem] font-mono text-[0.875em] text-ink-soft"
+const answerLink =
+  "text-[color-mix(in_oklab,var(--primary)_85%,var(--color-ink))] underline underline-offset-[0.15em]"
 ---
 
-<Base title="FAQ — Sunred" description="Common questions about Sunred: federation, Bluesky, self-hosting, feed formats, the API, and more.">
-  <a href="#main" class="skip-link">Skip to content</a>
+<Base
+  title="FAQ — Sunred"
+  description="Common questions about Sunred: federation, Bluesky, self-hosting, feed formats, the API, and more."
+>
+  <a
+    href="#main"
+    class="absolute -top-full left-4 z-[100] rounded-[0.5rem] bg-primary px-5 py-[0.625rem] text-sm font-semibold text-primary-foreground transition-[top] duration-200 focus:top-4"
+  >
+    Skip to content
+  </a>
   <Nav active="faq" />
 
-  <section class="page-hero" aria-label="FAQ">
-    <div class="page-hero-glow" aria-hidden="true"></div>
-    <div class="page-hero-inner reveal">
-      <h1 class="page-hero-headline">Good to know.</h1>
-      <p class="page-hero-lede">
-        Common questions about Sunred, federation, self-hosting, and the API.
-        Don't see your question? Ask in the GitHub issues.
-      </p>
-    </div>
-  </section>
+  <PageHero label="FAQ">
+    <h1
+      class="mt-0 mb-6 font-display text-[clamp(2.5rem,7vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-ink [text-wrap:balance]"
+    >
+      Good to know.
+    </h1>
+    <p
+      class="mt-0 max-w-[38rem] text-[clamp(1.125rem,2.5vw,1.375rem)] leading-[1.55] text-ink-soft [text-wrap:pretty]"
+    >
+      Common questions about Sunred, federation, self-hosting, and the API.
+      Don't see your question? Ask in the GitHub issues.
+    </p>
+  </PageHero>
 
-  <main id="main" class="faq-page">
-    <div class="section-inner section-inner-narrow">
+  <main id="main" class="py-[clamp(3rem,8vh,5rem)]">
+    <div class="mx-auto max-w-[46rem] px-[clamp(1.25rem,4vw,2.5rem)]">
       <!-- General -->
-      <section class="faq-group" aria-labelledby="general-heading">
-        <h2 id="general-heading" class="faq-group-heading">General</h2>
-        <div class="faq-list">
-          <details class="faq-item">
-            <summary>What feed formats does Sunred support?<span class="faq-toggle" aria-hidden="true"></span></summary>
-            <div class="faq-answer"><p>RSS 2.0, Atom 1.0, and JSON Feed. If a site publishes a feed in any of these formats, you can subscribe to it — blogs, news, podcasts, anything.</p></div>
-          </details>
-          <details class="faq-item">
-            <summary>Is there tracking or advertising?<span class="faq-toggle" aria-hidden="true"></span></summary>
-            <div class="faq-answer"><p>No. Sunred has no ads, no tracking, no analytics, no algorithmic feed. You see the entries from the feeds you subscribed to and the articles shared by people you follow, in the order they were published.</p></div>
-          </details>
-          <details class="faq-item">
-            <summary>Is there a mobile app?<span class="faq-toggle" aria-hidden="true"></span></summary>
-            <div class="faq-answer"><p>The web app is fully responsive and works great on mobile browsers. There's no native app — the web interface is the app. The REST API means anyone could build one, too.</p></div>
-          </details>
-          <details class="faq-item">
-            <summary>Can I import my feeds from another reader?<span class="faq-toggle" aria-hidden="true"></span></summary>
-            <div class="faq-answer"><p>Yes. Sunred supports OPML import. Export your feeds from any RSS reader (Feedly, Inoreader, NetNewsWire, etc.) as an OPML file and import them directly.</p></div>
-          </details>
+      <section aria-labelledby="general-heading" class="mb-[clamp(3rem,8vh,4.5rem)]">
+        <h2
+          id="general-heading"
+          class="mt-0 mb-5 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-ink-faint"
+        >
+          General
+        </h2>
+        <div class="flex flex-col border-t border-rule">
+          {
+            [
+              {
+                q: "What feed formats does Sunred support?",
+                a: <p>RSS 2.0, Atom 1.0, and JSON Feed. If a site publishes a feed in any of these formats, you can subscribe to it — blogs, news, podcasts, anything.</p>,
+              },
+              {
+                q: "Is there tracking or advertising?",
+                a: <p>No. Sunred has no ads, no tracking, no analytics, no algorithmic feed. You see the entries from the feeds you subscribed to and the articles shared by people you follow, in the order they were published.</p>,
+              },
+              {
+                q: "Is there a mobile app?",
+                a: <p>The web app is fully responsive and works great on mobile browsers. There's no native app — the web interface is the app. The REST API means anyone could build one, too.</p>,
+              },
+              {
+                q: "Can I import my feeds from another reader?",
+                a: <p>Yes. Sunred supports OPML import. Export your feeds from any RSS reader (Feedly, Inoreader, NetNewsWire, etc.) as an OPML file and import them directly.</p>,
+              },
+            ].map((item) => (
+              <details class="group border-b border-rule">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-[1.35rem] font-body text-[1.0625rem] font-medium text-ink transition-colors duration-150 hover:text-[color-mix(in_oklab,var(--primary)_80%,var(--color-ink))] [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                  <span class="relative h-5 w-5 shrink-0 text-ink-faint transition-colors duration-150 group-hover:text-[color-mix(in_oklab,var(--primary)_70%,var(--color-ink-soft))]" aria-hidden="true">
+                    <span class="absolute top-1/2 left-0 h-[1.5px] w-full -translate-y-1/2 rounded-[1px] bg-current" />
+                    <span class="absolute left-1/2 top-0 h-full w-[1.5px] -translate-x-1/2 rounded-[1px] bg-current transition-[scale] duration-200 group-open:scale-y-0" />
+                  </span>
+                </summary>
+                <div class="pb-[1.35rem]">{item.a}</div>
+              </details>
+            ))
+          }
         </div>
       </section>
 
       <!-- Social & federation -->
-      <section class="faq-group" aria-labelledby="social-heading">
-        <h2 id="social-heading" class="faq-group-heading">Social &amp; federation</h2>
-        <div class="faq-list">
-          <details class="faq-item">
-            <summary>Is the social graph really federated?<span class="faq-toggle" aria-hidden="true"></span></summary>
-            <div class="faq-answer"><p>Yes. Follows and shares are AT Protocol records on your own PDS (personal data server). When you sign into another Sunred instance, your follows and shares come with you — no export/import step. A relay aggregates records across instances so follower counts, share counts, and search results span the whole network.</p></div>
-          </details>
-          <details class="faq-item">
-            <summary>Do I need a Bluesky account?<span class="faq-toggle" aria-hidden="true"></span></summary>
-            <div class="faq-answer"><p>No. Sunred uses the AT Protocol for identity and federation, which is the same protocol Bluesky uses. Your Sunred account is its own AT Proto identity with its own DID and PDS. If you already have a Bluesky account, the protocols are compatible but the accounts are separate.</p></div>
-          </details>
-          <details class="faq-item">
-            <summary>Can I follow people on other instances?<span class="faq-toggle" aria-hidden="true"></span></summary>
-            <div class="faq-answer"><p>Yes. When a relay is configured, search results include people on other instances. You can follow anyone across the network — their shares will appear in your timeline just like shares from people on your instance.</p></div>
-          </details>
-          <details class="faq-item">
-            <summary>Where does my data live?<span class="faq-toggle" aria-hidden="true"></span></summary>
-            <div class="faq-answer"><p>Your social data (follows, shares, feed subscriptions) lives on your PDS as AT Protocol records. Your reading data (read states, stars) lives on the Sunred instance you use. If you self-host, both are on your machine. If you use the hosted version, your reading data is on sunred.app servers, but your social graph is still on your PDS and portable.</p></div>
-          </details>
-          <details class="faq-item">
-            <summary>What happens to my follows if I move instances?<span class="faq-toggle" aria-hidden="true"></span></summary>
-            <div class="faq-answer"><p>Because follows are AT Protocol records on your PDS, they travel with you. Sign into a new instance with the same identity and your social graph is there. No re-following, no export/import.</p></div>
-          </details>
+      <section aria-labelledby="social-heading" class="mb-[clamp(3rem,8vh,4.5rem)]">
+        <h2
+          id="social-heading"
+          class="mt-0 mb-5 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-ink-faint"
+        >
+          Social &amp; federation
+        </h2>
+        <div class="flex flex-col border-t border-rule">
+          {
+            [
+              {
+                q: "Is the social graph really federated?",
+                a: <p>Yes. Follows and shares are AT Protocol records on your own PDS (personal data server). When you sign into another Sunred instance, your follows and shares come with you — no export/import step. A relay aggregates records across instances so follower counts, share counts, and search results span the whole network.</p>,
+              },
+              {
+                q: "Do I need a Bluesky account?",
+                a: <p>No. Sunred uses the AT Protocol for identity and federation, which is the same protocol Bluesky uses. Your Sunred account is its own AT Proto identity with its own DID and PDS. If you already have a Bluesky account, the protocols are compatible but the accounts are separate.</p>,
+              },
+              {
+                q: "Can I follow people on other instances?",
+                a: <p>Yes. When a relay is configured, search results include people on other instances. You can follow anyone across the network — their shares will appear in your timeline just like shares from people on your instance.</p>,
+              },
+              {
+                q: "Where does my data live?",
+                a: <p>Your social data (follows, shares, feed subscriptions) lives on your PDS as AT Protocol records. Your reading data (read states, stars) lives on the Sunred instance you use. If you self-host, both are on your machine. If you use the hosted version, your reading data is on sunred.app servers, but your social graph is still on your PDS and portable.</p>,
+              },
+              {
+                q: "What happens to my follows if I move instances?",
+                a: <p>Because follows are AT Protocol records on your PDS, they travel with you. Sign into a new instance with the same identity and your social graph is there. No re-following, no export/import.</p>,
+              },
+            ].map((item) => (
+              <details class="group border-b border-rule">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-[1.35rem] font-body text-[1.0625rem] font-medium text-ink transition-colors duration-150 hover:text-[color-mix(in_oklab,var(--primary)_80%,var(--color-ink))] [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                  <span class="relative h-5 w-5 shrink-0 text-ink-faint transition-colors duration-150 group-hover:text-[color-mix(in_oklab,var(--primary)_70%,var(--color-ink-soft))]" aria-hidden="true">
+                    <span class="absolute top-1/2 left-0 h-[1.5px] w-full -translate-y-1/2 rounded-[1px] bg-current" />
+                    <span class="absolute left-1/2 top-0 h-full w-[1.5px] -translate-x-1/2 rounded-[1px] bg-current transition-[scale] duration-200 group-open:scale-y-0" />
+                  </span>
+                </summary>
+                <div class="pb-[1.35rem]">{item.a}</div>
+              </details>
+            ))
+          }
         </div>
       </section>
 
       <!-- Self-hosting -->
-      <section class="faq-group" aria-labelledby="hosting-heading">
-        <h2 id="hosting-heading" class="faq-group-heading">Self-hosting</h2>
-        <div class="faq-list">
-          <details class="faq-item">
-            <summary>Do I need to host it myself?<span class="faq-toggle" aria-hidden="true"></span></summary>
-            <div class="faq-answer"><p>No. You can use the hosted version and skip the setup. But if you want full control over your data, Sunred is open source and runs anywhere with Docker — a single command gets you a server, database, and web frontend. See the <a href="/self-host">self-hosting page</a> for details.</p></div>
-          </details>
-          <details class="faq-item">
-            <summary>What do I need to self-host?<span class="faq-toggle" aria-hidden="true"></span></summary>
-            <div class="faq-answer"><p>A machine that runs Docker (a VPS, a home server, even a Raspberry Pi), a Postgres database, and a domain with TLS (via Caddy, nginx, or Traefik). The server, web frontend, and scheduler all run in one process.</p></div>
-          </details>
-          <details class="faq-item">
-            <summary>Can I migrate from hosted to self-hosted?<span class="faq-toggle" aria-hidden="true"></span></summary>
-            <div class="faq-answer"><p>Your feed subscriptions and social graph are AT Protocol records on your PDS, so they move with your identity. Your reading state (read/unread, starred) is instance-local and doesn't transfer, but you can export your feeds as OPML from any reader and re-import.</p></div>
-          </details>
+      <section aria-labelledby="hosting-heading" class="mb-[clamp(3rem,8vh,4.5rem)]">
+        <h2
+          id="hosting-heading"
+          class="mt-0 mb-5 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-ink-faint"
+        >
+          Self-hosting
+        </h2>
+        <div class="flex flex-col border-t border-rule">
+          {
+            [
+              {
+                q: "Do I need to host it myself?",
+                a: <p>No. You can use the hosted version and skip the setup. But if you want full control over your data, Sunred is open source and runs anywhere with Docker — a single command gets you a server, database, and web frontend. See the <a href="/self-host" class={answerLink}>self-hosting page</a> for details.</p>,
+              },
+              {
+                q: "What do I need to self-host?",
+                a: <p>A machine that runs Docker (a VPS, a home server, even a Raspberry Pi), a Postgres database, and a domain with TLS (via Caddy, nginx, or Traefik). The server, web frontend, and scheduler all run in one process.</p>,
+              },
+              {
+                q: "Can I migrate from hosted to self-hosted?",
+                a: <p>Your feed subscriptions and social graph are AT Protocol records on your PDS, so they move with your identity. Your reading state (read/unread, starred) is instance-local and doesn't transfer, but you can export your feeds as OPML from any reader and re-import.</p>,
+              },
+            ].map((item) => (
+              <details class="group border-b border-rule">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-[1.35rem] font-body text-[1.0625rem] font-medium text-ink transition-colors duration-150 hover:text-[color-mix(in_oklab,var(--primary)_80%,var(--color-ink))] [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                  <span class="relative h-5 w-5 shrink-0 text-ink-faint transition-colors duration-150 group-hover:text-[color-mix(in_oklab,var(--primary)_70%,var(--color-ink-soft))]" aria-hidden="true">
+                    <span class="absolute top-1/2 left-0 h-[1.5px] w-full -translate-y-1/2 rounded-[1px] bg-current" />
+                    <span class="absolute left-1/2 top-0 h-full w-[1.5px] -translate-x-1/2 rounded-[1px] bg-current transition-[scale] duration-200 group-open:scale-y-0" />
+                  </span>
+                </summary>
+                <div class="pb-[1.35rem]">{item.a}</div>
+              </details>
+            ))
+          }
         </div>
       </section>
 
       <!-- API & interfaces -->
-      <section class="faq-group" aria-labelledby="api-heading">
-        <h2 id="api-heading" class="faq-group-heading">API &amp; interfaces</h2>
-        <div class="faq-list">
-          <details class="faq-item">
-            <summary>What's the API like?<span class="faq-toggle" aria-hidden="true"></span></summary>
-            <div class="faq-answer"><p>A clean REST API with JSON responses. Authenticate with a bearer token, then list feeds, add subscriptions, search entries, share articles, follow people, and more. Full documentation is in the <a href="https://sunred.dev/docs">docs</a>.</p></div>
-          </details>
-          <details class="faq-item">
-            <summary>How does the terminal UI work?<span class="faq-toggle" aria-hidden="true"></span></summary>
-            <div class="faq-answer"><p>The TUI is a terminal user interface — a full-screen, keyboard-driven reader that runs in your terminal. It supports vim-style navigation and gives you the same timeline, feeds, and entries as the web app, including social features like share and follow.</p></div>
-          </details>
-          <details class="faq-item">
-            <summary>Is the CLI separate from the TUI?<span class="faq-toggle" aria-hidden="true"></span></summary>
-            <div class="faq-answer"><p>They're the same binary. <code class="inline-code">sunred</code> runs one-off commands (add feeds, list entries, share, follow). <code class="inline-code">sunred tui</code> launches the full terminal interface. Same API, same auth, same data.</p></div>
-          </details>
+      <section aria-labelledby="api-heading" class="mb-[clamp(3rem,8vh,4.5rem)]">
+        <h2
+          id="api-heading"
+          class="mt-0 mb-5 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-ink-faint"
+        >
+          API &amp; interfaces
+        </h2>
+        <div class="flex flex-col border-t border-rule">
+          {
+            [
+              {
+                q: "What's the API like?",
+                a: <p>A clean REST API with JSON responses. Authenticate with a bearer token, then list feeds, add subscriptions, search entries, share articles, follow people, and more. Full documentation is in the <a href="https://sunred.dev/docs" class={answerLink}>docs</a>.</p>,
+              },
+              {
+                q: "How does the terminal UI work?",
+                a: <p>The TUI is a terminal user interface — a full-screen, keyboard-driven reader that runs in your terminal. It supports vim-style navigation and gives you the same timeline, feeds, and entries as the web app, including social features like share and follow.</p>,
+              },
+              {
+                q: "Is the CLI separate from the TUI?",
+                a: <p>They're the same binary. <code class={inlineCode}>sunred</code> runs one-off commands (add feeds, list entries, share, follow). <code class={inlineCode}>sunred tui</code> launches the full terminal interface. Same API, same auth, same data.</p>,
+              },
+            ].map((item) => (
+              <details class="group border-b border-rule">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-[1.35rem] font-body text-[1.0625rem] font-medium text-ink transition-colors duration-150 hover:text-[color-mix(in_oklab,var(--primary)_80%,var(--color-ink))] [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                  <span class="relative h-5 w-5 shrink-0 text-ink-faint transition-colors duration-150 group-hover:text-[color-mix(in_oklab,var(--primary)_70%,var(--color-ink-soft))]" aria-hidden="true">
+                    <span class="absolute top-1/2 left-0 h-[1.5px] w-full -translate-y-1/2 rounded-[1px] bg-current" />
+                    <span class="absolute left-1/2 top-0 h-full w-[1.5px] -translate-x-1/2 rounded-[1px] bg-current transition-[scale] duration-200 group-open:scale-y-0" />
+                  </span>
+                </summary>
+                <div class="pb-[1.35rem]">{item.a}</div>
+              </details>
+            ))
+          }
         </div>
       </section>
 
-      <div class="faq-still">
-        <p>Still have questions?</p>
-        <a class="cta cta-ghost" href={selfHostUrl}>
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path></svg>
+      <div class="flex flex-wrap items-center gap-5 border-t border-rule pt-8">
+        <p class="m-0 text-[1.0625rem] text-ink">Still have questions?</p>
+        <Cta href={selfHostUrl} variant="ghost">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+            ></path>
+          </svg>
           <span>Ask on GitHub</span>
-        </a>
+        </Cta>
       </div>
     </div>
   </main>
 
-  <section class="closing" aria-label="Get started">
-    <div class="closing-glow" aria-hidden="true"></div>
-    <div class="closing-inner">
-      <Logo class="closing-mark" static />
-      <h2 class="closing-headline">Start reading.</h2>
-      <p class="closing-lede">Subscribe to your first feed in under a minute.</p>
-      <div class="cta-row">
-        <a class="cta cta-primary" href={loginUrl}>
-          <span>Open the app</span>
-          <svg class="cta-arrow" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-        </a>
-        <a class="cta cta-ghost" href={selfHostUrl}>Self-host</a>
-      </div>
-    </div>
-  </section>
+  <Closing headline="Start reading." lede="Subscribe to your first feed in under a minute.">
+    <Cta href={loginUrl} variant="primary">
+      <span>Open the app</span>
+      <svg class="h-[17px] w-[17px] shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </Cta>
+    <Cta href={selfHostUrl} variant="ghost">Self-host</Cta>
+  </Closing>
 
   <Footer />
 </Base>
-
-<style is:global>
-  .faq-page {
-    padding: clamp(3rem, 8vh, 5rem) 0;
-  }
-  .faq-group {
-    margin-bottom: clamp(3rem, 8vh, 4.5rem);
-  }
-  .faq-group-heading {
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--color-ink-faint);
-    margin: 0 0 1.25rem;
-  }
-  .faq-page .faq-answer a {
-    color: color-mix(in oklab, var(--primary) 85%, var(--color-ink));
-    text-decoration: underline;
-    text-underline-offset: 0.15em;
-  }
-  .inline-code {
-    font-family: var(--font-mono);
-    font-size: 0.875em;
-    padding: 0.1rem 0.35rem;
-    border-radius: 0.3rem;
-    border: 1px solid var(--color-rule);
-    background-color: var(--color-bg-sunken);
-    color: var(--color-ink-soft);
-  }
-  .faq-still {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    flex-wrap: wrap;
-    padding-top: 2rem;
-    border-top: 1px solid var(--color-rule);
-  }
-  .faq-still p {
-    margin: 0;
-    font-size: 1.0625rem;
-    color: var(--color-ink);
-  }
-</style>

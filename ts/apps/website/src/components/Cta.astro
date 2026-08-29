@@ -1,0 +1,37 @@
+---
+interface Props {
+  href: string
+  variant?: "primary" | "ghost"
+  size?: "md" | "sm"
+  class?: string
+}
+
+const {
+  href,
+  variant = "primary",
+  size = "md",
+  class: className = "",
+} = Astro.props
+
+const base =
+  "inline-flex items-center rounded-[0.625rem] font-body font-semibold leading-none transition-[transform,background-color,border-color] duration-200 ease-out hover:-translate-y-px active:translate-y-0"
+
+const sizes = {
+  md: "gap-2 px-[1.4rem] py-[0.8rem] text-[0.9375rem] min-h-[46px]",
+  sm: "gap-[0.4rem] px-[1rem] py-[0.55rem] text-[0.8125rem] min-h-[36px]",
+}
+
+const variants = {
+  primary:
+    "bg-primary text-primary-foreground hover:bg-[color-mix(in_oklab,var(--primary)_92%,white)]",
+  ghost:
+    "border border-rule-strong bg-transparent text-ink hover:border-[oklch(1_0_0/0.28)] hover:bg-[oklch(1_0_0/0.04)]",
+}
+---
+
+<a
+  href={href}
+  class:list={[base, sizes[size], variants[variant], className]}
+>
+  <slot />
+</a>

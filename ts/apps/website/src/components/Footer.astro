@@ -5,22 +5,29 @@ const loginUrl = "/login"
 const selfHostUrl = "https://github.com/fuegoio/sunred"
 ---
 
-<footer class="site-footer">
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <Logo class="footer-mark" static />
+<footer class="border-t border-rule px-6 pt-12 pb-14">
+  <div
+    class="mx-auto flex max-w-[72rem] flex-col items-center gap-5 text-center"
+  >
+    <div
+      class="flex items-center gap-2 font-display text-[1.0625rem] font-semibold tracking-[-0.02em] text-ink"
+    >
+      <Logo class="h-6 w-6 shrink-0" static />
       <span>Sunred</span>
     </div>
-    <nav class="footer-nav" aria-label="Footer">
-      <a href={loginUrl}>Login</a>
-      <a href="/social">Social</a>
-      <a href="/features">Features</a>
-      <a href="/self-host">Self-host</a>
-      <a href="/faq">FAQ</a>
-      <a href="https://sunred.dev/docs">Docs</a>
-      <a href={selfHostUrl}>GitHub</a>
+    <nav
+      aria-label="Footer"
+      class="flex flex-wrap justify-center gap-6 text-[0.9375rem] font-medium"
+    >
+      <a class="text-ink-soft transition-colors duration-150 hover:text-ink" href={loginUrl}>Login</a>
+      <a class="text-ink-soft transition-colors duration-150 hover:text-ink" href="/social">Social</a>
+      <a class="text-ink-soft transition-colors duration-150 hover:text-ink" href="/features">Features</a>
+      <a class="text-ink-soft transition-colors duration-150 hover:text-ink" href="/self-host">Self-host</a>
+      <a class="text-ink-soft transition-colors duration-150 hover:text-ink" href="/faq">FAQ</a>
+      <a class="text-ink-soft transition-colors duration-150 hover:text-ink" href="https://sunred.dev/docs">Docs</a>
+      <a class="text-ink-soft transition-colors duration-150 hover:text-ink" href={selfHostUrl}>GitHub</a>
     </nav>
-    <p class="footer-note">
+    <p class="m-0 max-w-[30rem] font-mono text-[0.8125rem] text-ink-faint">
       Open source. Self-hostable. Federated. Built for people who still read.
     </p>
   </div>

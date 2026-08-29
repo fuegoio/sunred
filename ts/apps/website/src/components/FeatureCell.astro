@@ -1,0 +1,30 @@
+---
+interface Props {
+  title: string
+  class?: string
+}
+
+const { title, class: className = "" } = Astro.props
+---
+
+<article
+  class:list={[
+    "rounded-[0.75rem] border border-rule bg-[color-mix(in_oklab,var(--color-bg-raised)_80%,transparent)] px-[1.6rem] py-[1.75rem] transition-[border-color,transform,background-color] duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_oklab,var(--primary)_30%,var(--color-rule-strong))] hover:bg-[color-mix(in_oklab,var(--color-bg-raised)_95%,transparent)]",
+    className,
+  ]}
+>
+  <div
+    class="mb-[1.1rem] flex h-10 w-10 items-center justify-center rounded-[0.6rem] border border-[color-mix(in_oklab,var(--primary)_18%,transparent)] bg-[color-mix(in_oklab,var(--primary)_14%,transparent)] text-[color-mix(in_oklab,var(--primary)_85%,var(--color-ink))]"
+  >
+    <slot name="icon" />
+  </div>
+  <h3
+    class="mt-0 mb-2 font-display text-[1.0625rem] font-semibold tracking-[-0.01em] text-ink"
+  >
+    {title}
+  </h3>
+  <p class="mt-0 text-[0.9375rem] leading-[1.6] text-ink-soft">
+    <slot />
+  </p>
+  <slot name="tags" />
+</article>
