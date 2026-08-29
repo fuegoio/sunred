@@ -686,3 +686,56 @@ func TestUpdateUserAvatar_SetsAndClears(t *testing.T) {
 		t.Errorf("HasAvatar=true, want false after clear")
 	}
 }
+
+func TestGetLocalArticleCountsBatch(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+
+	shareURL := fmt.Sprintf("https://example.com/local-counts-share-%d", time.Now().UnixNano())
+	starURL := fmt.Sprintf("https://example.com/local-counts-star-%d", time.Now().UnixNano())
+	bothURL := fmt.Sprintf("https://example.com/local-counts-both-%d", time.Now().UnixNano())
+	noneURL := fmt.Sprintf("https://example.com/local-counts-none-%d", time.Now().UnixNano())
+
+	u1 := seedUser(t, s, fmt.Sprintf("lc-u1-%d@example.com", time.Now().UnixNano()))
+	u2 := seedUser(t, s, fmt.Sprintf("lc-u2-%d@example.com", time.Now().UnixNano()))
+	t.Cleanup(func() {
+		_, _ = s.DB.Exec(`DELETE FROM shared_articles WHERE article_url IN ($1,$2,$3)`, shareURL, starURL, bothURL)
+		_, _ = s.DB.Exec(`DELETE FROM entry_stars WHERE article_url IN ($1,$2,$3)`, shareURL, starURL, bothURL)
+	})
+
+	// Two distinct users share the same URL -> share count 2.
+	if _, err := s.ShareArticle(ctx, u1, shareURL, "T", "", "", "", "", "", nil); err != nil {
+		t.Fatalf("ShareArticle u1: %v", err)
+	}
+	if _, err := s.ShareArticle(ctx, u2, shareURL, "T", "", "", "", "", "", nil); err != nil {
+		t.Fatalf("ShareArticle u2: %v", err)
+	}
+	// One user stars -> star count 1.
+	if err := s.ToggleEntryStarredByURL(ctx, u1, starURL, "T", "", "", "", "", "", nil, true); err != nil {
+		t.Fatalf("ToggleEntryStarredByURL: %v", err)
+	}
+	// One share and one star (different users) on bothURL.
+	if _, err := s.ShareArticle(ctx, u1, bothURL, "T", "", "", "", "", "", nil); err != nil {
+		t.Fatalf("ShareArticle bothURL: %v", err)
+	}
+	if err := s.ToggleEntryStarredByURL(ctx, u2, bothURL, "T", "", "", "", "", "", nil, true); err != nil {
+		t.Fatalf("ToggleEntryStarredByURL bothURL: %v", err)
+	}
+
+	got, err := s.GetLocalArticleCountsBatch(ctx, []string{shareURL, starURL, bothURL, noneURL})
+	if err != nil {
+		t.Fatalf("GetLocalArticleCountsBatch: %v", err)
+	}
+	if c := got[shareURL]; c.ShareCount != 2 || c.StarCount != 0 {
+		t.Errorf("shareURL = %+v, want {ShareCount:2 StarCount:0}", c)
+	}
+	if c := got[starURL]; c.ShareCount != 0 || c.StarCount != 1 {
+		t.Errorf("starURL = %+v, want {ShareCount:0 StarCount:1}", c)
+	}
+	if c := got[bothURL]; c.ShareCount != 1 || c.StarCount != 1 {
+		t.Errorf("bothURL = %+v, want {ShareCount:1 StarCount:1}", c)
+	}
+	if _, ok := got[noneURL]; ok {
+		t.Errorf("noneURL should be absent (treated as zero)")
+	}
+}
