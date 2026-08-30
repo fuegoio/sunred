@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutList, Circle, Star, Plus, Settings, LogOut, Sun, Moon, User } from "lucide-react";
+import { LayoutList, Circle, Star, Plus, Settings, LogOut, Sun, Moon, User, CircleHelp } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Menu } from "@base-ui/react/menu";
 import { Skeleton } from "@workspace/ui/components/skeleton";
@@ -82,25 +82,35 @@ export function AccountButton({ userHandle, userDisplayName, userHasAvatar }: { 
     <Menu.Root>
       <Menu.Trigger
         className={cn(
-          "flex min-w-0 flex-1 items-center gap-2 rounded-md py-1.5 pl-1.5 pr-2",
-          "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
+          "flex size-8 items-center justify-center rounded-full transition-colors",
+          "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
           "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30",
         )}
         aria-label="Account menu"
       >
         <UserAvatar displayName={userDisplayName} handle={userHandle} src={avatarUrl(userHandle, userHasAvatar)} className="size-7 text-xs font-medium" />
-        <span className="truncate text-sm font-medium">@{userHandle}</span>
       </Menu.Trigger>
       <Menu.Portal>
         <Menu.Positioner
           className={cn(
-            "z-50 min-w-48 overflow-hidden rounded-md border border-border bg-popover p-1",
+            "z-50 min-w-56 overflow-hidden rounded-md border border-border bg-popover p-1",
             "shadow-md",
           )}
-          align="start"
-          side="top"
+          align="end"
+          side="bottom"
+          sideOffset={6}
         >
           <Menu.Popup>
+            <div className="flex items-center gap-2.5 px-2 py-2">
+              <UserAvatar displayName={userDisplayName} handle={userHandle} src={avatarUrl(userHandle, userHasAvatar)} className="size-9 text-sm font-medium" />
+              <div className="flex min-w-0 flex-col">
+                {userDisplayName ? (
+                  <span className="truncate text-sm font-medium">{userDisplayName}</span>
+                ) : null}
+                <span className="truncate text-xs text-muted-foreground">@{userHandle}</span>
+              </div>
+            </div>
+            <hr className="-mx-1 my-1 border-border" />
             <Menu.Item className={menuItemClass} render={<Link href={`/users/${userHandle}`} />}>
               <User className="size-4" />
               Profile
@@ -126,6 +136,25 @@ export function AccountButton({ userHandle, userDisplayName, userHasAvatar }: { 
         </Menu.Positioner>
       </Menu.Portal>
     </Menu.Root>
+  );
+}
+
+function HelpButton() {
+  return (
+    <div className="flex shrink-0 items-center gap-1">
+      <Link
+        href="https://sunred.app/docs"
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Help & docs"
+        className={cn(
+          buttonVariants({ variant: "ghost", size: "icon-xs" }),
+          "rounded-full text-muted-foreground hover:text-foreground",
+        )}
+      >
+        <CircleHelp className="size-3.5" />
+      </Link>
+    </div>
   );
 }
 
@@ -157,6 +186,7 @@ function SidebarContent({ userHandle, userDisplayName, userHasAvatar }: { userHa
         </Link>
         <div className="flex-1" />
         <OfflineBadge />
+        <AccountButton userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
       </div>
 
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-3">
@@ -267,7 +297,7 @@ function SidebarContent({ userHandle, userDisplayName, userHasAvatar }: { userHa
       </div>
 
       <div className="shrink-0 p-3">
-        <AccountButton userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
+        <HelpButton />
       </div>
     </div>
   );
