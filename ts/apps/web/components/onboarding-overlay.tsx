@@ -154,7 +154,7 @@ export function OnboardingOverlay({
 
   if (step === "welcome") {
     return (
-      <WelcomeCard
+      <WelcomeScreen
         userDisplayName={userDisplayName}
         onAddFeed={handleAddFeed}
         onMaybeLater={handleMaybeLater}
@@ -167,7 +167,7 @@ export function OnboardingOverlay({
   );
 }
 
-function WelcomeCard({
+function WelcomeScreen({
   userDisplayName,
   onAddFeed,
   onMaybeLater,
@@ -178,23 +178,23 @@ function WelcomeCard({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-[2px] animate-in fade-in duration-200"
+      className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-background px-6 animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-label="Welcome to Sunred"
     >
-      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center shadow-xl animate-in fade-in zoom-in-95 duration-200">
-        <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-primary/10">
-          <Logo className="size-8" />
+      <div className="flex w-full max-w-sm flex-col items-center text-center">
+        <div className="flex size-20 items-center justify-center rounded-3xl bg-primary/10">
+          <Logo className="size-12" />
         </div>
-        <h1 className="mt-5 font-serif text-2xl font-bold tracking-normal text-balance">
+        <h1 className="mt-6 font-serif text-3xl font-bold tracking-normal text-balance">
           {userDisplayName ? `Welcome, ${userDisplayName}` : "Welcome to Sunred"}
         </h1>
-        <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground text-pretty">
+        <p className="mt-3 max-w-xs text-pretty text-muted-foreground">
           Add your first RSS feed and Sunred will fetch new articles for you
           automatically. It only takes a URL.
         </p>
-        <div className="mt-6 flex flex-col gap-2">
+        <div className="mt-8 flex w-full flex-col gap-2">
           <Button
             size="lg"
             className="bg-primary text-primary-foreground hover:bg-primary/90"
