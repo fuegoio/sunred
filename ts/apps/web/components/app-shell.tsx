@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
+import { OnboardingOverlay } from "@/components/onboarding-overlay";
 import { SettingsSidebar } from "@/components/settings-sidebar";
 import { ShellContext } from "@/components/shell-context";
 import { SyncStatusBar } from "@/components/sync-status-bar";
@@ -13,12 +14,14 @@ export function AppShell({
   userDisplayName,
   userHasAvatar,
   pdsSyncStatus,
+  userOnboarded,
 }: {
   children: React.ReactNode;
   userHandle: string;
   userDisplayName?: string;
   userHasAvatar?: boolean;
   pdsSyncStatus: string;
+  userOnboarded: boolean;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
@@ -44,6 +47,8 @@ export function AppShell({
 
         {/* Right filler — matches main content bg on wide screens */}
         <div className="hidden flex-1 bg-background lg:block" />
+
+        <OnboardingOverlay initialSyncStatus={pdsSyncStatus} initialOnboarded={userOnboarded} userDisplayName={userDisplayName} />
       </div>
     </ShellContext>
   );
