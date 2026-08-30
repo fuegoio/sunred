@@ -964,9 +964,9 @@ func (s *Store) UpdateUser(ctx context.Context, id int, displayName string, bio 
 		`UPDATE users SET display_name = $2, bio = COALESCE($3, bio) WHERE id = $1
 		 RETURNING id, COALESCE(handle, ''), COALESCE(did, ''), COALESCE(display_name, ''), COALESCE(bio, ''),
 		           COALESCE(avatar, ''), COALESCE(banner, ''),
-		           created_at, pds_sync_status, pds_synced_at`,
+		           created_at, pds_sync_status, pds_synced_at, onboarded`,
 		id, displayName, bio,
-	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.Avatar, &u.Banner, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt)
+	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.Avatar, &u.Banner, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt, &u.Onboarded)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -985,9 +985,9 @@ func (s *Store) UpdateUserAvatar(ctx context.Context, id int, avatar string) (*U
 		`UPDATE users SET avatar = $2 WHERE id = $1
 		 RETURNING id, COALESCE(handle, ''), COALESCE(did, ''), COALESCE(display_name, ''), COALESCE(bio, ''),
 		           COALESCE(avatar, ''), COALESCE(banner, ''),
-		           created_at, pds_sync_status, pds_synced_at`,
+		           created_at, pds_sync_status, pds_synced_at, onboarded`,
 		id, avatar,
-	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.Avatar, &u.Banner, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt)
+	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.Avatar, &u.Banner, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt, &u.Onboarded)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -1027,10 +1027,10 @@ func (s *Store) GetUserByID(ctx context.Context, id int) (*User, error) {
 	err := s.DB.QueryRowContext(ctx,
 		`SELECT id, COALESCE(handle, ''), COALESCE(did, ''), COALESCE(display_name, ''), COALESCE(bio, ''),
 		       COALESCE(avatar, ''), COALESCE(banner, ''),
-		       created_at, pds_sync_status, pds_synced_at
+		       created_at, pds_sync_status, pds_synced_at, onboarded
 		 FROM users
 		 WHERE id = $1`, id,
-	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.Avatar, &u.Banner, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt)
+	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.Avatar, &u.Banner, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt, &u.Onboarded)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -1052,6 +1052,29 @@ func (s *Store) SetUserSyncStatus(ctx context.Context, userID int, status string
 	}
 	_, err := s.DB.ExecContext(ctx, q, status, userID)
 	return err
+}
+
+// MarkUserOnboarded flips the user's onboarding flag to true and returns the
+// updated user. Idempotent: re-marking an already-onboarded user is a no-op
+// that still returns the current row. Called when the web client finishes
+// (or dismisses) the first-run onboarding overlay.
+func (s *Store) MarkUserOnboarded(ctx context.Context, userID int) (*User, error) {
+	var u User
+	err := s.DB.QueryRowContext(ctx,
+		`UPDATE users SET onboarded = TRUE WHERE id = $1
+		 RETURNING id, COALESCE(handle, ''), COALESCE(did, ''), COALESCE(display_name, ''), COALESCE(bio, ''),
+		           COALESCE(avatar, ''), COALESCE(banner, ''),
+		           created_at, pds_sync_status, pds_synced_at, onboarded`,
+		userID,
+	).Scan(&u.ID, &u.Handle, &u.DID, &u.DisplayName, &u.Bio, &u.Avatar, &u.Banner, &u.CreatedAt, &u.PDSSyncStatus, &u.PDSSyncedAt, &u.Onboarded)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	u.setHasImages()
+	return &u, nil
 }
 
 // --- Cleanup ---
