@@ -19,6 +19,30 @@ type TreeNode =
 
 type DragData = { kind: "feed"; id: number } | { kind: "folder"; id: number };
 
+const COLLAPSED_FOLDERS_KEY = "sunred:collapsed-folders";
+
+function loadCollapsedFolders(): Set<number> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = window.localStorage.getItem(COLLAPSED_FOLDERS_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(parsed.filter((v): v is number => typeof v === "number"));
+  } catch {
+    return new Set();
+  }
+}
+
+function saveCollapsedFolders(ids: Set<number>) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(COLLAPSED_FOLDERS_KEY, JSON.stringify([...ids]));
+  } catch {
+    // ignore quota / privacy mode errors
+  }
+}
+
 function isActive(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(href + "/");
@@ -132,6 +156,10 @@ function FolderNode({
   setDropTarget,
   onDrop,
   depth,
+  open,
+  onToggleOpen,
+  collapsedIds,
+  toggleOpen,
 }: {
   folder: Folder;
   childNodes: TreeNode[];
@@ -145,9 +173,12 @@ function FolderNode({
   setDropTarget: (id: number | null) => void;
   onDrop: (e: DragEvent, targetFolderId: number | null) => void;
   depth: number;
+  open: boolean;
+  onToggleOpen: () => void;
+  collapsedIds: Set<number>;
+  toggleOpen: (id: number) => void;
 }) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(true);
 
   const href = `/folders/${folder.id}`;
   const active = isActive(pathname, href);
@@ -222,7 +253,7 @@ function FolderNode({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            setOpen((o) => !o);
+            onToggleOpen();
           }}
           className="flex size-5 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground"
           aria-label={open ? "Collapse" : "Expand"}
@@ -262,6 +293,10 @@ function FolderNode({
                     setDropTarget={setDropTarget}
                     onDrop={onDrop}
                     depth={depth + 1}
+                    open={!collapsedIds.has(child.folder.id)}
+                    onToggleOpen={() => toggleOpen(child.folder.id)}
+                    collapsedIds={collapsedIds}
+                    toggleOpen={toggleOpen}
                   />
                 ) : (
                   <div
@@ -296,6 +331,17 @@ export function FeedTree({ feeds, folders }: { feeds: Feed[]; folders: Folder[] 
   const queryClient = useQueryClient();
   const [dragData, setDragData] = useState<DragData | null>(null);
   const [dropTarget, setDropTarget] = useState<number | null>(null);
+  const [collapsedIds, setCollapsedIds] = useState<Set<number>>(loadCollapsedFolders);
+
+  const toggleOpen = useCallback((id: number) => {
+    setCollapsedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      saveCollapsedFolders(next);
+      return next;
+    });
+  }, []);
 
   const tree = buildTree(feeds, folders);
 
@@ -370,6 +416,10 @@ export function FeedTree({ feeds, folders }: { feeds: Feed[]; folders: Folder[] 
             setDropTarget={setDropTarget}
             onDrop={handleDrop}
             depth={0}
+            open={!collapsedIds.has(node.folder.id)}
+            onToggleOpen={() => toggleOpen(node.folder.id)}
+            collapsedIds={collapsedIds}
+            toggleOpen={toggleOpen}
           />
         ) : (
           <FeedNode
