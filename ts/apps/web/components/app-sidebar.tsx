@@ -43,7 +43,7 @@ function SidebarNav() {
   ];
 
   return (
-    <nav className="flex flex-col gap-0.5">
+    <nav data-onboarding="unread" className="flex flex-col gap-0.5">
       {navItems.map((item) => {
         const active = isActive(pathname, item.href);
         return (
@@ -196,7 +196,7 @@ function SidebarContent({ userHandle, userDisplayName, userHasAvatar }: { userHa
 
         <Separator />
 
-        <div className="flex flex-col gap-1">
+        <div data-onboarding="feeds" className="flex flex-col gap-1">
           <div className="flex items-center justify-between pl-3 pr-2.5 pb-1">
             <Link
               href="/feeds"

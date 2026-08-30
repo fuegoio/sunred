@@ -45,5 +45,5 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     );
   }
 
-  return <AppShell userHandle={user.handle ?? ""} userDisplayName={user.display_name} userHasAvatar={user.has_avatar} pdsSyncStatus={user.pds_sync_status}>{children}</AppShell>;
+  return <AppShell userHandle={user.handle ?? ""} userDisplayName={user.display_name} userHasAvatar={user.has_avatar} pdsSyncStatus={user.pds_sync_status} userOnboarded={user.onboarded}>{children}</AppShell>;
 }
