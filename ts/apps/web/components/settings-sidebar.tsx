@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, Key, User, FileText } from "lucide-react";
+import { ArrowLeft, Key, User, FileText, CircleHelp } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { OfflineBadge } from "@/components/offline-badge";
 import { Separator } from "@workspace/ui/components/separator";
+import { buttonVariants } from "@workspace/ui/components/button";
 import { cn } from "@workspace/ui/lib/utils";
 import {
   AccountButton,
@@ -20,6 +21,25 @@ const settingsNavItems = [
   { href: "/settings/opml", label: "OPML", icon: FileText },
 ];
 
+function HelpButton() {
+  return (
+    <div className="flex shrink-0 items-center gap-1">
+      <Link
+        href="https://sunred.app/docs"
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Help & docs"
+        className={cn(
+          buttonVariants({ variant: "ghost", size: "icon-xs" }),
+          "rounded-full text-muted-foreground hover:text-foreground",
+        )}
+      >
+        <CircleHelp className="size-3.5" />
+      </Link>
+    </div>
+  );
+}
+
 function SettingsSidebarContent({ userHandle, userDisplayName, userHasAvatar }: { userHandle: string; userDisplayName?: string; userHasAvatar?: boolean }) {
   const pathname = usePathname();
 
@@ -32,6 +52,7 @@ function SettingsSidebarContent({ userHandle, userDisplayName, userHasAvatar }: 
         </Link>
         <div className="flex-1" />
         <OfflineBadge />
+        <AccountButton userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
       </div>
 
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-3">
@@ -67,7 +88,7 @@ function SettingsSidebarContent({ userHandle, userDisplayName, userHasAvatar }: 
       </div>
 
       <div className="shrink-0 p-3">
-        <AccountButton userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
+        <HelpButton />
       </div>
     </div>
   );
