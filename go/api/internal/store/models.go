@@ -152,6 +152,10 @@ type User struct {
 	// The web UI polls this to show a waiting state on first login.
 	PDSSyncStatus string     `json:"pds_sync_status"`
 	PDSSyncedAt   *time.Time `json:"pds_synced_at,omitempty"`
+	// Onboarded is set true once the user has completed the first-run web
+	// onboarding. The web UI gates the onboarding overlay on this being
+	// false after the post-login PDS sync settles.
+	Onboarded bool `json:"onboarded"`
 	// HasAvatar/HasBanner tell the client an image exists without leaking
 	// the PDS URL; the client fetches the bytes via the proxy endpoints.
 	HasAvatar bool `json:"has_avatar,omitempty"`

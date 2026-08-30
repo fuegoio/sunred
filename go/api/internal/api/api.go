@@ -172,6 +172,28 @@ func (a *API) registerMeRoutes() {
 		return &MeOutput{Body: *user}, nil
 	})
 
+	// POST /v1/me/onboarding — mark the caller's first-run onboarding complete.
+	// The web client calls this once the welcome + spotlight tour finishes or
+	// is dismissed, so the overlay never re-appears for that account. The
+	// operation is idempotent; the response is the updated user.
+	huma.Register(a.huma, huma.Operation{
+		OperationID: "complete-me-onboarding",
+		Method:      http.MethodPost,
+		Path:        "/v1/me/onboarding",
+		Summary:     "Mark current user onboarding complete",
+		Tags:        []string{"users"},
+	}, func(ctx context.Context, _ *struct{}) (*MeOutput, error) {
+		userID := auth.UserIDFromCtx(ctx)
+		user, err := a.store.MarkUserOnboarded(ctx, userID)
+		if err != nil {
+			return nil, huma.Error500InternalServerError(fmt.Errorf("mark onboarded: %w", err).Error())
+		}
+		if user == nil {
+			return nil, huma.Error404NotFound("user not found")
+		}
+		return &MeOutput{Body: *user}, nil
+	})
+
 	huma.Register(a.huma, huma.Operation{
 		OperationID: "delete-me",
 		Method:      http.MethodDelete,

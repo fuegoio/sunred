@@ -1475,6 +1475,9 @@
                         "format": "int64",
                         "type": "integer"
                     },
+                    "onboarded": {
+                        "type": "boolean"
+                    },
                     "pds_sync_status": {
                         "type": "string"
                     },
@@ -1487,7 +1490,8 @@
                     "id",
                     "handle",
                     "created_at",
-                    "pds_sync_status"
+                    "pds_sync_status",
+                    "onboarded"
                 ],
                 "type": "object"
             },
@@ -3447,6 +3451,37 @@
                     }
                 },
                 "summary": "Upload current user's avatar",
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/v1/me/onboarding": {
+            "post": {
+                "operationId": "complete-me-onboarding",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "default": {
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        },
+                        "description": "Error"
+                    }
+                },
+                "summary": "Mark current user onboarding complete",
                 "tags": [
                     "users"
                 ]

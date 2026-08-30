@@ -1512,6 +1512,9 @@ export const UserSchema = {
             format: 'int64',
             type: 'integer'
         },
+        onboarded: {
+            type: 'boolean'
+        },
         pds_sync_status: {
             type: 'string'
         },
@@ -1524,7 +1527,8 @@ export const UserSchema = {
         'id',
         'handle',
         'created_at',
-        'pds_sync_status'
+        'pds_sync_status',
+        'onboarded'
     ],
     type: 'object'
 } as const;
@@ -2654,6 +2658,9 @@ export const UserWritableSchema = {
             format: 'int64',
             type: 'integer'
         },
+        onboarded: {
+            type: 'boolean'
+        },
         pds_sync_status: {
             type: 'string'
         },
@@ -2666,7 +2673,8 @@ export const UserWritableSchema = {
         'id',
         'handle',
         'created_at',
-        'pds_sync_status'
+        'pds_sync_status',
+        'onboarded'
     ],
     type: 'object'
 } as const;

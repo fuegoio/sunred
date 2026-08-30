@@ -466,6 +466,7 @@ export type User = {
     has_avatar?: boolean;
     has_banner?: boolean;
     id: number;
+    onboarded: boolean;
     pds_sync_status: string;
     pds_synced_at?: string;
 };
@@ -769,6 +770,7 @@ export type UserWritable = {
     has_avatar?: boolean;
     has_banner?: boolean;
     id: number;
+    onboarded: boolean;
     pds_sync_status: string;
     pds_synced_at?: string;
 };
@@ -1992,6 +1994,31 @@ export type UploadMeAvatarResponses = {
 };
 
 export type UploadMeAvatarResponse = UploadMeAvatarResponses[keyof UploadMeAvatarResponses];
+
+export type CompleteMeOnboardingData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/me/onboarding';
+};
+
+export type CompleteMeOnboardingErrors = {
+    /**
+     * Error
+     */
+    default: ErrorModel;
+};
+
+export type CompleteMeOnboardingError = CompleteMeOnboardingErrors[keyof CompleteMeOnboardingErrors];
+
+export type CompleteMeOnboardingResponses = {
+    /**
+     * OK
+     */
+    200: User;
+};
+
+export type CompleteMeOnboardingResponse = CompleteMeOnboardingResponses[keyof CompleteMeOnboardingResponses];
 
 export type ExportOpmlData = {
     body?: never;
