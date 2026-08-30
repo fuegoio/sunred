@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Plus, ChevronRight, X } from "lucide-react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { Button } from "@workspace/ui/components/button";
 import { Logo } from "@/components/logo";
 import { getClient, getMe, listFeeds, completeMeOnboarding, unwrap } from "@/lib/sunred";
@@ -17,9 +18,9 @@ import type { Feed, User } from "@/lib/types";
  * Triggered once, after the post-login PDS sync settles, for any user whose
  * `onboarded` flag is false. The flow has two beats:
  *
- *   1. Welcome card — asks the user to add their first RSS feed (only when they
- *      have no feeds yet; users whose PDS sync already imported feeds skip
- *      straight to the tour).
+ *   1. Welcome screen — a full-screen surface asking the user to add their
+ *      first RSS feed (only when they have no feeds yet; users whose PDS sync
+ *      already imported feeds skip straight to the tour).
  *   2. Spotlight tour — a full-viewport overlay that dims the UI and highlights
  *      the sidebar's Feeds section and the reading nav, with coachmark tooltips.
  *
@@ -167,6 +168,9 @@ export function OnboardingOverlay({
   );
 }
 
+// Motion easing: natural deceleration, no bounce/elastic.
+const easeOutQuart = [0.25, 1, 0.5, 1] as const;
+
 function WelcomeScreen({
   userDisplayName,
   onAddFeed,
@@ -176,30 +180,69 @@ function WelcomeScreen({
   onAddFeed: () => void;
   onMaybeLater: () => void;
 }) {
+  const reduce = useReducedMotion();
+  const primaryRef = useRef<HTMLButtonElement>(null);
+
+  // Focus the primary action once the entrance is underway. autoFocus on the
+  // element is brittle across the motion mount, so we move focus in an effect
+  // after first paint.
+  useEffect(() => {
+    primaryRef.current?.focus();
+  }, []);
+
+  // One well-rehearsed staggered entrance: logo → headline → copy → actions.
+  // Not a per-section reflex; it gives the first-run moment presence without a
+  // long page-load choreography. Reduced motion collapses it to instant.
+  const item: (i: number) => Record<string, unknown> = reduce
+    ? () => ({})
+    : (i: number) => ({
+        initial: { opacity: 0, y: 8 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.4, ease: easeOutQuart, delay: 0.08 + i * 0.07 },
+      });
+
   return (
-    <div
-      className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-background px-6 animate-in fade-in duration-200"
+    <motion.div
+      className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-background px-6"
       role="dialog"
       aria-modal="true"
       aria-label="Welcome to Sunred"
+      initial={reduce ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: easeOutQuart }}
     >
       <div className="flex w-full max-w-sm flex-col items-center text-center">
-        <div className="flex size-20 items-center justify-center rounded-3xl bg-primary/10">
+        <motion.div
+          className="flex size-20 items-center justify-center rounded-3xl bg-primary/10"
+          {...item(0)}
+        >
           <Logo className="size-12" />
-        </div>
-        <h1 className="mt-6 font-serif text-3xl font-bold tracking-normal text-balance">
+        </motion.div>
+
+        <motion.h1
+          className="mt-6 font-serif text-3xl font-bold tracking-normal text-balance"
+          {...item(1)}
+        >
           {userDisplayName ? `Welcome, ${userDisplayName}` : "Welcome to Sunred"}
-        </h1>
-        <p className="mt-3 max-w-xs text-pretty text-muted-foreground">
-          Add your first RSS feed and Sunred will fetch new articles for you
-          automatically. It only takes a URL.
-        </p>
-        <div className="mt-8 flex w-full flex-col gap-2">
+        </motion.h1>
+
+        <motion.p
+          className="mt-3 max-w-xs text-pretty text-muted-foreground"
+          {...item(2)}
+        >
+          Add an RSS feed and Sunred fetches new articles for you automatically.
+          It only takes a URL.
+        </motion.p>
+
+        <motion.div
+          className="mt-8 flex w-full flex-col gap-2"
+          {...item(3)}
+        >
           <Button
+            ref={primaryRef}
             size="lg"
             className="bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={onAddFeed}
-            autoFocus
           >
             <Plus className="size-4" />
             Add your first feed
@@ -207,9 +250,9 @@ function WelcomeScreen({
           <Button variant="ghost" size="lg" onClick={onMaybeLater}>
             Maybe later
           </Button>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -224,10 +267,12 @@ function SpotlightTour({
   onComplete: () => Promise<boolean>;
   onSkip: () => Promise<boolean>;
 }) {
+  const reduce = useReducedMotion();
   const [index, setIndex] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [placement, setPlacement] = useState<{ top: number; left: number } | null>(null);
   const [finishing, setFinishing] = useState(false);
+  const [ready, setReady] = useState(false);
   const step = steps[index];
   const isLast = index === steps.length - 1;
   const selector = step?.selector;
@@ -261,6 +306,7 @@ function SpotlightTour({
 
   useEffect(() => {
     measure();
+    setReady(true);
     window.addEventListener("resize", measure);
     window.addEventListener("scroll", measure, true);
     return () => {
@@ -300,51 +346,71 @@ function SpotlightTour({
   return (
     <>
       {/* Click-capture backdrop: blocks interaction with the UI beneath the
-          tour. Transparent itself; the darkening comes from the spotlight's
-          box-shadow so the cutout stays crisp. */}
-      <div className="fixed inset-0 z-[60]" aria-hidden="true" />
+          tour. The darkening comes from the spotlight's box-shadow so the
+          cutout stays crisp; this layer just catches pointer events. */}
+      <motion.div
+        className="fixed inset-0 z-[60]"
+        aria-hidden="true"
+        initial={reduce ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2, ease: easeOutQuart }}
+      />
 
-      {/* Spotlight cutout around the target. */}
+      {/* Spotlight cutout around the target. Animate position and size via
+          transforms (translate + scale) instead of top/left/width/height so
+          the transition between steps stays on the compositor and off the
+          layout thread. */}
       {rect && step && (
-        <div
-          className="fixed z-[61] rounded-lg border-2 border-primary pointer-events-none transition-all duration-150 ease-out"
-          style={{
-            top: rect.top - 4,
-            left: rect.left - 4,
+        <motion.div
+          className="fixed left-0 top-0 z-[61] rounded-lg border-2 border-primary pointer-events-none"
+          style={{ boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.55)" }}
+          initial={false}
+          animate={{
+            x: rect.left - 4,
+            y: rect.top - 4,
             width: rect.width + 8,
             height: rect.height + 8,
-            boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.55)",
+            opacity: ready ? 1 : 0,
           }}
+          transition={
+            reduce
+              ? { duration: 0 }
+              : { type: "spring", stiffness: 380, damping: 34, opacity: { duration: 0.18, ease: easeOutQuart } }
+          }
         />
       )}
 
-      {/* Coachmark. */}
+      {/* Coachmark. Crossfades between steps (mode="wait") so it settles rather
+          than teleporting; keyed by index so AnimatePresence owns the swap. */}
       {rect && placement && step && (
-        <div
-          className="fixed z-[62] w-72 rounded-lg border border-border bg-popover p-4 shadow-xl"
-          style={{ top: placement.top, left: placement.left }}
-          role="dialog"
-          aria-modal="true"
-          aria-label={step.title}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
-              {index + 1} of {steps.length}
-            </span>
-            <button
-              type="button"
-              onClick={skip}
-              disabled={finishing}
-              className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30 disabled:opacity-50"
-              aria-label="Skip tour"
-            >
-              <X className="size-4" />
-            </button>
-          </div>
-          <h2 className="mt-2 font-medium text-foreground">{step.title}</h2>
-          <p className="mt-1 text-sm text-muted-foreground text-pretty">{step.body}</p>
-          <div className="mt-4 flex items-center justify-end gap-2">
-            {!isLast && (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={index}
+            className="fixed z-[62] w-72 rounded-lg border border-border bg-popover p-4 shadow-xl"
+            style={{ top: placement.top, left: placement.left }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={step.title}
+            initial={reduce ? false : { opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, y: -6 }}
+            transition={{ duration: 0.16, ease: easeOutQuart }}
+          >
+            <div className="flex items-center justify-between">
+              <TourPips count={steps.length} index={index} />
+              <button
+                type="button"
+                onClick={skip}
+                disabled={finishing}
+                className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30 disabled:opacity-50"
+                aria-label="Skip tour"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+            <h2 className="mt-2 font-medium text-foreground">{step.title}</h2>
+            <p className="mt-1 text-sm text-muted-foreground text-pretty">{step.body}</p>
+            <div className="mt-4 flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={skip}
@@ -353,15 +419,33 @@ function SpotlightTour({
               >
                 Skip
               </button>
-            )}
-            <Button size="sm" onClick={next} disabled={finishing} autoFocus>
-              {isLast ? "Got it" : "Next"}
-              {!isLast && <ChevronRight className="size-4" />}
-            </Button>
-          </div>
-        </div>
+              <Button size="sm" onClick={next} disabled={finishing} autoFocus>
+                {isLast ? "Got it" : "Next"}
+                {!isLast && <ChevronRight className="size-4" />}
+              </Button>
+            </div>
+          </motion.div>
+        </AnimatePresence>
       )}
     </>
+  );
+}
+
+/** Small progress pips — calmer and more product-native than "1 of 2" text. */
+function TourPips({ count, index }: { count: number; index: number }) {
+  return (
+    <div className="flex items-center gap-1.5" aria-label={`Step ${index + 1} of ${count}`}>
+      {Array.from({ length: count }).map((_, i) => (
+        <span
+          key={i}
+          className={
+            i === index
+              ? "size-1.5 rounded-full bg-primary transition-colors"
+              : "size-1.5 rounded-full bg-muted-foreground/30 transition-colors"
+          }
+        />
+      ))}
+    </div>
   );
 }
 
