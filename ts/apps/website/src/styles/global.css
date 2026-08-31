@@ -2,54 +2,28 @@
 @import "@workspace/ui/tokens.css";
 
 /*
- * Sunred marketing site — design tokens
+ * Sunred marketing site.
  *
- * The marketing surface is dark-first: a deep near-black tinted toward the
- * sun's hue (the sky before dawn), with the brand orange (--primary, shared
- * from @workspace/ui) as the single saturated accent. The sun is still the
- * brand; here it reads as a warm glow rising out of the dark, not a cream
- * newspaper. Type is Geist (sans + mono) — a modern developer-tool voice.
+ * Colors and fonts come from the shared design tokens in @workspace/ui, so
+ * the marketing surface stays in sync with the web app. The site is
+ * dark-first: <html> carries the `dark` class (see layouts/Base.astro) so the
+ * shared dark palette applies. Type uses the same families as the web app —
+ * IBM Plex Sans (sans), Merriweather (serif), Geist Mono (mono) — loaded from
+ * Google Fonts in Base.astro.
  *
  * Component and layout styling lives inline as Tailwind utilities in the
- * .astro markup, driven by the tokens below. Only base element resets,
+ * .astro markup, driven by the shared tokens. Only base element resets,
  * keyframes, and the reveal-animation helpers remain here.
  */
 
 @theme {
-  /* Brand — the sun. Aliases of the shared --primary token. */
-  --color-sun: var(--primary);
-  --color-sun-glow: oklch(0.72 0.24 55);
-  --color-sun-deep: oklch(0.62 0.24 45);
-
-  /* Dark surface ramp — near-black, tinted toward the sun hue (~45–55) */
-  --color-bg: oklch(0.165 0.008 50);
-  --color-bg-raised: oklch(0.205 0.009 50);
-  --color-bg-elevated: oklch(0.245 0.011 50);
-  --color-bg-sunken: oklch(0.135 0.007 50);
-
-  /* Ink — warm near-white, tuned for ≥4.5:1 on the dark bg */
-  --color-ink: oklch(0.97 0.004 50);
-  --color-ink-soft: oklch(0.74 0.012 50);
-  --color-ink-faint: oklch(0.645 0.014 50);
-
-  /* Hairlines — translucent white for depth without hard edges */
-  --color-rule: oklch(1 0 0 / 0.08);
-  --color-rule-strong: oklch(1 0 0 / 0.14);
-
-  /* Fonts — Geist (modern developer-tool voice) */
-  --font-sans: "Geist", system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-serif: "Merriweather", Georgia, serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
-  --font-display: var(--font-sans);
-  --font-body: var(--font-sans);
 }
 
 :root {
   color-scheme: dark;
-
-  /* Fonts — propagate to non-theme contexts (e.g. SVG, inline code) */
-  --font-sans: "Geist", system-ui, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, monospace;
-  --font-serif: var(--font-sans);
 }
 
 * {
@@ -65,9 +39,9 @@ html {
 
 body {
   margin: 0;
-  font-family: var(--font-body);
-  background-color: var(--color-bg);
-  color: var(--color-ink);
+  font-family: var(--font-sans);
+  background-color: var(--background);
+  color: var(--foreground);
   font-size: 1.0625rem;
   line-height: 1.65;
   overflow-x: hidden;
@@ -84,7 +58,7 @@ body {
 
 ::selection {
   background-color: color-mix(in oklab, var(--primary) 32%, transparent);
-  color: var(--color-ink);
+  color: var(--foreground);
 }
 
 a {
@@ -97,7 +71,7 @@ button {
 }
 
 :focus-visible {
-  outline: 2px solid var(--sun);
+  outline: 2px solid var(--primary);
   outline-offset: 3px;
   border-radius: 4px;
 }

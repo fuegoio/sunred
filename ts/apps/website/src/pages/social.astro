@@ -12,31 +12,31 @@ import MockWindow from "../components/MockWindow.astro"
 const loginUrl = "/login"
 const selfHostUrl = "https://github.com/fuegoio/sunred"
 
-const featureSection = "border-t border-rule py-[clamp(4rem,10vh,6.5rem)]"
+const featureSection = "border-t border-border py-[clamp(4rem,10vh,6.5rem)]"
 const featureSectionAlt =
-  "bg-[color-mix(in_oklab,var(--color-bg-sunken)_50%,var(--color-bg))]"
+  "bg-[color-mix(in_oklab,var(--background)_88%,black)]"
 const split =
   "grid grid-cols-1 items-center gap-[clamp(2.5rem,6vw,4rem)] min-[880px]:grid-cols-2"
 const tag =
-  "inline-flex items-center gap-2 rounded-full border border-rule bg-[color-mix(in_oklab,var(--color-bg-raised)_60%,transparent)] px-[0.7rem] py-[0.35rem] font-mono text-[0.75rem] font-medium text-ink-soft"
+  "inline-flex items-center gap-2 rounded-full border border-border bg-[color-mix(in_oklab,var(--card)_60%,transparent)] px-[0.7rem] py-[0.35rem] font-mono text-[0.75rem] font-medium text-muted-foreground"
 const tagDot =
   "h-[0.45rem] w-[0.45rem] rounded-full bg-primary shadow-[0_0_0_3px_color-mix(in_oklab,var(--primary)_22%,transparent)]"
 const arrow =
   '<svg class="h-[17px] w-[17px] shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
 
 const prose =
-  "mt-6 max-w-[40rem] text-[1.125rem] leading-[1.75] [&_p]:m-0 [&_p]:text-ink-soft [&_p+p]:mt-5 [&_strong]:font-semibold [&_strong]:text-ink [&_a]:text-[color-mix(in_oklab,var(--primary)_85%,var(--color-ink))] [&_a]:underline [&_a]:underline-offset-[0.15em] [&_a]:decoration-[color-mix(in_oklab,var(--primary)_35%,transparent)]"
+  "mt-6 max-w-[40rem] text-[1.125rem] leading-[1.75] [&_p]:m-0 [&_p]:text-muted-foreground [&_p+p]:mt-5 [&_strong]:font-semibold [&_strong]:text-foreground [&_a]:text-[color-mix(in_oklab,var(--primary)_85%,var(--foreground))] [&_a]:underline [&_a]:underline-offset-[0.15em] [&_a]:decoration-[color-mix(in_oklab,var(--primary)_35%,transparent)]"
 
 const spSearch =
-  "mb-4 flex items-center gap-2 rounded-[0.5rem] border border-rule bg-bg-sunken px-[0.85rem] py-[0.6rem]"
+  "mb-4 flex items-center gap-2 rounded-[0.5rem] border border-border bg-background px-[0.85rem] py-[0.6rem]"
 const spResult =
-  "flex items-center gap-3 rounded-[0.5rem] border border-rule bg-[color-mix(in_oklab,var(--color-bg-raised)_60%,transparent)] px-[0.75rem] py-[0.65rem] transition-colors duration-150 hover:border-rule-strong"
+  "flex items-center gap-3 rounded-[0.5rem] border border-border bg-[color-mix(in_oklab,var(--card)_60%,transparent)] px-[0.75rem] py-[0.65rem] transition-colors duration-150 hover:border-input"
 const spFollow =
-  "shrink-0 rounded-[0.4rem] border border-rule-strong px-[0.7rem] py-[0.3rem] text-[0.75rem] font-semibold text-ink-soft"
+  "shrink-0 rounded-[0.4rem] border border-input px-[0.7rem] py-[0.3rem] text-[0.75rem] font-semibold text-muted-foreground"
 const shareEntry =
-  "mb-2 rounded-[0.55rem] border border-rule bg-[color-mix(in_oklab,var(--color-bg-sunken)_40%,transparent)] px-4 py-[0.85rem]"
+  "mb-2 rounded-[0.55rem] border border-border bg-[color-mix(in_oklab,var(--background)_40%,transparent)] px-4 py-[0.85rem]"
 const shareAction =
-  "inline-flex items-center gap-[0.3rem] text-[0.75rem] font-medium text-ink-faint"
+  "inline-flex items-center gap-[0.3rem] text-[0.75rem] font-medium text-muted-foreground/70"
 ---
 
 <Base
@@ -57,12 +57,12 @@ const shareAction =
       Federated on the AT Protocol
     </span>
     <h1
-      class="mt-0 mb-6 font-display text-[clamp(2.5rem,7vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-ink [text-wrap:balance]"
+      class="mt-0 mb-6 font-sans text-[clamp(2.5rem,7vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-foreground [text-wrap:balance]"
     >
       Reading is better<br />with people you trust.
     </h1>
     <p
-      class="mt-0 max-w-[38rem] text-[clamp(1.125rem,2.5vw,1.375rem)] leading-[1.55] text-ink-soft [text-wrap:pretty]"
+      class="mt-0 max-w-[38rem] text-[clamp(1.125rem,2.5vw,1.375rem)] leading-[1.55] text-muted-foreground [text-wrap:pretty]"
     >
       Follow people and see the articles they share in your timeline.
       Your social graph runs on the same protocol as Bluesky — it travels
@@ -95,32 +95,32 @@ const shareAction =
             <MockWindow path="Find people" class="max-w-[28rem]">
               <div class="p-4">
                 <div class={spSearch}>
-                  <span class="text-base text-ink-faint">⌕</span>
-                  <span class="font-mono text-[0.875rem] text-ink">elena</span>
+                  <span class="text-base text-muted-foreground/70">⌕</span>
+                  <span class="font-mono text-[0.875rem] text-foreground">elena</span>
                   <span class="h-4 w-[1.5px] rounded-[1px] bg-primary"></span>
                 </div>
                 <div class="flex flex-col gap-2">
                   <div class={spResult}>
                     <span class="h-8 w-8 shrink-0 rounded-full bg-[color-mix(in_oklab,var(--primary)_40%,oklch(0.5_0.01_50))]"></span>
                     <div class="flex min-w-0 flex-1 flex-col gap-[0.15rem]">
-                      <span class="text-[0.875rem] font-semibold text-ink">Elena Vasquez</span>
-                      <span class="font-mono text-[0.72rem] text-ink-faint">@elena · sunred.app</span>
+                      <span class="text-[0.875rem] font-semibold text-foreground">Elena Vasquez</span>
+                      <span class="font-mono text-[0.72rem] text-muted-foreground/70">@elena · sunred.app</span>
                     </div>
                     <span class={spFollow}>Following</span>
                   </div>
                   <div class={spResult}>
                     <span class="h-8 w-8 shrink-0 rounded-full bg-[color-mix(in_oklab,oklch(0.6_0.12_200)_50%,oklch(0.5_0.01_50))]"></span>
                     <div class="flex min-w-0 flex-1 flex-col gap-[0.15rem]">
-                      <span class="text-[0.875rem] font-semibold text-ink">Elena K.</span>
-                      <span class="font-mono text-[0.72rem] text-ink-faint">@elena.dev · relay</span>
+                      <span class="text-[0.875rem] font-semibold text-foreground">Elena K.</span>
+                      <span class="font-mono text-[0.72rem] text-muted-foreground/70">@elena.dev · relay</span>
                     </div>
                     <span class:list={[spFollow, "border-primary bg-primary text-primary-foreground"]}>Follow</span>
                   </div>
                   <div class={spResult}>
                     <span class="h-8 w-8 shrink-0 rounded-full bg-[color-mix(in_oklab,oklch(0.6_0.12_300)_50%,oklch(0.5_0.01_50))]"></span>
                     <div class="flex min-w-0 flex-1 flex-col gap-[0.15rem]">
-                      <span class="text-[0.875rem] font-semibold text-ink">elenas.blog</span>
-                      <span class="font-mono text-[0.72rem] text-ink-faint">@elena · other.instance</span>
+                      <span class="text-[0.875rem] font-semibold text-foreground">elenas.blog</span>
+                      <span class="font-mono text-[0.72rem] text-muted-foreground/70">@elena · other.instance</span>
                     </div>
                     <span class:list={[spFollow, "border-primary bg-primary text-primary-foreground"]}>Follow</span>
                   </div>
@@ -148,15 +148,15 @@ const shareAction =
           <div aria-hidden="true" class="order-1 min-[880px]:order-2">
             <MockWindow path="sunred — Unread">
               <div class="p-[0.6rem]">
-                <div class:list={[shareEntry, "border-[color-mix(in_oklab,var(--primary)_30%,var(--color-rule-strong))]"]}>
-                  <div class="mb-[0.3rem] flex gap-[0.6rem] font-mono text-[0.6875rem] text-ink-faint">
-                    <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--color-ink-soft))]">rust-lang.org</span>
+                <div class:list={[shareEntry, "border-[color-mix(in_oklab,var(--primary)_30%,var(--input))]"]}>
+                  <div class="mb-[0.3rem] flex gap-[0.6rem] font-mono text-[0.6875rem] text-muted-foreground/70">
+                    <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--muted-foreground))]">rust-lang.org</span>
                     <span>5h</span>
                   </div>
-                  <div class="mb-1 text-[0.9375rem] font-semibold text-ink">Rust 2026 roadmap</div>
-                  <div class="mb-[0.6rem] text-[0.8rem] leading-[1.5] text-ink-soft">A look at the language team's direction for the next edition…</div>
+                  <div class="mb-1 text-[0.9375rem] font-semibold text-foreground">Rust 2026 roadmap</div>
+                  <div class="mb-[0.6rem] text-[0.8rem] leading-[1.5] text-muted-foreground">A look at the language team's direction for the next edition…</div>
                   <div class="flex gap-3">
-                    <span class:list={[shareAction, "text-[color-mix(in_oklab,var(--primary)_85%,var(--color-ink))]"]}>
+                    <span class:list={[shareAction, "text-[color-mix(in_oklab,var(--primary)_85%,var(--foreground))]"]}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/></svg>
                       Shared
                     </span>
@@ -167,12 +167,12 @@ const shareAction =
                   </div>
                 </div>
                 <div class={shareEntry}>
-                  <div class="mb-[0.3rem] flex gap-[0.6rem] font-mono text-[0.6875rem] text-ink-faint">
-                    <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--color-ink-soft))]">selfhosted.show</span>
+                  <div class="mb-[0.3rem] flex gap-[0.6rem] font-mono text-[0.6875rem] text-muted-foreground/70">
+                    <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--muted-foreground))]">selfhosted.show</span>
                     <span>8h</span>
                   </div>
-                  <div class="mb-1 text-[0.9375rem] font-semibold text-ink">The end of Moore's law (again)</div>
-                  <div class="mb-[0.6rem] text-[0.8rem] leading-[1.5] text-ink-soft">Density gains slow, and what that means for the home lab…</div>
+                  <div class="mb-1 text-[0.9375rem] font-semibold text-foreground">The end of Moore's law (again)</div>
+                  <div class="mb-[0.6rem] text-[0.8rem] leading-[1.5] text-muted-foreground">Density gains slow, and what that means for the home lab…</div>
                   <div class="flex gap-3">
                     <span class={shareAction}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/></svg>
@@ -210,42 +210,42 @@ const shareAction =
                 <div class="mb-5 flex items-start gap-[0.85rem]">
                   <span class="h-12 w-12 shrink-0 rounded-full bg-[color-mix(in_oklab,var(--primary)_40%,oklch(0.5_0.01_50))]"></span>
                   <div class="flex flex-1 flex-col gap-[0.1rem]">
-                    <span class="text-base font-semibold text-ink">Elena Vasquez</span>
-                    <span class="font-mono text-[0.78rem] text-ink-faint">@elena</span>
-                    <p class="mt-[0.4rem] text-[0.8125rem] leading-[1.5] text-ink-soft">Reading Rust, systems, and the open web. Sharing what matters.</p>
+                    <span class="text-base font-semibold text-foreground">Elena Vasquez</span>
+                    <span class="font-mono text-[0.78rem] text-muted-foreground/70">@elena</span>
+                    <p class="mt-[0.4rem] text-[0.8125rem] leading-[1.5] text-muted-foreground">Reading Rust, systems, and the open web. Sharing what matters.</p>
                   </div>
-                  <span class="shrink-0 rounded-[0.4rem] border border-rule-strong px-[0.8rem] py-[0.35rem] text-[0.75rem] font-semibold text-ink-soft">Following</span>
+                  <span class="shrink-0 rounded-[0.4rem] border border-input px-[0.8rem] py-[0.35rem] text-[0.75rem] font-semibold text-muted-foreground">Following</span>
                 </div>
-                <div class="mb-3 flex gap-7 border-b border-rule pb-4">
+                <div class="mb-3 flex gap-7 border-b border-border pb-4">
                   <div class="flex flex-col gap-[0.1rem]">
-                    <span class="text-[0.9375rem] font-semibold text-ink">1,247</span>
-                    <span class="text-[0.72rem] text-ink-faint">followers</span>
+                    <span class="text-[0.9375rem] font-semibold text-foreground">1,247</span>
+                    <span class="text-[0.72rem] text-muted-foreground/70">followers</span>
                   </div>
                   <div class="flex flex-col gap-[0.1rem]">
-                    <span class="text-[0.9375rem] font-semibold text-ink">89</span>
-                    <span class="text-[0.72rem] text-ink-faint">following</span>
+                    <span class="text-[0.9375rem] font-semibold text-foreground">89</span>
+                    <span class="text-[0.72rem] text-muted-foreground/70">following</span>
                   </div>
                   <div class="flex flex-col gap-[0.1rem]">
-                    <span class="text-[0.9375rem] font-semibold text-ink">34</span>
-                    <span class="text-[0.72rem] text-ink-faint">articles shared</span>
+                    <span class="text-[0.9375rem] font-semibold text-foreground">34</span>
+                    <span class="text-[0.72rem] text-muted-foreground/70">articles shared</span>
                   </div>
                 </div>
-                <div class="mb-2 flex gap-5 border-b border-rule">
-                  <span class="-mb-px border-b-[1.5px] border-primary pb-[0.6rem] text-[0.8125rem] font-medium text-ink">Articles</span>
-                  <span class="-mb-px border-b-[1.5px] border-transparent pb-[0.6rem] text-[0.8125rem] font-medium text-ink-faint">Feeds</span>
+                <div class="mb-2 flex gap-5 border-b border-border">
+                  <span class="-mb-px border-b-[1.5px] border-primary pb-[0.6rem] text-[0.8125rem] font-medium text-foreground">Articles</span>
+                  <span class="-mb-px border-b-[1.5px] border-transparent pb-[0.6rem] text-[0.8125rem] font-medium text-muted-foreground/70">Feeds</span>
                 </div>
                 <div class="flex flex-col gap-[0.1rem]">
-                  <div class="flex items-center justify-between border-b border-rule py-[0.6rem] last:border-b-0">
-                    <span class="text-[0.8125rem] font-medium text-ink">Why RSS still matters</span>
-                    <span class="font-mono text-[0.6875rem] text-ink-faint">planet4.local · 2h</span>
+                  <div class="flex items-center justify-between border-b border-border py-[0.6rem] last:border-b-0">
+                    <span class="text-[0.8125rem] font-medium text-foreground">Why RSS still matters</span>
+                    <span class="font-mono text-[0.6875rem] text-muted-foreground/70">planet4.local · 2h</span>
                   </div>
-                  <div class="flex items-center justify-between border-b border-rule py-[0.6rem] last:border-b-0">
-                    <span class="text-[0.8125rem] font-medium text-ink">Rust 2026 roadmap</span>
-                    <span class="font-mono text-[0.6875rem] text-ink-faint">rust-lang.org · 5h</span>
+                  <div class="flex items-center justify-between border-b border-border py-[0.6rem] last:border-b-0">
+                    <span class="text-[0.8125rem] font-medium text-foreground">Rust 2026 roadmap</span>
+                    <span class="font-mono text-[0.6875rem] text-muted-foreground/70">rust-lang.org · 5h</span>
                   </div>
-                  <div class="flex items-center justify-between border-b border-rule py-[0.6rem] last:border-b-0">
-                    <span class="text-[0.8125rem] font-medium text-ink">A field guide to OPML</span>
-                    <span class="font-mono text-[0.6875rem] text-ink-faint">planet4.local · 1d</span>
+                  <div class="flex items-center justify-between border-b border-border py-[0.6rem] last:border-b-0">
+                    <span class="text-[0.8125rem] font-medium text-foreground">A field guide to OPML</span>
+                    <span class="font-mono text-[0.6875rem] text-muted-foreground/70">planet4.local · 1d</span>
                   </div>
                 </div>
               </div>
@@ -270,16 +270,16 @@ const shareAction =
             </div>
           </div>
           <div aria-hidden="true" class="order-1 min-[880px]:order-2">
-            <div class="flex max-w-[28rem] flex-col items-center gap-6 rounded-[0.75rem] border border-rule bg-[color-mix(in_oklab,var(--color-bg-sunken)_40%,transparent)] p-8">
+            <div class="flex max-w-[28rem] flex-col items-center gap-6 rounded-[0.75rem] border border-border bg-[color-mix(in_oklab,var(--background)_40%,transparent)] p-8">
               <div class="flex flex-col items-center gap-[0.2rem] rounded-[0.6rem] border border-primary bg-[color-mix(in_oklab,var(--primary)_12%,transparent)] px-5 py-3">
                 <span class="text-[0.625rem] text-primary">●</span>
-                <span class="text-[0.8125rem] font-semibold text-ink">Your PDS</span>
-                <span class="font-mono text-[0.6875rem] text-ink-faint">follows · shares · feeds</span>
+                <span class="text-[0.8125rem] font-semibold text-foreground">Your PDS</span>
+                <span class="font-mono text-[0.6875rem] text-muted-foreground/70">follows · shares · feeds</span>
               </div>
               <div class="flex h-6 flex-col gap-[0.4rem]" aria-hidden="true">
-                <span class="h-full w-px bg-rule-strong"></span>
-                <span class="h-full w-px bg-rule-strong"></span>
-                <span class="h-full w-px bg-rule-strong"></span>
+                <span class="h-full w-px bg-input"></span>
+                <span class="h-full w-px bg-input"></span>
+                <span class="h-full w-px bg-input"></span>
               </div>
               <div class="flex gap-3">
                 {
@@ -288,17 +288,17 @@ const shareAction =
                     { label: "Instance B", sub: "self-hosted" },
                     { label: "Instance C", sub: "other.host" },
                   ].map((n) => (
-                    <div class="flex flex-col items-center gap-[0.2rem] rounded-[0.6rem] border border-rule-strong bg-[color-mix(in_oklab,var(--color-bg-raised)_60%,transparent)] px-5 py-3">
-                      <span class="text-[0.625rem] text-[color-mix(in_oklab,var(--primary)_70%,var(--color-ink-soft))]">●</span>
-                      <span class="text-[0.8125rem] font-semibold text-ink">{n.label}</span>
-                      <span class="font-mono text-[0.6875rem] text-ink-faint">{n.sub}</span>
+                    <div class="flex flex-col items-center gap-[0.2rem] rounded-[0.6rem] border border-input bg-[color-mix(in_oklab,var(--card)_60%,transparent)] px-5 py-3">
+                      <span class="text-[0.625rem] text-[color-mix(in_oklab,var(--primary)_70%,var(--muted-foreground))]">●</span>
+                      <span class="text-[0.8125rem] font-semibold text-foreground">{n.label}</span>
+                      <span class="font-mono text-[0.6875rem] text-muted-foreground/70">{n.sub}</span>
                     </div>
                   ))
                 }
               </div>
-              <div class="flex flex-col items-center gap-[0.15rem] rounded-[0.6rem] border border-dashed border-rule-strong px-5 py-2">
-                <span class="font-mono text-[0.75rem] font-semibold text-ink-soft">relay</span>
-                <span class="text-[0.6875rem] text-ink-faint">aggregates counts across instances</span>
+              <div class="flex flex-col items-center gap-[0.15rem] rounded-[0.6rem] border border-dashed border-input px-5 py-2">
+                <span class="font-mono text-[0.75rem] font-semibold text-muted-foreground">relay</span>
+                <span class="text-[0.6875rem] text-muted-foreground/70">aggregates counts across instances</span>
               </div>
             </div>
           </div>

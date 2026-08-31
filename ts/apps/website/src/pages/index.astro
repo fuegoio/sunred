@@ -13,18 +13,18 @@ const loginUrl = "/login"
 const selfHostUrl = "https://github.com/fuegoio/sunred"
 
 const tag =
-  "inline-flex items-center gap-2 rounded-full border border-rule bg-[color-mix(in_oklab,var(--color-bg-raised)_60%,transparent)] px-[0.7rem] py-[0.35rem] font-mono text-[0.75rem] font-medium text-ink-soft"
+  "inline-flex items-center gap-2 rounded-full border border-border bg-[color-mix(in_oklab,var(--card)_60%,transparent)] px-[0.7rem] py-[0.35rem] font-mono text-[0.75rem] font-medium text-muted-foreground"
 const tagDot =
   "h-[0.45rem] w-[0.45rem] rounded-full bg-primary shadow-[0_0_0_3px_color-mix(in_oklab,var(--primary)_22%,transparent)]"
 const ctaRow = "mt-8 flex flex-wrap items-center gap-3"
 const linkArrow =
-  "inline-flex items-center gap-[0.4rem] font-body text-[0.9375rem] font-medium text-[color-mix(in_oklab,var(--primary)_85%,var(--color-ink))] transition-[gap] duration-200 hover:gap-[0.6rem]"
+  "inline-flex items-center gap-[0.4rem] font-sans text-[0.9375rem] font-medium text-[color-mix(in_oklab,var(--primary)_85%,var(--foreground))] transition-[gap] duration-200 hover:gap-[0.6rem]"
 const arrowSvg =
   '<svg class="h-[17px] w-[17px] shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
 const manifestoBody =
-  "max-w-[40rem] text-[1.125rem] leading-[1.75] [&_p]:m-0 [&_p]:text-ink-soft [&_p+p]:mt-5 [&_a]:text-[color-mix(in_oklab,var(--primary)_85%,var(--color-ink))] [&_a]:underline [&_a]:underline-offset-[0.15em] [&_a]:decoration-[color-mix(in_oklab,var(--primary)_35%,transparent)]"
+  "max-w-[40rem] text-[1.125rem] leading-[1.75] [&_p]:m-0 [&_p]:text-muted-foreground [&_p+p]:mt-5 [&_a]:text-[color-mix(in_oklab,var(--primary)_85%,var(--foreground))] [&_a]:underline [&_a]:underline-offset-[0.15em] [&_a]:decoration-[color-mix(in_oklab,var(--primary)_35%,transparent)]"
 const answerLink =
-  "text-[color-mix(in_oklab,var(--primary)_85%,var(--color-ink))] underline underline-offset-[0.15em]"
+  "text-[color-mix(in_oklab,var(--primary)_85%,var(--foreground))] underline underline-offset-[0.15em]"
 
 const bento = "grid grid-cols-6 gap-4 max-[860px]:grid-cols-2 max-[640px]:grid-cols-1"
 const bentoTall =
@@ -33,13 +33,13 @@ const bentoSpan4 = "col-span-4 max-[860px]:col-span-2 max-[640px]:col-span-1"
 const bentoFull = "col-span-6 max-[860px]:col-span-2 max-[640px]:col-span-1"
 
 const interfaceCard =
-  "flex flex-col overflow-hidden rounded-[0.75rem] border border-rule bg-[color-mix(in_oklab,var(--color-bg-raised)_70%,transparent)] transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_oklab,var(--primary)_28%,var(--color-rule-strong))]"
+  "flex flex-col overflow-hidden rounded-[0.75rem] border border-border bg-[color-mix(in_oklab,var(--card)_70%,transparent)] transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_oklab,var(--primary)_28%,var(--input))]"
 const interfaceBadge =
-  "mt-[1.4rem] mx-[1.6rem] self-start rounded-[0.35rem] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)] bg-[color-mix(in_oklab,var(--primary)_16%,transparent)] px-[0.55rem] py-[0.25rem] font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-[color-mix(in_oklab,var(--primary)_82%,var(--color-ink))]"
+  "mt-[1.4rem] mx-[1.6rem] self-start rounded-[0.35rem] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)] bg-[color-mix(in_oklab,var(--primary)_16%,transparent)] px-[0.55rem] py-[0.25rem] font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-[color-mix(in_oklab,var(--primary)_82%,var(--foreground))]"
 const interfaceH3 =
-  "mt-[0.75rem] mx-[1.6rem] mb-2 font-display text-[1.0625rem] font-semibold tracking-[-0.01em] text-ink"
+  "mt-[0.75rem] mx-[1.6rem] mb-2 font-sans text-[1.0625rem] font-semibold tracking-[-0.01em] text-foreground"
 const interfaceP =
-  "mt-0 mx-[1.6rem] mb-[1.6rem] text-[0.9375rem] leading-[1.6] text-ink-soft"
+  "mt-0 mx-[1.6rem] mb-[1.6rem] text-[0.9375rem] leading-[1.6] text-muted-foreground"
 const tuiScreen =
   "m-0 overflow-hidden whitespace-pre p-[0.85rem_1rem] font-mono text-[0.72rem] leading-[1.55] text-[oklch(0.8_0.01_50)]"
 ---
@@ -75,15 +75,15 @@ const tuiScreen =
           </span>
 
           <h1
-            class:list={["reveal", "mt-0 font-display text-[clamp(2.75rem,8vw,5.25rem)] font-semibold leading-none tracking-[-0.04em] text-ink [text-wrap:balance]"]}
+            class:list={["reveal", "mt-0 font-sans text-[clamp(2.75rem,8vw,5.25rem)] font-semibold leading-none tracking-[-0.04em] text-foreground [text-wrap:balance]"]}
             style="animation-delay:0.14s"
           >
             Your feeds,<br />
-            <span class="text-[color-mix(in_oklab,var(--primary)_92%,var(--color-ink))]">your terms.</span>
+            <span class="text-[color-mix(in_oklab,var(--primary)_92%,var(--foreground))]">your terms.</span>
           </h1>
 
           <p
-            class:list={["reveal", "mt-6 max-w-[32rem] text-[clamp(1.0625rem,2.4vw,1.25rem)] font-normal leading-[1.6] text-ink-soft [text-wrap:pretty]"]}
+            class:list={["reveal", "mt-6 max-w-[32rem] text-[clamp(1.0625rem,2.4vw,1.25rem)] font-normal leading-[1.6] text-muted-foreground [text-wrap:pretty]"]}
             style="animation-delay:0.22s"
           >
             A modern, self-hostable RSS reader with a federated social
@@ -102,13 +102,13 @@ const tuiScreen =
           </div>
 
           <div
-            class:list={["reveal", "mt-7 inline-flex items-center gap-[0.6rem] rounded-[0.55rem] border border-rule bg-bg-sunken px-[0.85rem] py-[0.55rem] font-mono text-[0.8125rem]"]}
+            class:list={["reveal", "mt-7 inline-flex items-center gap-[0.6rem] rounded-[0.55rem] border border-border bg-background px-[0.85rem] py-[0.55rem] font-mono text-[0.8125rem]"]}
             style="animation-delay:0.40s"
             aria-label="Install command"
           >
             <span class="font-semibold text-primary" aria-hidden="true">$</span>
-            <code class="text-ink-soft">docker run sunred/sunred</code>
-            <span class="ml-2 rounded-[0.3rem] border border-rule px-[0.45rem] py-[0.15rem] text-[0.6875rem] text-ink-faint" aria-hidden="true">copy</span>
+            <code class="text-muted-foreground">docker run sunred/sunred</code>
+            <span class="ml-2 rounded-[0.3rem] border border-border px-[0.45rem] py-[0.15rem] text-[0.6875rem] text-muted-foreground/70" aria-hidden="true">copy</span>
           </div>
         </div>
 
@@ -118,82 +118,82 @@ const tuiScreen =
           aria-hidden="true"
         >
           <MockWindow path="sunred — Unread">
-            <span slot="trailing" class="ml-auto rounded-[0.3rem] border border-rule px-[0.45rem] py-[0.15rem] font-mono text-[0.6875rem] text-ink-faint">⌘K</span>
+            <span slot="trailing" class="ml-auto rounded-[0.3rem] border border-border px-[0.45rem] py-[0.15rem] font-mono text-[0.6875rem] text-muted-foreground/70">⌘K</span>
             <div class="grid min-h-[22rem] grid-cols-[9.5rem_1fr] max-[640px]:grid-cols-[6.5rem_1fr]">
-              <aside class="flex flex-col gap-[0.4rem] border-r border-rule bg-bg-sunken p-[0.85rem_0.6rem]">
-                <div class="px-[0.4rem] pb-2 font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-ink-faint">Feeds</div>
+              <aside class="flex flex-col gap-[0.4rem] border-r border-border bg-background p-[0.85rem_0.6rem]">
+                <div class="px-[0.4rem] pb-2 font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-muted-foreground/70">Feeds</div>
                 <ul class="m-0 flex list-none flex-col gap-[0.1rem] p-0">
-                  <li class="flex items-center gap-2 rounded-[0.45rem] bg-[color-mix(in_oklab,var(--primary)_16%,transparent)] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-ink">
+                  <li class="flex items-center gap-2 rounded-[0.45rem] bg-[color-mix(in_oklab,var(--primary)_16%,transparent)] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-foreground">
                     <span class="h-2 w-2 shrink-0 rounded-[2px] bg-primary"></span>Technology
-                    <span class="ml-auto font-mono text-[0.6875rem] text-ink-faint">12</span>
+                    <span class="ml-auto font-mono text-[0.6875rem] text-muted-foreground/70">12</span>
                   </li>
-                  <li class="flex items-center gap-2 rounded-[0.45rem] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-ink-soft">
+                  <li class="flex items-center gap-2 rounded-[0.45rem] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-muted-foreground">
                     <span class="h-2 w-2 shrink-0 rounded-[2px] bg-[oklch(1_0_0/0.14)]"></span>Rust
-                    <span class="ml-auto font-mono text-[0.6875rem] text-ink-faint">4</span>
+                    <span class="ml-auto font-mono text-[0.6875rem] text-muted-foreground/70">4</span>
                   </li>
-                  <li class="flex items-center gap-2 rounded-[0.45rem] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-ink-soft">
+                  <li class="flex items-center gap-2 rounded-[0.45rem] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-muted-foreground">
                     <span class="h-2 w-2 shrink-0 rounded-[2px] bg-[oklch(1_0_0/0.14)]"></span>Planets
-                    <span class="ml-auto font-mono text-[0.6875rem] text-ink-faint">3</span>
+                    <span class="ml-auto font-mono text-[0.6875rem] text-muted-foreground/70">3</span>
                   </li>
-                  <li class="flex items-center gap-2 rounded-[0.45rem] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-ink-soft">
+                  <li class="flex items-center gap-2 rounded-[0.45rem] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-muted-foreground">
                     <span class="h-2 w-2 shrink-0 rounded-[2px] bg-[oklch(1_0_0/0.14)]"></span>Self-hosting
-                    <span class="ml-auto font-mono text-[0.6875rem] text-ink-faint">7</span>
+                    <span class="ml-auto font-mono text-[0.6875rem] text-muted-foreground/70">7</span>
                   </li>
                 </ul>
-                <div class="mt-[0.6rem] border-t border-rule px-[0.4rem] pb-2 pt-[0.6rem] font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-ink-faint">Follows</div>
+                <div class="mt-[0.6rem] border-t border-border px-[0.4rem] pb-2 pt-[0.6rem] font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-muted-foreground/70">Follows</div>
                 <ul class="m-0 flex list-none flex-col gap-[0.1rem] p-0">
-                  <li class="flex items-center gap-2 rounded-[0.45rem] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-ink-soft">
+                  <li class="flex items-center gap-2 rounded-[0.45rem] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-muted-foreground">
                     <span class="h-[0.85rem] w-[0.85rem] shrink-0 rounded-full bg-[color-mix(in_oklab,var(--primary)_40%,oklch(0.5_0.01_50))]"></span>@elena
-                    <span class="ml-auto font-mono text-[0.6875rem] text-ink-faint">3</span>
+                    <span class="ml-auto font-mono text-[0.6875rem] text-muted-foreground/70">3</span>
                   </li>
-                  <li class="flex items-center gap-2 rounded-[0.45rem] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-ink-soft">
+                  <li class="flex items-center gap-2 rounded-[0.45rem] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-muted-foreground">
                     <span class="h-[0.85rem] w-[0.85rem] shrink-0 rounded-full bg-[color-mix(in_oklab,var(--primary)_40%,oklch(0.5_0.01_50))]"></span>@kael
-                    <span class="ml-auto font-mono text-[0.6875rem] text-ink-faint">1</span>
+                    <span class="ml-auto font-mono text-[0.6875rem] text-muted-foreground/70">1</span>
                   </li>
                 </ul>
-                <div class="mt-auto flex items-center gap-2 border-t border-rule px-[0.5rem] pt-[0.6rem] text-[0.8125rem] text-ink-soft">
+                <div class="mt-auto flex items-center gap-2 border-t border-border px-[0.5rem] pt-[0.6rem] text-[0.8125rem] text-muted-foreground">
                   <span class="text-primary">★</span> Starred
                 </div>
               </aside>
               <div class="flex flex-col gap-[0.35rem] p-[0.6rem]">
                 <!-- shared entry -->
-                <div class="relative rounded-[0.55rem] border border-rule bg-[color-mix(in_oklab,var(--color-bg-elevated)_70%,color-mix(in_oklab,var(--primary)_8%,transparent))] px-[0.85rem] py-[0.7rem] pl-[1.6rem]">
+                <div class="relative rounded-[0.55rem] border border-border bg-[color-mix(in_oklab,var(--secondary)_70%,color-mix(in_oklab,var(--primary)_8%,transparent))] px-[0.85rem] py-[0.7rem] pl-[1.6rem]">
                   <span class="absolute top-4 left-[0.55rem] h-[0.4rem] w-[0.4rem] rounded-full bg-primary"></span>
-                  <div class="mb-[0.25rem] flex items-center gap-[0.4rem] font-mono text-[0.6875rem] text-ink-faint">
+                  <div class="mb-[0.25rem] flex items-center gap-[0.4rem] font-mono text-[0.6875rem] text-muted-foreground/70">
                     <span class="h-[0.85rem] w-[0.85rem] shrink-0 rounded-full bg-[color-mix(in_oklab,var(--primary)_40%,oklch(0.5_0.01_50))]"></span>
-                    shared by <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--color-ink-soft))]">@elena</span>
+                    shared by <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--muted-foreground))]">@elena</span>
                   </div>
-                  <div class="mb-[0.2rem] text-[0.875rem] font-semibold text-ink">Why RSS still matters</div>
-                  <div class="text-[0.78rem] leading-[1.5] text-ink-soft [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">
+                  <div class="mb-[0.2rem] text-[0.875rem] font-semibold text-foreground">Why RSS still matters</div>
+                  <div class="text-[0.78rem] leading-[1.5] text-muted-foreground [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">
                     The web used to come to you. Then it stopped. Here's why the oldest syndication format is quietly outliving the platforms…
                   </div>
                 </div>
                 <div class="group/mock-entry relative rounded-[0.55rem] border border-transparent px-[0.85rem] py-[0.7rem] pl-[1.6rem] hover:bg-[oklch(1_0_0/0.025)]">
                   <span class="absolute top-4 left-[0.55rem] h-[0.4rem] w-[0.4rem] rounded-full bg-primary"></span>
-                  <div class="mb-[0.25rem] flex items-center gap-[0.6rem] font-mono text-[0.6875rem] text-ink-faint">
-                    <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--color-ink-soft))]">rust-lang.org</span>
+                  <div class="mb-[0.25rem] flex items-center gap-[0.6rem] font-mono text-[0.6875rem] text-muted-foreground/70">
+                    <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--muted-foreground))]">rust-lang.org</span>
                     <span>5h</span>
                   </div>
-                  <div class="mb-[0.2rem] text-[0.875rem] font-semibold text-ink">Rust 2026 roadmap</div>
-                  <div class="text-[0.78rem] leading-[1.5] text-ink-soft [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">A look at the language team's direction for the next edition…</div>
+                  <div class="mb-[0.2rem] text-[0.875rem] font-semibold text-foreground">Rust 2026 roadmap</div>
+                  <div class="text-[0.78rem] leading-[1.5] text-muted-foreground [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">A look at the language team's direction for the next edition…</div>
                 </div>
                 <div class="group/mock-entry relative rounded-[0.55rem] border border-transparent px-[0.85rem] py-[0.7rem] pl-[1.6rem] hover:bg-[oklch(1_0_0/0.025)]">
                   <span class="absolute top-4 left-[0.55rem] h-[0.4rem] w-[0.4rem] rounded-full bg-primary"></span>
-                  <div class="mb-[0.25rem] flex items-center gap-[0.6rem] font-mono text-[0.6875rem] text-ink-faint">
-                    <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--color-ink-soft))]">selfhosted.show</span>
+                  <div class="mb-[0.25rem] flex items-center gap-[0.6rem] font-mono text-[0.6875rem] text-muted-foreground/70">
+                    <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--muted-foreground))]">selfhosted.show</span>
                     <span>8h</span>
                   </div>
-                  <div class="mb-[0.2rem] text-[0.875rem] font-semibold text-ink">The end of Moore's law (again)</div>
-                  <div class="text-[0.78rem] leading-[1.5] text-ink-soft [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">Density gains slow, and what that means for the home lab…</div>
+                  <div class="mb-[0.2rem] text-[0.875rem] font-semibold text-foreground">The end of Moore's law (again)</div>
+                  <div class="text-[0.78rem] leading-[1.5] text-muted-foreground [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">Density gains slow, and what that means for the home lab…</div>
                 </div>
                 <div class="group/mock-entry relative rounded-[0.55rem] border border-transparent px-[0.85rem] py-[0.7rem] pl-[1.6rem] hover:bg-[oklch(1_0_0/0.025)]">
                   <span class="absolute top-4 left-[0.55rem] h-[0.4rem] w-[0.4rem] rounded-full bg-[oklch(1_0_0/0.18)]"></span>
-                  <div class="mb-[0.25rem] flex items-center gap-[0.6rem] font-mono text-[0.6875rem] text-ink-faint">
-                    <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--color-ink-soft))]">planet4.local</span>
+                  <div class="mb-[0.25rem] flex items-center gap-[0.6rem] font-mono text-[0.6875rem] text-muted-foreground/70">
+                    <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--muted-foreground))]">planet4.local</span>
                     <span>1d</span>
                   </div>
-                  <div class="mb-[0.2rem] text-[0.875rem] font-medium text-ink-soft">A field guide to OPML</div>
-                  <div class="text-[0.78rem] leading-[1.5] text-ink-soft [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">Exporting and importing your subscriptions, explained…</div>
+                  <div class="mb-[0.2rem] text-[0.875rem] font-medium text-muted-foreground">A field guide to OPML</div>
+                  <div class="text-[0.78rem] leading-[1.5] text-muted-foreground [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">Exporting and importing your subscriptions, explained…</div>
                 </div>
               </div>
             </div>
@@ -206,7 +206,7 @@ const tuiScreen =
         </div>
       </div>
 
-      <div class="reveal-fade mx-auto mt-[clamp(3rem,8vh,5rem)] flex max-w-[72rem] flex-wrap items-center justify-center gap-4 font-mono text-[0.78rem] text-ink-faint">
+      <div class="reveal-fade mx-auto mt-[clamp(3rem,8vh,5rem)] flex max-w-[72rem] flex-wrap items-center justify-center gap-4 font-mono text-[0.78rem] text-muted-foreground/70">
         <span>Open source</span>
         <span class="opacity-50">·</span>
         <span>Self-hostable</span>
@@ -219,11 +219,11 @@ const tuiScreen =
 
     <!-- ═══ MANIFESTO ═══ -->
     <section
-      class="border-t border-rule px-[clamp(1.25rem,4vw,2.5rem)] py-[clamp(5rem,12vh,8rem)]"
+      class="border-t border-border px-[clamp(1.25rem,4vw,2.5rem)] py-[clamp(5rem,12vh,8rem)]"
       aria-labelledby="positioning-heading"
     >
       <div class="mx-auto max-w-[72rem]">
-        <h2 class="mt-0 mb-[clamp(2.5rem,6vh,3.5rem)] max-w-[22ch] font-display text-[clamp(1.875rem,4.5vw,3rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-ink [text-wrap:balance]">
+        <h2 class="mt-0 mb-[clamp(2.5rem,6vh,3.5rem)] max-w-[22ch] font-sans text-[clamp(1.875rem,4.5vw,3rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-foreground [text-wrap:balance]">
           RSS is alive. It just needed a reader that&nbsp;respects&nbsp;you.
         </h2>
 
@@ -242,11 +242,11 @@ const tuiScreen =
               across instances. <a href="/social">Learn how it works →</a>
             </p>
           </div>
-          <aside class="max-w-[22rem] border-l border-rule-strong pl-7 max-[640px]:border-l-0 max-[640px]:border-t max-[640px]:pt-6 max-[640px]:pl-0">
-            <p class="mt-0 mb-3 font-display text-[1.5rem] font-semibold leading-[1.25] tracking-[-0.02em] text-[color-mix(in_oklab,var(--primary)_88%,var(--color-ink))]">
+          <aside class="max-w-[22rem] border-l border-input pl-7 max-[640px]:border-l-0 max-[640px]:border-t max-[640px]:pt-6 max-[640px]:pl-0">
+            <p class="mt-0 mb-3 font-sans text-[1.5rem] font-semibold leading-[1.25] tracking-[-0.02em] text-[color-mix(in_oklab,var(--primary)_88%,var(--foreground))]">
               "Your feeds, your terms."
             </p>
-            <p class="m-0 text-[0.9375rem] leading-[1.55] text-ink-faint">
+            <p class="m-0 text-[0.9375rem] leading-[1.55] text-muted-foreground/70">
               The one line worth remembering. Everything else is in service of it.
             </p>
           </aside>
@@ -268,7 +268,7 @@ const tuiScreen =
     </section>
 
     <!-- ═══ SOCIAL PREVIEW ═══ -->
-    <section class="border-t border-rule py-[clamp(4.5rem,10vh,7rem)]" aria-labelledby="social-heading">
+    <section class="border-t border-border py-[clamp(4.5rem,10vh,7rem)]" aria-labelledby="social-heading">
       <div class="mx-auto max-w-[72rem] px-[clamp(1.25rem,4vw,2.5rem)]">
         <SectionHead mark="/ social" headlineId="social-heading" lede="Follow people and see the articles they share in your timeline. Your graph is federated on the AT Protocol — it travels with you when you move instances.">
           Reading is better with people you trust.
@@ -299,7 +299,7 @@ const tuiScreen =
     </section>
 
     <!-- ═══ FEATURES BENTO ═══ -->
-    <section id="features" class="border-t border-rule py-[clamp(4.5rem,10vh,7rem)]" aria-labelledby="features-heading">
+    <section id="features" class="border-t border-border py-[clamp(4.5rem,10vh,7rem)]" aria-labelledby="features-heading">
       <div class="mx-auto max-w-[72rem] px-[clamp(1.25rem,4vw,2.5rem)]">
         <SectionHead mark="/ features" headlineId="features-heading" lede="No feature bloat. No tracking. Just the tools you need to subscribe, read, share, and self-host.">
           Everything an RSS reader should be.
@@ -310,9 +310,9 @@ const tuiScreen =
             <span slot="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" fill="currentColor" stroke="none" /></svg></span>
             RSS 2.0, Atom 1.0, and JSON Feed. Subscribe to anything with a feed URL — blogs, news, podcasts.
             <ul slot="tags" class="mt-5 flex list-none flex-wrap gap-[0.4rem] p-0">
-              <li class="rounded-[0.3rem] border border-rule px-[0.5rem] py-[0.2rem] font-mono text-[0.6875rem] text-ink-soft">RSS 2.0</li>
-              <li class="rounded-[0.3rem] border border-rule px-[0.5rem] py-[0.2rem] font-mono text-[0.6875rem] text-ink-soft">Atom 1.0</li>
-              <li class="rounded-[0.3rem] border border-rule px-[0.5rem] py-[0.2rem] font-mono text-[0.6875rem] text-ink-soft">JSON Feed</li>
+              <li class="rounded-[0.3rem] border border-border px-[0.5rem] py-[0.2rem] font-mono text-[0.6875rem] text-muted-foreground">RSS 2.0</li>
+              <li class="rounded-[0.3rem] border border-border px-[0.5rem] py-[0.2rem] font-mono text-[0.6875rem] text-muted-foreground">Atom 1.0</li>
+              <li class="rounded-[0.3rem] border border-border px-[0.5rem] py-[0.2rem] font-mono text-[0.6875rem] text-muted-foreground">JSON Feed</li>
             </ul>
           </FeatureCell>
           <FeatureCell title="Full-text search" class={bentoSpan4}>
@@ -343,7 +343,7 @@ const tuiScreen =
     </section>
 
     <!-- ═══ INTERFACES ═══ -->
-    <section id="interfaces" class="border-t border-rule py-[clamp(4.5rem,10vh,7rem)]" aria-labelledby="interfaces-heading">
+    <section id="interfaces" class="border-t border-border py-[clamp(4.5rem,10vh,7rem)]" aria-labelledby="interfaces-heading">
       <div class="mx-auto max-w-[72rem] px-[clamp(1.25rem,4vw,2.5rem)]">
         <SectionHead mark="/ interfaces" headlineId="interfaces-heading" lede="The web app for browsing. The terminal UI for keyboard-driven reading. The CLI for scripts and automation. All backed by the same REST API.">
           Read from wherever you work.
@@ -352,8 +352,8 @@ const tuiScreen =
         <div class="grid grid-cols-3 gap-5 max-[860px]:grid-cols-1">
           <!-- Web -->
           <article class={interfaceCard}>
-            <div class="h-44 overflow-hidden border-b border-rule bg-bg-sunken" aria-hidden="true">
-              <div class="flex gap-[0.3rem] border-b border-rule px-[0.7rem] py-[0.55rem]">
+            <div class="h-44 overflow-hidden border-b border-border bg-background" aria-hidden="true">
+              <div class="flex gap-[0.3rem] border-b border-border px-[0.7rem] py-[0.55rem]">
                 <span class="h-[0.45rem] w-[0.45rem] rounded-full bg-[oklch(1_0_0/0.14)]"></span>
                 <span class="h-[0.45rem] w-[0.45rem] rounded-full bg-[oklch(1_0_0/0.14)]"></span>
                 <span class="h-[0.45rem] w-[0.45rem] rounded-full bg-[oklch(1_0_0/0.14)]"></span>
@@ -381,8 +381,8 @@ const tuiScreen =
 
           <!-- TUI -->
           <article class={interfaceCard}>
-            <div class="h-44 overflow-hidden border-b border-rule bg-bg-sunken" aria-hidden="true">
-              <pre class:list={[tuiScreen, "h-full"]}><code><span class="font-semibold text-ink">▸ Technology</span>      <span class="text-[oklch(0.6_0.012_50)]">12</span>
+            <div class="h-44 overflow-hidden border-b border-border bg-background" aria-hidden="true">
+              <pre class:list={[tuiScreen, "h-full"]}><code><span class="font-semibold text-foreground">▸ Technology</span>      <span class="text-[oklch(0.6_0.012_50)]">12</span>
   Rust 2026 roadmap    <span class="text-[oklch(0.6_0.012_50)]">2h</span>
   @elena Why RSS…     <span class="text-[oklch(0.6_0.012_50)]">2h</span>
 <span class="text-[oklch(0.6_0.012_50)]">▸ Self-hosting</span>     <span class="text-[oklch(0.6_0.012_50)]">7</span>
@@ -397,7 +397,7 @@ const tuiScreen =
 
           <!-- CLI -->
           <article class={interfaceCard}>
-            <div class="h-44 overflow-hidden border-b border-rule bg-bg-sunken" aria-hidden="true">
+            <div class="h-44 overflow-hidden border-b border-border bg-background" aria-hidden="true">
               <pre class:list={[tuiScreen, "h-full"]}><code><span class="font-semibold text-primary">$</span> sunred follow @elena
 <span class="text-[oklch(0.6_0.012_50)]"># backfilling 3 shares</span>
 
@@ -415,11 +415,11 @@ const tuiScreen =
     </section>
 
     <!-- ═══ FAQ (short) ═══ -->
-    <section class="border-t border-rule py-[clamp(4.5rem,10vh,7rem)]" aria-labelledby="faq-heading">
+    <section class="border-t border-border py-[clamp(4.5rem,10vh,7rem)]" aria-labelledby="faq-heading">
       <div class="mx-auto max-w-[46rem] px-[clamp(1.25rem,4vw,2.5rem)]">
         <SectionHead mark="/ faq" headlineId="faq-heading">Good to know.</SectionHead>
 
-        <div class="flex flex-col border-t border-rule">
+        <div class="flex flex-col border-t border-border">
           {
             [
               {
@@ -435,10 +435,10 @@ const tuiScreen =
                 a: <p>No. Sunred has no ads, no tracking, no analytics, no algorithmic feed. You see the entries from the feeds you subscribed to and the articles shared by people you follow, in the order they were published.</p>,
               },
             ].map((item) => (
-              <details class="group border-b border-rule">
-                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-[1.35rem] font-body text-[1.0625rem] font-medium text-ink transition-colors duration-150 hover:text-[color-mix(in_oklab,var(--primary)_80%,var(--color-ink))] [&::-webkit-details-marker]:hidden">
+              <details class="group border-b border-border">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-[1.35rem] font-sans text-[1.0625rem] font-medium text-foreground transition-colors duration-150 hover:text-[color-mix(in_oklab,var(--primary)_80%,var(--foreground))] [&::-webkit-details-marker]:hidden">
                   {item.q}
-                  <span class="relative h-5 w-5 shrink-0 text-ink-faint transition-colors duration-150 group-hover:text-[color-mix(in_oklab,var(--primary)_70%,var(--color-ink-soft))]" aria-hidden="true">
+                  <span class="relative h-5 w-5 shrink-0 text-muted-foreground/70 transition-colors duration-150 group-hover:text-[color-mix(in_oklab,var(--primary)_70%,var(--muted-foreground))]" aria-hidden="true">
                     <span class="absolute top-1/2 left-0 h-[1.5px] w-full -translate-y-1/2 rounded-[1px] bg-current" />
                     <span class="absolute left-1/2 top-0 h-full w-[1.5px] -translate-x-1/2 rounded-[1px] bg-current transition-[scale] duration-200 group-open:scale-y-0" />
                   </span>

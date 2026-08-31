@@ -12,12 +12,12 @@ import CodeSample from "../components/CodeSample.astro"
 const loginUrl = "/login"
 const selfHostUrl = "https://github.com/fuegoio/sunred"
 
-const featGroup = "border-t border-rule py-[clamp(4rem,10vh,6.5rem)]"
+const featGroup = "border-t border-border py-[clamp(4rem,10vh,6.5rem)]"
 const featGrid = "grid grid-cols-2 gap-5 max-[860px]:grid-cols-1"
 const tagsUl =
   "mt-5 flex list-none flex-wrap gap-[0.4rem] p-0"
 const tagsLi =
-  "rounded-[0.3rem] border border-rule px-[0.5rem] py-[0.2rem] font-mono text-[0.6875rem] text-ink-soft"
+  "rounded-[0.3rem] border border-border px-[0.5rem] py-[0.2rem] font-mono text-[0.6875rem] text-muted-foreground"
 ---
 
 <Base
@@ -34,12 +34,12 @@ const tagsLi =
 
   <PageHero label="Features">
     <h1
-      class="mt-0 mb-6 font-display text-[clamp(2.5rem,7vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-ink [text-wrap:balance]"
+      class="mt-0 mb-6 font-sans text-[clamp(2.5rem,7vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-foreground [text-wrap:balance]"
     >
       Everything an RSS reader should be.
     </h1>
     <p
-      class="mt-0 max-w-[38rem] text-[clamp(1.125rem,2.5vw,1.375rem)] leading-[1.55] text-ink-soft [text-wrap:pretty]"
+      class="mt-0 max-w-[38rem] text-[clamp(1.125rem,2.5vw,1.375rem)] leading-[1.55] text-muted-foreground [text-wrap:pretty]"
     >
       No feature bloat. No tracking. Just the tools you need to subscribe,
       read, share, and self-host — across web, terminal, and CLI.
@@ -89,7 +89,7 @@ const tagsLi =
 
     <!-- Social -->
     <section
-      class:list={[featGroup, "bg-[color-mix(in_oklab,var(--color-bg-sunken)_50%,var(--color-bg))]"]}
+      class:list={[featGroup, "bg-[color-mix(in_oklab,var(--background)_88%,black)]"]}
       aria-labelledby="social-feat-heading"
     >
       <div class="mx-auto max-w-[72rem] px-[clamp(1.25rem,4vw,2.5rem)]">
@@ -129,7 +129,7 @@ const tagsLi =
         <div class="mt-10">
           <a
             href="/social"
-            class="inline-flex items-center gap-[0.4rem] font-body text-[0.9375rem] font-medium text-[color-mix(in_oklab,var(--primary)_85%,var(--color-ink))] transition-[gap] duration-200 hover:gap-[0.6rem]"
+            class="inline-flex items-center gap-[0.4rem] font-sans text-[0.9375rem] font-medium text-[color-mix(in_oklab,var(--primary)_85%,var(--foreground))] transition-[gap] duration-200 hover:gap-[0.6rem]"
           >
             Explore the social layer
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
@@ -173,7 +173,7 @@ const tagsLi =
         <div class="mt-10">
           <a
             href="/self-host"
-            class="inline-flex items-center gap-[0.4rem] font-body text-[0.9375rem] font-medium text-[color-mix(in_oklab,var(--primary)_85%,var(--color-ink))] transition-[gap] duration-200 hover:gap-[0.6rem]"
+            class="inline-flex items-center gap-[0.4rem] font-sans text-[0.9375rem] font-medium text-[color-mix(in_oklab,var(--primary)_85%,var(--foreground))] transition-[gap] duration-200 hover:gap-[0.6rem]"
           >
             Self-hosting guide
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
@@ -184,7 +184,7 @@ const tagsLi =
 
     <!-- API / CLI -->
     <section
-      class:list={[featGroup, "bg-[color-mix(in_oklab,var(--color-bg-sunken)_50%,var(--color-bg))]"]}
+      class:list={[featGroup, "bg-[color-mix(in_oklab,var(--background)_88%,black)]"]}
       aria-labelledby="api-heading"
     >
       <div class="mx-auto max-w-[72rem] px-[clamp(1.25rem,4vw,2.5rem)]">

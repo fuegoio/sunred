@@ -22,20 +22,20 @@ const dots = [
   role="region"
   aria-label={label}
   class:list={[
-    "overflow-hidden rounded-[0.75rem] border border-rule-strong bg-bg-sunken",
+    "overflow-hidden rounded-[0.75rem] border border-input bg-background",
     className,
   ]}
 >
-  <div class="flex items-center gap-2 border-b border-rule px-[0.9rem] py-[0.65rem]">
+  <div class="flex items-center gap-2 border-b border-border px-[0.9rem] py-[0.65rem]">
     {
       dots.map((d) => (
         <span class:list={["h-[0.7rem] w-[0.7rem] rounded-full", d]}></span>
       ))
     }
-    <span class="ml-2 font-mono text-[0.72rem] text-ink-faint">terminal</span>
+    <span class="ml-2 font-mono text-[0.72rem] text-muted-foreground/70">terminal</span>
     <span class="flex-1"></span>
     <span
-      class="rounded-[0.3rem] border border-rule px-[0.4rem] py-[0.12rem] font-mono text-[0.65rem] text-ink-faint"
+      class="rounded-[0.3rem] border border-border px-[0.4rem] py-[0.12rem] font-mono text-[0.65rem] text-muted-foreground/70"
     >
       {lang}
     </span>

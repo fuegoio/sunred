@@ -22,19 +22,19 @@ const links = [
 
 <nav
   aria-label="Primary"
-  class="sticky top-0 z-50 border-b border-rule bg-[color-mix(in_oklab,var(--color-bg)_78%,transparent)] backdrop-saturate-[1.6] backdrop-blur-[14px]"
+  class="sticky top-0 z-50 border-b border-border bg-[color-mix(in_oklab,var(--background)_78%,transparent)] backdrop-saturate-[1.6] backdrop-blur-[14px]"
 >
   <div
     class="mx-auto flex max-w-[72rem] items-center justify-between gap-4 px-[clamp(1.25rem,4vw,2.5rem)] py-[0.85rem]"
   >
     <a
-      class="flex items-center gap-2 font-display text-[1.0625rem] font-semibold tracking-[-0.02em] text-ink"
+      class="flex items-center gap-2 font-sans text-[1.0625rem] font-semibold tracking-[-0.02em] text-foreground"
       href="/"
     >
       <Logo class="h-6 w-6 shrink-0" static />
       <span>Sunred</span>
       <span
-        class="ml-[0.15rem] hidden rounded-[0.3rem] border border-rule px-[0.4rem] py-[0.1rem] font-mono text-[0.6875rem] font-medium text-ink-faint md:inline"
+        class="ml-[0.15rem] hidden rounded-[0.3rem] border border-border px-[0.4rem] py-[0.1rem] font-mono text-[0.6875rem] font-medium text-muted-foreground/70 md:inline"
       >
         v0.1
       </span>
@@ -45,8 +45,8 @@ const links = [
           <a
             href={l.href}
             class:list={[
-              "transition-colors duration-150 hover:text-ink",
-              active === l.key ? "relative text-ink" : "text-ink-soft",
+              "transition-colors duration-150 hover:text-foreground",
+              active === l.key ? "relative text-foreground" : "text-muted-foreground",
             ]}
           >
             {l.label}
@@ -59,7 +59,7 @@ const links = [
     </div>
     <div class="flex items-center gap-[0.85rem]">
       <a
-        class="max-sm:hidden text-[0.9375rem] font-medium text-ink-soft transition-colors duration-150 hover:text-ink"
+        class="max-sm:hidden text-[0.9375rem] font-medium text-muted-foreground transition-colors duration-150 hover:text-foreground"
         href={loginUrl}
       >
         Login

@@ -10,9 +10,9 @@ const loginUrl = "/login"
 const selfHostUrl = "https://github.com/fuegoio/sunred"
 
 const inlineCode =
-  "rounded-[0.3rem] border border-rule bg-bg-sunken px-[0.35rem] py-[0.1rem] font-mono text-[0.875em] text-ink-soft"
+  "rounded-[0.3rem] border border-border bg-background px-[0.35rem] py-[0.1rem] font-mono text-[0.875em] text-muted-foreground"
 const answerLink =
-  "text-[color-mix(in_oklab,var(--primary)_85%,var(--color-ink))] underline underline-offset-[0.15em]"
+  "text-[color-mix(in_oklab,var(--primary)_85%,var(--foreground))] underline underline-offset-[0.15em]"
 ---
 
 <Base
@@ -29,12 +29,12 @@ const answerLink =
 
   <PageHero label="FAQ">
     <h1
-      class="mt-0 mb-6 font-display text-[clamp(2.5rem,7vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-ink [text-wrap:balance]"
+      class="mt-0 mb-6 font-sans text-[clamp(2.5rem,7vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-foreground [text-wrap:balance]"
     >
       Good to know.
     </h1>
     <p
-      class="mt-0 max-w-[38rem] text-[clamp(1.125rem,2.5vw,1.375rem)] leading-[1.55] text-ink-soft [text-wrap:pretty]"
+      class="mt-0 max-w-[38rem] text-[clamp(1.125rem,2.5vw,1.375rem)] leading-[1.55] text-muted-foreground [text-wrap:pretty]"
     >
       Common questions about Sunred, federation, self-hosting, and the API.
       Don't see your question? Ask in the GitHub issues.
@@ -47,11 +47,11 @@ const answerLink =
       <section aria-labelledby="general-heading" class="mb-[clamp(3rem,8vh,4.5rem)]">
         <h2
           id="general-heading"
-          class="mt-0 mb-5 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-ink-faint"
+          class="mt-0 mb-5 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground/70"
         >
           General
         </h2>
-        <div class="flex flex-col border-t border-rule">
+        <div class="flex flex-col border-t border-border">
           {
             [
               {
@@ -71,10 +71,10 @@ const answerLink =
                 a: <p>Yes. Sunred supports OPML import. Export your feeds from any RSS reader (Feedly, Inoreader, NetNewsWire, etc.) as an OPML file and import them directly.</p>,
               },
             ].map((item) => (
-              <details class="group border-b border-rule">
-                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-[1.35rem] font-body text-[1.0625rem] font-medium text-ink transition-colors duration-150 hover:text-[color-mix(in_oklab,var(--primary)_80%,var(--color-ink))] [&::-webkit-details-marker]:hidden">
+              <details class="group border-b border-border">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-[1.35rem] font-sans text-[1.0625rem] font-medium text-foreground transition-colors duration-150 hover:text-[color-mix(in_oklab,var(--primary)_80%,var(--foreground))] [&::-webkit-details-marker]:hidden">
                   {item.q}
-                  <span class="relative h-5 w-5 shrink-0 text-ink-faint transition-colors duration-150 group-hover:text-[color-mix(in_oklab,var(--primary)_70%,var(--color-ink-soft))]" aria-hidden="true">
+                  <span class="relative h-5 w-5 shrink-0 text-muted-foreground/70 transition-colors duration-150 group-hover:text-[color-mix(in_oklab,var(--primary)_70%,var(--muted-foreground))]" aria-hidden="true">
                     <span class="absolute top-1/2 left-0 h-[1.5px] w-full -translate-y-1/2 rounded-[1px] bg-current" />
                     <span class="absolute left-1/2 top-0 h-full w-[1.5px] -translate-x-1/2 rounded-[1px] bg-current transition-[scale] duration-200 group-open:scale-y-0" />
                   </span>
@@ -90,11 +90,11 @@ const answerLink =
       <section aria-labelledby="social-heading" class="mb-[clamp(3rem,8vh,4.5rem)]">
         <h2
           id="social-heading"
-          class="mt-0 mb-5 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-ink-faint"
+          class="mt-0 mb-5 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground/70"
         >
           Social &amp; federation
         </h2>
-        <div class="flex flex-col border-t border-rule">
+        <div class="flex flex-col border-t border-border">
           {
             [
               {
@@ -118,10 +118,10 @@ const answerLink =
                 a: <p>Because follows are AT Protocol records on your PDS, they travel with you. Sign into a new instance with the same identity and your social graph is there. No re-following, no export/import.</p>,
               },
             ].map((item) => (
-              <details class="group border-b border-rule">
-                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-[1.35rem] font-body text-[1.0625rem] font-medium text-ink transition-colors duration-150 hover:text-[color-mix(in_oklab,var(--primary)_80%,var(--color-ink))] [&::-webkit-details-marker]:hidden">
+              <details class="group border-b border-border">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-[1.35rem] font-sans text-[1.0625rem] font-medium text-foreground transition-colors duration-150 hover:text-[color-mix(in_oklab,var(--primary)_80%,var(--foreground))] [&::-webkit-details-marker]:hidden">
                   {item.q}
-                  <span class="relative h-5 w-5 shrink-0 text-ink-faint transition-colors duration-150 group-hover:text-[color-mix(in_oklab,var(--primary)_70%,var(--color-ink-soft))]" aria-hidden="true">
+                  <span class="relative h-5 w-5 shrink-0 text-muted-foreground/70 transition-colors duration-150 group-hover:text-[color-mix(in_oklab,var(--primary)_70%,var(--muted-foreground))]" aria-hidden="true">
                     <span class="absolute top-1/2 left-0 h-[1.5px] w-full -translate-y-1/2 rounded-[1px] bg-current" />
                     <span class="absolute left-1/2 top-0 h-full w-[1.5px] -translate-x-1/2 rounded-[1px] bg-current transition-[scale] duration-200 group-open:scale-y-0" />
                   </span>
@@ -137,11 +137,11 @@ const answerLink =
       <section aria-labelledby="hosting-heading" class="mb-[clamp(3rem,8vh,4.5rem)]">
         <h2
           id="hosting-heading"
-          class="mt-0 mb-5 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-ink-faint"
+          class="mt-0 mb-5 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground/70"
         >
           Self-hosting
         </h2>
-        <div class="flex flex-col border-t border-rule">
+        <div class="flex flex-col border-t border-border">
           {
             [
               {
@@ -157,10 +157,10 @@ const answerLink =
                 a: <p>Your feed subscriptions and social graph are AT Protocol records on your PDS, so they move with your identity. Your reading state (read/unread, starred) is instance-local and doesn't transfer, but you can export your feeds as OPML from any reader and re-import.</p>,
               },
             ].map((item) => (
-              <details class="group border-b border-rule">
-                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-[1.35rem] font-body text-[1.0625rem] font-medium text-ink transition-colors duration-150 hover:text-[color-mix(in_oklab,var(--primary)_80%,var(--color-ink))] [&::-webkit-details-marker]:hidden">
+              <details class="group border-b border-border">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-[1.35rem] font-sans text-[1.0625rem] font-medium text-foreground transition-colors duration-150 hover:text-[color-mix(in_oklab,var(--primary)_80%,var(--foreground))] [&::-webkit-details-marker]:hidden">
                   {item.q}
-                  <span class="relative h-5 w-5 shrink-0 text-ink-faint transition-colors duration-150 group-hover:text-[color-mix(in_oklab,var(--primary)_70%,var(--color-ink-soft))]" aria-hidden="true">
+                  <span class="relative h-5 w-5 shrink-0 text-muted-foreground/70 transition-colors duration-150 group-hover:text-[color-mix(in_oklab,var(--primary)_70%,var(--muted-foreground))]" aria-hidden="true">
                     <span class="absolute top-1/2 left-0 h-[1.5px] w-full -translate-y-1/2 rounded-[1px] bg-current" />
                     <span class="absolute left-1/2 top-0 h-full w-[1.5px] -translate-x-1/2 rounded-[1px] bg-current transition-[scale] duration-200 group-open:scale-y-0" />
                   </span>
@@ -176,11 +176,11 @@ const answerLink =
       <section aria-labelledby="api-heading" class="mb-[clamp(3rem,8vh,4.5rem)]">
         <h2
           id="api-heading"
-          class="mt-0 mb-5 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-ink-faint"
+          class="mt-0 mb-5 font-mono text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground/70"
         >
           API &amp; interfaces
         </h2>
-        <div class="flex flex-col border-t border-rule">
+        <div class="flex flex-col border-t border-border">
           {
             [
               {
@@ -196,10 +196,10 @@ const answerLink =
                 a: <p>They're the same binary. <code class={inlineCode}>sunred</code> runs one-off commands (add feeds, list entries, share, follow). <code class={inlineCode}>sunred tui</code> launches the full terminal interface. Same API, same auth, same data.</p>,
               },
             ].map((item) => (
-              <details class="group border-b border-rule">
-                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-[1.35rem] font-body text-[1.0625rem] font-medium text-ink transition-colors duration-150 hover:text-[color-mix(in_oklab,var(--primary)_80%,var(--color-ink))] [&::-webkit-details-marker]:hidden">
+              <details class="group border-b border-border">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-[1.35rem] font-sans text-[1.0625rem] font-medium text-foreground transition-colors duration-150 hover:text-[color-mix(in_oklab,var(--primary)_80%,var(--foreground))] [&::-webkit-details-marker]:hidden">
                   {item.q}
-                  <span class="relative h-5 w-5 shrink-0 text-ink-faint transition-colors duration-150 group-hover:text-[color-mix(in_oklab,var(--primary)_70%,var(--color-ink-soft))]" aria-hidden="true">
+                  <span class="relative h-5 w-5 shrink-0 text-muted-foreground/70 transition-colors duration-150 group-hover:text-[color-mix(in_oklab,var(--primary)_70%,var(--muted-foreground))]" aria-hidden="true">
                     <span class="absolute top-1/2 left-0 h-[1.5px] w-full -translate-y-1/2 rounded-[1px] bg-current" />
                     <span class="absolute left-1/2 top-0 h-full w-[1.5px] -translate-x-1/2 rounded-[1px] bg-current transition-[scale] duration-200 group-open:scale-y-0" />
                   </span>
@@ -211,8 +211,8 @@ const answerLink =
         </div>
       </section>
 
-      <div class="flex flex-wrap items-center gap-5 border-t border-rule pt-8">
-        <p class="m-0 text-[1.0625rem] text-ink">Still have questions?</p>
+      <div class="flex flex-wrap items-center gap-5 border-t border-border pt-8">
+        <p class="m-0 text-[1.0625rem] text-foreground">Still have questions?</p>
         <Cta href={selfHostUrl} variant="ghost">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
             <path

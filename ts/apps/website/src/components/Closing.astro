@@ -15,7 +15,7 @@ const { headline, lede, label = "Get started", class: className = "" } =
 <section
   aria-label={label}
   class:list={[
-    "relative isolate overflow-hidden border-t border-rule px-6 py-[clamp(6rem,16vh,10rem)] text-center",
+    "relative isolate overflow-hidden border-t border-border px-6 py-[clamp(6rem,16vh,10rem)] text-center",
     className,
   ]}
 >
@@ -26,10 +26,10 @@ const { headline, lede, label = "Get started", class: className = "" } =
   </div>
   <div class="mx-auto flex max-w-[40rem] flex-col items-center">
     <Logo class="mb-6 h-[3.25rem] w-[3.25rem]" static />
-    <h2 class="mt-0 font-display text-[clamp(2.25rem,6vw,3.5rem)] font-semibold leading-[1.05] tracking-[-0.035em] text-ink [text-wrap:balance]">
+    <h2 class="mt-0 font-sans text-[clamp(2.25rem,6vw,3.5rem)] font-semibold leading-[1.05] tracking-[-0.035em] text-foreground [text-wrap:balance]">
       {headline}
     </h2>
-    <p class="mt-5 max-w-[30rem] text-[1.125rem] leading-[1.55] text-ink-soft">
+    <p class="mt-5 max-w-[30rem] text-[1.125rem] leading-[1.55] text-muted-foreground">
       {lede}
     </p>
     <div class="mt-8 flex flex-wrap items-center justify-center gap-3">

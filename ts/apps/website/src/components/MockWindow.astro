@@ -15,12 +15,12 @@ const dots = [
 
 <div
   class:list={[
-    "overflow-hidden rounded-[0.875rem] border border-rule-strong bg-bg-raised shadow-[0_1px_0_oklch(1_0_0/0.06)_inset,0_30px_80px_-30px_oklch(0_0_0/0.7)]",
+    "overflow-hidden rounded-[0.875rem] border border-input bg-card shadow-[0_1px_0_oklch(1_0_0/0.06)_inset,0_30px_80px_-30px_oklch(0_0_0/0.7)]",
     className,
   ]}
 >
   <div
-    class="flex items-center gap-2 border-b border-rule bg-[color-mix(in_oklab,var(--color-bg-raised)_85%,var(--color-bg-sunken))] px-[0.9rem] py-[0.7rem]"
+    class="flex items-center gap-2 border-b border-border bg-[color-mix(in_oklab,var(--card)_85%,var(--background))] px-[0.9rem] py-[0.7rem]"
   >
     {
       dots.map((d) => (
@@ -29,7 +29,7 @@ const dots = [
     }
     {
       path && (
-        <span class="ml-[0.6rem] font-mono text-[0.75rem] text-ink-soft">
+        <span class="ml-[0.6rem] font-mono text-[0.75rem] text-muted-foreground">
           {path}
         </span>
       )

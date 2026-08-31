@@ -25,20 +25,20 @@ const {
 >
   {
     mark && (
-      <span class="mb-5 inline-block font-mono text-[0.8125rem] font-medium text-[color-mix(in_oklab,var(--primary)_75%,var(--color-ink))]">
+      <span class="mb-5 inline-block font-mono text-[0.8125rem] font-medium text-[color-mix(in_oklab,var(--primary)_75%,var(--foreground))]">
         {mark}
       </span>
     )
   }
   <h2
     id={headlineId}
-    class="mt-0 mb-5 font-display text-[clamp(2rem,5vw,3.25rem)] font-semibold leading-[1.08] tracking-[-0.035em] text-ink [text-wrap:balance]"
+    class="mt-0 mb-5 font-sans text-[clamp(2rem,5vw,3.25rem)] font-semibold leading-[1.08] tracking-[-0.035em] text-foreground [text-wrap:balance]"
   >
     <slot />
   </h2>
   {
     lede && (
-      <p class="mt-0 max-w-[38rem] text-[1.125rem] leading-[1.6] text-ink-soft [text-wrap:pretty]">
+      <p class="mt-0 max-w-[38rem] text-[1.125rem] leading-[1.6] text-muted-foreground [text-wrap:pretty]">
         {lede}
       </p>
     )

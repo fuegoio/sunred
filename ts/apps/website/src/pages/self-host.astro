@@ -12,11 +12,11 @@ import CodeSample from "../components/CodeSample.astro"
 const loginUrl = "/login"
 const selfHostUrl = "https://github.com/fuegoio/sunred"
 
-const section = "border-t border-rule py-[clamp(4rem,10vh,6.5rem)]"
+const section = "border-t border-border py-[clamp(4rem,10vh,6.5rem)]"
 const inlineCode =
-  "rounded-[0.3rem] border border-rule bg-bg-sunken px-[0.35rem] py-[0.1rem] font-mono text-[0.875em] text-ink-soft"
+  "rounded-[0.3rem] border border-border bg-background px-[0.35rem] py-[0.1rem] font-mono text-[0.875em] text-muted-foreground"
 const tag =
-  "inline-flex items-center gap-2 rounded-full border border-rule bg-[color-mix(in_oklab,var(--color-bg-raised)_60%,transparent)] px-[0.7rem] py-[0.35rem] font-mono text-[0.75rem] font-medium text-ink-soft"
+  "inline-flex items-center gap-2 rounded-full border border-border bg-[color-mix(in_oklab,var(--card)_60%,transparent)] px-[0.7rem] py-[0.35rem] font-mono text-[0.75rem] font-medium text-muted-foreground"
 const tagDot =
   "h-[0.45rem] w-[0.45rem] rounded-full bg-primary shadow-[0_0_0_3px_color-mix(in_oklab,var(--primary)_22%,transparent)]"
 const githubIcon =
@@ -25,9 +25,9 @@ const arrow =
   '<svg class="h-[17px] w-[17px] shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
 
 const compareRow =
-  "grid grid-cols-[1.2fr_1fr_1fr] items-center gap-[0.3rem] border-b border-rule px-5 py-[0.85rem] text-[0.9375rem] last:border-b-0 max-[768px]:grid-cols-1 max-[768px]:py-4"
+  "grid grid-cols-[1.2fr_1fr_1fr] items-center gap-[0.3rem] border-b border-border px-5 py-[0.85rem] text-[0.9375rem] last:border-b-0 max-[768px]:grid-cols-1 max-[768px]:py-4"
 const compareHead =
-  "bg-[color-mix(in_oklab,var(--color-bg-sunken)_50%,transparent)] font-semibold text-ink max-[768px]:hidden"
+  "bg-[color-mix(in_oklab,var(--background)_50%,transparent)] font-semibold text-foreground max-[768px]:hidden"
 ---
 
 <Base
@@ -48,12 +48,12 @@ const compareHead =
       Docker · Open source · MIT
     </span>
     <h1
-      class="mt-0 mb-6 font-display text-[clamp(2.5rem,7vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-ink [text-wrap:balance]"
+      class="mt-0 mb-6 font-sans text-[clamp(2.5rem,7vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-foreground [text-wrap:balance]"
     >
       Own your data,<br />or skip the setup.
     </h1>
     <p
-      class="mt-0 max-w-[38rem] text-[clamp(1.125rem,2.5vw,1.375rem)] leading-[1.55] text-ink-soft [text-wrap:pretty]"
+      class="mt-0 max-w-[38rem] text-[clamp(1.125rem,2.5vw,1.375rem)] leading-[1.55] text-muted-foreground [text-wrap:pretty]"
     >
       Sunred runs anywhere with Docker — a single command gets you a
       server, database, and web frontend. Or use the hosted version and
@@ -95,20 +95,20 @@ const compareHead =
         </CodeSample>
 
         <div class="grid grid-cols-3 gap-5 max-[768px]:grid-cols-1">
-          <div class="rounded-[0.75rem] border border-rule bg-[color-mix(in_oklab,var(--color-bg-raised)_70%,transparent)] px-[1.6rem] py-[1.75rem]">
+          <div class="rounded-[0.75rem] border border-border bg-[color-mix(in_oklab,var(--card)_70%,transparent)] px-[1.6rem] py-[1.75rem]">
             <span class="mb-3 block font-mono text-[0.875rem] font-semibold text-primary">1</span>
-            <h3 class="mt-0 mb-2 font-display text-[1.0625rem] font-semibold tracking-[-0.01em] text-ink">Run the container</h3>
-            <p class="mt-0 text-[0.9375rem] leading-[1.6] text-ink-soft">One Docker command. Provide a database URL and a volume for data persistence. The server, web frontend, and scheduler all run in the same process.</p>
+            <h3 class="mt-0 mb-2 font-sans text-[1.0625rem] font-semibold tracking-[-0.01em] text-foreground">Run the container</h3>
+            <p class="mt-0 text-[0.9375rem] leading-[1.6] text-muted-foreground">One Docker command. Provide a database URL and a volume for data persistence. The server, web frontend, and scheduler all run in the same process.</p>
           </div>
-          <div class="rounded-[0.75rem] border border-rule bg-[color-mix(in_oklab,var(--color-bg-raised)_70%,transparent)] px-[1.6rem] py-[1.75rem]">
+          <div class="rounded-[0.75rem] border border-border bg-[color-mix(in_oklab,var(--card)_70%,transparent)] px-[1.6rem] py-[1.75rem]">
             <span class="mb-3 block font-mono text-[0.875rem] font-semibold text-primary">2</span>
-            <h3 class="mt-0 mb-2 font-display text-[1.0625rem] font-semibold tracking-[-0.01em] text-ink">Point a domain at it</h3>
-            <p class="mt-0 text-[0.9375rem] leading-[1.6] text-ink-soft">Put a reverse proxy (Caddy, nginx, Traefik) in front with TLS. The server respects <code class={inlineCode}>X-Forwarded-*</code> headers for redirects and canonical URLs.</p>
+            <h3 class="mt-0 mb-2 font-sans text-[1.0625rem] font-semibold tracking-[-0.01em] text-foreground">Point a domain at it</h3>
+            <p class="mt-0 text-[0.9375rem] leading-[1.6] text-muted-foreground">Put a reverse proxy (Caddy, nginx, Traefik) in front with TLS. The server respects <code class={inlineCode}>X-Forwarded-*</code> headers for redirects and canonical URLs.</p>
           </div>
-          <div class="rounded-[0.75rem] border border-rule bg-[color-mix(in_oklab,var(--color-bg-raised)_70%,transparent)] px-[1.6rem] py-[1.75rem]">
+          <div class="rounded-[0.75rem] border border-border bg-[color-mix(in_oklab,var(--card)_70%,transparent)] px-[1.6rem] py-[1.75rem]">
             <span class="mb-3 block font-mono text-[0.875rem] font-semibold text-primary">3</span>
-            <h3 class="mt-0 mb-2 font-display text-[1.0625rem] font-semibold tracking-[-0.01em] text-ink">Add your feeds</h3>
-            <p class="mt-0 text-[0.9375rem] leading-[1.6] text-ink-soft">Open the web app, create an account, and import your existing feeds with OPML. Or use the CLI to script everything.</p>
+            <h3 class="mt-0 mb-2 font-sans text-[1.0625rem] font-semibold tracking-[-0.01em] text-foreground">Add your feeds</h3>
+            <p class="mt-0 text-[0.9375rem] leading-[1.6] text-muted-foreground">Open the web app, create an account, and import your existing feeds with OPML. Or use the CLI to script everything.</p>
           </div>
         </div>
       </div>
@@ -150,11 +150,11 @@ const compareHead =
           Hosted or self-hosted?
         </SectionHead>
 
-        <div class="flex flex-col overflow-hidden rounded-[0.75rem] border border-rule">
+        <div class="flex flex-col overflow-hidden rounded-[0.75rem] border border-border">
           <div class:list={[compareRow, compareHead]}>
             <span></span>
-            <span class="text-center font-display font-semibold">Hosted</span>
-            <span class="text-center font-display font-semibold">Self-hosted</span>
+            <span class="text-center font-sans font-semibold">Hosted</span>
+            <span class="text-center font-sans font-semibold">Self-hosted</span>
           </div>
           {
             [
@@ -166,9 +166,9 @@ const compareHead =
               { label: "Cost", a: "Free", b: "Your server" },
             ].map((row) => (
               <div class={compareRow}>
-                <span class="font-medium text-ink-soft">{row.label}</span>
-                <span class:list={["text-center", row.check ? "font-medium text-ink" : "text-ink-soft", "max-[768px]:text-left"]}>{row.a}</span>
-                <span class:list={["text-center", row.check ? "font-medium text-ink" : "text-ink-soft", "max-[768px]:text-left"]}>{row.b}</span>
+                <span class="font-medium text-muted-foreground">{row.label}</span>
+                <span class:list={["text-center", row.check ? "font-medium text-foreground" : "text-muted-foreground", "max-[768px]:text-left"]}>{row.a}</span>
+                <span class:list={["text-center", row.check ? "font-medium text-foreground" : "text-muted-foreground", "max-[768px]:text-left"]}>{row.b}</span>
               </div>
             ))
           }
