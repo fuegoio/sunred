@@ -13,14 +13,15 @@ const {
 ---
 
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
-    <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#15110d" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fffffd" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1815" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -38,6 +39,24 @@ const {
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Geist+Mono:wght@400;500;600&display=swap"
     />
+
+    <!-- Apply the resolved theme before paint to avoid a flash. Matches the
+         web app: default to the system preference, honour an explicit choice
+         stored under `theme` (same key the ThemeToggle writes). -->
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          var prefersDark = window.matchMedia(
+            "(prefers-color-scheme: dark)",
+          ).matches;
+          var isDark = stored ? stored === "dark" : prefersDark;
+          document.documentElement.classList.toggle("dark", isDark);
+        } catch (e) {
+          /* localStorage may be unavailable (private mode); fall back to system. */
+        }
+      })();
+    </script>
 
     <title>{title}</title>
   </head>

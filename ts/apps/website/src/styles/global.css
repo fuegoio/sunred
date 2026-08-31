@@ -5,16 +5,19 @@
  * Sunred marketing site.
  *
  * Colors and fonts come from the shared design tokens in @workspace/ui, so
- * the marketing surface stays in sync with the web app. The site is
- * dark-first: <html> carries the `dark` class (see layouts/Base.astro) so the
- * shared dark palette applies. Type uses the same families as the web app —
- * IBM Plex Sans (sans), Merriweather (serif), Geist Mono (mono) — loaded from
- * Google Fonts in Base.astro.
+ * the marketing surface stays in sync with the web app. The site supports
+ * both light and dark themes: <html> carries the `dark` class when the
+ * resolved theme is dark (see layouts/Base.astro and the pre-paint script),
+ * and the shared tokens swap accordingly. Type uses the same families as
+ * the web app — IBM Plex Sans (sans), Merriweather (serif), Geist Mono
+ * (mono) — loaded from Google Fonts in Base.astro.
  *
  * Component and layout styling lives inline as Tailwind utilities in the
  * .astro markup, driven by the shared tokens. Only base element resets,
  * keyframes, and the reveal-animation helpers remain here.
  */
+
+@custom-variant dark (&:is(.dark *));
 
 @theme {
   --font-sans: "IBM Plex Sans", system-ui, sans-serif;
@@ -23,6 +26,10 @@
 }
 
 :root {
+  color-scheme: light dark;
+}
+
+html.dark {
   color-scheme: dark;
 }
 

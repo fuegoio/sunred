@@ -1,6 +1,7 @@
 ---
 import Logo from "./Logo.astro"
 import Cta from "./Cta.astro"
+import ThemeToggle from "./ThemeToggle.astro"
 
 interface Props {
   active?: string
@@ -64,6 +65,7 @@ const links = [
       >
         Login
       </a>
+      <ThemeToggle class="max-sm:hidden" />
       <Cta href={selfHostUrl} size="sm" variant="primary">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
           <path
