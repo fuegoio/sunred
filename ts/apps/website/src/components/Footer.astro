@@ -9,26 +9,23 @@ const selfHostUrl = "https://github.com/fuegoio/sunred"
   <div
     class="mx-auto flex max-w-[72rem] flex-col items-center gap-5 text-center"
   >
-    <div
-      class="flex items-center gap-2 font-sans text-[1.0625rem] font-semibold tracking-[-0.02em] text-foreground"
+    <a
+      class="flex items-center gap-[0.6rem] font-serif text-[1.0625rem] font-bold tracking-[-0.01em] text-foreground"
+      href="/"
     >
       <Logo class="h-6 w-6 shrink-0" static />
       <span>Sunred</span>
-    </div>
+    </a>
     <nav
       aria-label="Footer"
-      class="flex flex-wrap justify-center gap-6 text-[0.9375rem] font-medium"
+      class="flex flex-wrap justify-center gap-6 text-[0.875rem] font-medium"
     >
-      <a class="text-muted-foreground transition-colors duration-150 hover:text-foreground" href={loginUrl}>Login</a>
-      <a class="text-muted-foreground transition-colors duration-150 hover:text-foreground" href="/social">Social</a>
-      <a class="text-muted-foreground transition-colors duration-150 hover:text-foreground" href="/features">Features</a>
-      <a class="text-muted-foreground transition-colors duration-150 hover:text-foreground" href="/self-host">Self-host</a>
-      <a class="text-muted-foreground transition-colors duration-150 hover:text-foreground" href="/faq">FAQ</a>
-      <a class="text-muted-foreground transition-colors duration-150 hover:text-foreground" href="https://sunred.dev/docs">Docs</a>
+      <a class="text-muted-foreground transition-colors duration-150 hover:text-foreground" href={loginUrl}>Open the app</a>
       <a class="text-muted-foreground transition-colors duration-150 hover:text-foreground" href={selfHostUrl}>GitHub</a>
+      <a class="text-muted-foreground transition-colors duration-150 hover:text-foreground" href="https://sunred.dev/docs">Docs</a>
     </nav>
     <p class="m-0 max-w-[30rem] font-mono text-[0.8125rem] text-muted-foreground/70">
-      Open source. Self-hostable. Federated. Built for people who still read.
+      Open source. Self-hostable. Federated on the AT Protocol.
     </p>
   </div>
 </footer>

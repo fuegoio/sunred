@@ -4,49 +4,18 @@ import Nav from "../components/Nav.astro"
 import Footer from "../components/Footer.astro"
 import Cta from "../components/Cta.astro"
 import Closing from "../components/Closing.astro"
-import SectionHead from "../components/SectionHead.astro"
-import FeatureCell from "../components/FeatureCell.astro"
-import CodeSample from "../components/CodeSample.astro"
 import MockWindow from "../components/MockWindow.astro"
 
 const loginUrl = "/login"
 const selfHostUrl = "https://github.com/fuegoio/sunred"
 
-const tag =
-  "inline-flex items-center gap-2 rounded-full border border-border bg-[color-mix(in_oklab,var(--card)_60%,transparent)] px-[0.7rem] py-[0.35rem] font-mono text-[0.75rem] font-medium text-muted-foreground"
-const tagDot =
-  "h-[0.45rem] w-[0.45rem] rounded-full bg-primary shadow-[0_0_0_3px_color-mix(in_oklab,var(--primary)_22%,transparent)]"
-const ctaRow = "mt-8 flex flex-wrap items-center gap-3"
-const linkArrow =
-  "inline-flex items-center gap-[0.4rem] font-sans text-[0.9375rem] font-medium text-[color-mix(in_oklab,var(--primary)_85%,var(--foreground))] transition-[gap] duration-200 hover:gap-[0.6rem]"
 const arrowSvg =
   '<svg class="h-[17px] w-[17px] shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
-const manifestoBody =
-  "max-w-[40rem] text-[1.125rem] leading-[1.75] [&_p]:m-0 [&_p]:text-muted-foreground [&_p+p]:mt-5 [&_a]:text-[color-mix(in_oklab,var(--primary)_85%,var(--foreground))] [&_a]:underline [&_a]:underline-offset-[0.15em] [&_a]:decoration-[color-mix(in_oklab,var(--primary)_35%,transparent)]"
-const answerLink =
-  "text-[color-mix(in_oklab,var(--primary)_85%,var(--foreground))] underline underline-offset-[0.15em]"
-
-const bento = "grid grid-cols-6 gap-4 max-[860px]:grid-cols-2 max-[640px]:grid-cols-1"
-const bentoTall =
-  "col-span-2 row-span-2 flex flex-col max-[860px]:row-span-1 max-[640px]:col-span-1"
-const bentoSpan4 = "col-span-4 max-[860px]:col-span-2 max-[640px]:col-span-1"
-const bentoFull = "col-span-6 max-[860px]:col-span-2 max-[640px]:col-span-1"
-
-const interfaceCard =
-  "flex flex-col overflow-hidden rounded-[0.75rem] border border-border bg-[color-mix(in_oklab,var(--card)_70%,transparent)] transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_oklab,var(--primary)_28%,var(--input))]"
-const interfaceBadge =
-  "mt-[1.4rem] mx-[1.6rem] self-start rounded-[0.35rem] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)] bg-[color-mix(in_oklab,var(--primary)_16%,transparent)] px-[0.55rem] py-[0.25rem] font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-[color-mix(in_oklab,var(--primary)_82%,var(--foreground))]"
-const interfaceH3 =
-  "mt-[0.75rem] mx-[1.6rem] mb-2 font-sans text-[1.0625rem] font-semibold tracking-[-0.01em] text-foreground"
-const interfaceP =
-  "mt-0 mx-[1.6rem] mb-[1.6rem] text-[0.9375rem] leading-[1.6] text-muted-foreground"
-const tuiScreen =
-  "m-0 overflow-hidden whitespace-pre p-[0.85rem_1rem] font-mono text-[0.72rem] leading-[1.55] text-[oklch(0.8_0.01_50)]"
 ---
 
 <Base>
   <a
-    href="#positioning-heading"
+    href="#hero"
     class="absolute -top-full left-4 z-[100] rounded-[0.5rem] bg-primary px-5 py-[0.625rem] text-sm font-semibold text-primary-foreground transition-[top] duration-200 focus:top-4"
   >
     Skip to content
@@ -56,410 +25,169 @@ const tuiScreen =
   <main>
     <!-- ═══ HERO ═══ -->
     <section
+      id="hero"
       aria-label="Hero"
-      class="relative isolate overflow-hidden px-[clamp(1.25rem,4vw,2.5rem)] pt-[clamp(3rem,8vh,5.5rem)] pb-[clamp(3.5rem,9vh,6rem)]"
-    >
-      <div
-        aria-hidden="true"
-        class="absolute -top-[18%] left-1/2 h-[620px] w-[min(900px,95vw)] -translate-x-1/2 -z-10 rounded-full bg-[radial-gradient(circle_at_center,oklch(0.74_0.2_45/0.16)_0%,oklch(0.6_0.16_50/0.07)_35%,transparent_68%)] blur-[8px] [animation:glow-bloom_1.6s_cubic-bezier(0.22,1,0.36,1)_forwards]"
-      >
-      </div>
-
-      <div
-        class="mx-auto grid max-w-[72rem] grid-cols-1 items-center gap-[clamp(2.5rem,6vw,4rem)] min-[900px]:grid-cols-[1fr_1.05fr]"
-      >
-        <div class="max-w-[34rem] min-[900px]:max-w-none">
-          <span class:list={[tag, "reveal"]} style="animation-delay:0.05s">
-            <span class={tagDot}></span>
-            RSS 2.0 · Atom · JSON Feed · Federated
-          </span>
-
-          <h1
-            class:list={["reveal", "mt-0 font-sans text-[clamp(2.75rem,8vw,5.25rem)] font-semibold leading-none tracking-[-0.04em] text-foreground [text-wrap:balance]"]}
-            style="animation-delay:0.14s"
-          >
-            Your feeds,<br />
-            <span class="text-[color-mix(in_oklab,var(--primary)_92%,var(--foreground))]">your terms.</span>
-          </h1>
-
-          <p
-            class:list={["reveal", "mt-6 max-w-[32rem] text-[clamp(1.0625rem,2.4vw,1.25rem)] font-normal leading-[1.6] text-muted-foreground [text-wrap:pretty]"]}
-            style="animation-delay:0.22s"
-          >
-            A modern, self-hostable RSS reader with a federated social
-            graph. Follow people, share articles, and read what your trusted
-            circle is reading — one timeline, no algorithm.
-          </p>
-
-          <div class:list={[ctaRow, "reveal"]} style="animation-delay:0.30s">
-            <Cta href={loginUrl} variant="primary">
-              <span>Open the app</span>
-              <svg class="h-[17px] w-[17px] shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                <path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
-              </svg>
-            </Cta>
-            <Cta href={selfHostUrl} variant="ghost">Self-host</Cta>
-          </div>
-
-          <div
-            class:list={["reveal", "mt-7 inline-flex items-center gap-[0.6rem] rounded-[0.55rem] border border-border bg-background px-[0.85rem] py-[0.55rem] font-mono text-[0.8125rem]"]}
-            style="animation-delay:0.40s"
-            aria-label="Install command"
-          >
-            <span class="font-semibold text-primary" aria-hidden="true">$</span>
-            <code class="text-muted-foreground">docker run sunred/sunred</code>
-            <span class="ml-2 rounded-[0.3rem] border border-border px-[0.45rem] py-[0.15rem] text-[0.6875rem] text-muted-foreground/70" aria-hidden="true">copy</span>
-          </div>
-        </div>
-
-        <!-- Product mock -->
-        <div
-          class="reveal relative opacity-0 [animation:mock-in_1s_cubic-bezier(0.22,1,0.36,1)_forwards] [animation-delay:0.25s]"
-          aria-hidden="true"
-        >
-          <MockWindow path="sunred — Unread">
-            <span slot="trailing" class="ml-auto rounded-[0.3rem] border border-border px-[0.45rem] py-[0.15rem] font-mono text-[0.6875rem] text-muted-foreground/70">⌘K</span>
-            <div class="grid min-h-[22rem] grid-cols-[9.5rem_1fr] max-[640px]:grid-cols-[6.5rem_1fr]">
-              <aside class="flex flex-col gap-[0.4rem] border-r border-border bg-background p-[0.85rem_0.6rem]">
-                <div class="px-[0.4rem] pb-2 font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-muted-foreground/70">Feeds</div>
-                <ul class="m-0 flex list-none flex-col gap-[0.1rem] p-0">
-                  <li class="flex items-center gap-2 rounded-[0.45rem] bg-[color-mix(in_oklab,var(--primary)_16%,transparent)] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-foreground">
-                    <span class="h-2 w-2 shrink-0 rounded-[2px] bg-primary"></span>Technology
-                    <span class="ml-auto font-mono text-[0.6875rem] text-muted-foreground/70">12</span>
-                  </li>
-                  <li class="flex items-center gap-2 rounded-[0.45rem] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-muted-foreground">
-                    <span class="h-2 w-2 shrink-0 rounded-[2px] bg-[oklch(1_0_0/0.14)]"></span>Rust
-                    <span class="ml-auto font-mono text-[0.6875rem] text-muted-foreground/70">4</span>
-                  </li>
-                  <li class="flex items-center gap-2 rounded-[0.45rem] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-muted-foreground">
-                    <span class="h-2 w-2 shrink-0 rounded-[2px] bg-[oklch(1_0_0/0.14)]"></span>Planets
-                    <span class="ml-auto font-mono text-[0.6875rem] text-muted-foreground/70">3</span>
-                  </li>
-                  <li class="flex items-center gap-2 rounded-[0.45rem] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-muted-foreground">
-                    <span class="h-2 w-2 shrink-0 rounded-[2px] bg-[oklch(1_0_0/0.14)]"></span>Self-hosting
-                    <span class="ml-auto font-mono text-[0.6875rem] text-muted-foreground/70">7</span>
-                  </li>
-                </ul>
-                <div class="mt-[0.6rem] border-t border-border px-[0.4rem] pb-2 pt-[0.6rem] font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-muted-foreground/70">Follows</div>
-                <ul class="m-0 flex list-none flex-col gap-[0.1rem] p-0">
-                  <li class="flex items-center gap-2 rounded-[0.45rem] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-muted-foreground">
-                    <span class="h-[0.85rem] w-[0.85rem] shrink-0 rounded-full bg-[color-mix(in_oklab,var(--primary)_40%,oklch(0.5_0.01_50))]"></span>@elena
-                    <span class="ml-auto font-mono text-[0.6875rem] text-muted-foreground/70">3</span>
-                  </li>
-                  <li class="flex items-center gap-2 rounded-[0.45rem] px-[0.5rem] py-[0.4rem] text-[0.8125rem] text-muted-foreground">
-                    <span class="h-[0.85rem] w-[0.85rem] shrink-0 rounded-full bg-[color-mix(in_oklab,var(--primary)_40%,oklch(0.5_0.01_50))]"></span>@kael
-                    <span class="ml-auto font-mono text-[0.6875rem] text-muted-foreground/70">1</span>
-                  </li>
-                </ul>
-                <div class="mt-auto flex items-center gap-2 border-t border-border px-[0.5rem] pt-[0.6rem] text-[0.8125rem] text-muted-foreground">
-                  <span class="text-primary">★</span> Starred
-                </div>
-              </aside>
-              <div class="flex flex-col gap-[0.35rem] p-[0.6rem]">
-                <!-- shared entry -->
-                <div class="relative rounded-[0.55rem] border border-border bg-[color-mix(in_oklab,var(--secondary)_70%,color-mix(in_oklab,var(--primary)_8%,transparent))] px-[0.85rem] py-[0.7rem] pl-[1.6rem]">
-                  <span class="absolute top-4 left-[0.55rem] h-[0.4rem] w-[0.4rem] rounded-full bg-primary"></span>
-                  <div class="mb-[0.25rem] flex items-center gap-[0.4rem] font-mono text-[0.6875rem] text-muted-foreground/70">
-                    <span class="h-[0.85rem] w-[0.85rem] shrink-0 rounded-full bg-[color-mix(in_oklab,var(--primary)_40%,oklch(0.5_0.01_50))]"></span>
-                    shared by <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--muted-foreground))]">@elena</span>
-                  </div>
-                  <div class="mb-[0.2rem] text-[0.875rem] font-semibold text-foreground">Why RSS still matters</div>
-                  <div class="text-[0.78rem] leading-[1.5] text-muted-foreground [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">
-                    The web used to come to you. Then it stopped. Here's why the oldest syndication format is quietly outliving the platforms…
-                  </div>
-                </div>
-                <div class="group/mock-entry relative rounded-[0.55rem] border border-transparent px-[0.85rem] py-[0.7rem] pl-[1.6rem] hover:bg-[oklch(1_0_0/0.025)]">
-                  <span class="absolute top-4 left-[0.55rem] h-[0.4rem] w-[0.4rem] rounded-full bg-primary"></span>
-                  <div class="mb-[0.25rem] flex items-center gap-[0.6rem] font-mono text-[0.6875rem] text-muted-foreground/70">
-                    <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--muted-foreground))]">rust-lang.org</span>
-                    <span>5h</span>
-                  </div>
-                  <div class="mb-[0.2rem] text-[0.875rem] font-semibold text-foreground">Rust 2026 roadmap</div>
-                  <div class="text-[0.78rem] leading-[1.5] text-muted-foreground [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">A look at the language team's direction for the next edition…</div>
-                </div>
-                <div class="group/mock-entry relative rounded-[0.55rem] border border-transparent px-[0.85rem] py-[0.7rem] pl-[1.6rem] hover:bg-[oklch(1_0_0/0.025)]">
-                  <span class="absolute top-4 left-[0.55rem] h-[0.4rem] w-[0.4rem] rounded-full bg-primary"></span>
-                  <div class="mb-[0.25rem] flex items-center gap-[0.6rem] font-mono text-[0.6875rem] text-muted-foreground/70">
-                    <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--muted-foreground))]">selfhosted.show</span>
-                    <span>8h</span>
-                  </div>
-                  <div class="mb-[0.2rem] text-[0.875rem] font-semibold text-foreground">The end of Moore's law (again)</div>
-                  <div class="text-[0.78rem] leading-[1.5] text-muted-foreground [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">Density gains slow, and what that means for the home lab…</div>
-                </div>
-                <div class="group/mock-entry relative rounded-[0.55rem] border border-transparent px-[0.85rem] py-[0.7rem] pl-[1.6rem] hover:bg-[oklch(1_0_0/0.025)]">
-                  <span class="absolute top-4 left-[0.55rem] h-[0.4rem] w-[0.4rem] rounded-full bg-[oklch(1_0_0/0.18)]"></span>
-                  <div class="mb-[0.25rem] flex items-center gap-[0.6rem] font-mono text-[0.6875rem] text-muted-foreground/70">
-                    <span class="text-[color-mix(in_oklab,var(--primary)_80%,var(--muted-foreground))]">planet4.local</span>
-                    <span>1d</span>
-                  </div>
-                  <div class="mb-[0.2rem] text-[0.875rem] font-medium text-muted-foreground">A field guide to OPML</div>
-                  <div class="text-[0.78rem] leading-[1.5] text-muted-foreground [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">Exporting and importing your subscriptions, explained…</div>
-                </div>
-              </div>
-            </div>
-          </MockWindow>
-          <div
-            aria-hidden="true"
-            class="pointer-events-none absolute inset-[10%_0_-20%_0] -z-10 bg-[radial-gradient(ellipse_70%_60%_at_50%_40%,color-mix(in_oklab,var(--primary)_22%,transparent),transparent_70%)] blur-[40px]"
-          >
-          </div>
-        </div>
-      </div>
-
-      <div class="reveal-fade mx-auto mt-[clamp(3rem,8vh,5rem)] flex max-w-[72rem] flex-wrap items-center justify-center gap-4 font-mono text-[0.78rem] text-muted-foreground/70">
-        <span>Open source</span>
-        <span class="opacity-50">·</span>
-        <span>Self-hostable</span>
-        <span class="opacity-50">·</span>
-        <span>Federated on AT Protocol</span>
-        <span class="opacity-50">·</span>
-        <span>No ads, no tracking, no algorithm</span>
-      </div>
-    </section>
-
-    <!-- ═══ MANIFESTO ═══ -->
-    <section
-      class="border-t border-border px-[clamp(1.25rem,4vw,2.5rem)] py-[clamp(5rem,12vh,8rem)]"
-      aria-labelledby="positioning-heading"
+      class="px-[clamp(1.25rem,4vw,2.5rem)] pt-[clamp(3.5rem,10vh,6rem)] pb-[clamp(3rem,7vh,5rem)]"
     >
       <div class="mx-auto max-w-[72rem]">
-        <h2 class="mt-0 mb-[clamp(2.5rem,6vh,3.5rem)] max-w-[22ch] font-sans text-[clamp(1.875rem,4.5vw,3rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-foreground [text-wrap:balance]">
-          RSS is alive. It just needed a reader that&nbsp;respects&nbsp;you.
+        <h1
+          class:list={["reveal", "mt-0 max-w-[18ch] font-sans text-[clamp(2.75rem,9vw,6rem)] font-semibold leading-[0.98] tracking-[-0.04em] text-foreground [text-wrap:balance]"]}
+          style="animation-delay:0.10s"
+        >
+          The Internet is broken.
+          <br />
+          <span class="text-[color-mix(in_oklab,var(--primary)_88%,var(--foreground))]">Let's fix it.</span>
+        </h1>
+
+        <p
+          class:list={["reveal", "mt-7 max-w-[34rem] text-[clamp(1rem,2.2vw,1.1875rem)] leading-[1.65] text-muted-foreground [text-wrap:pretty]"]}
+          style="animation-delay:0.20s"
+        >
+          Sunred is a self-hostable RSS reader on open protocols.
+          RSS to bring the web back to you. AT Protocol to make it yours to keep.
+        </p>
+
+        <div class:list={["reveal", "mt-9 flex flex-wrap items-center gap-3"]} style="animation-delay:0.30s">
+          <Cta href={loginUrl} variant="primary">
+            <span>Open the app</span>
+            <svg class="h-[17px] w-[17px] shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </Cta>
+          <Cta href={selfHostUrl} variant="ghost">Self-host</Cta>
+        </div>
+      </div>
+
+      <!-- App screenshot -->
+      <div class="reveal-fade mx-auto mt-[clamp(2.5rem,6vh,4rem)] max-w-[72rem]" style="animation-delay:0.4s">
+        <MockWindow path="sunred — Unread">
+          <img
+            src="/app.light.png"
+            alt="Sunred web app showing a feed timeline and sidebar"
+            width="1559"
+            height="1023"
+            loading="lazy"
+            class="block w-full dark:hidden"
+          />
+          <img
+            src="/app.dark.png"
+            alt="Sunred web app showing a feed timeline and sidebar"
+            width="1559"
+            height="1023"
+            loading="lazy"
+            class="hidden w-full dark:block"
+          />
+        </MockWindow>
+      </div>
+    </section>
+
+    <!-- ═══ THE FIX: RSS & AT PROTOCOL ═══ -->
+    <section
+      class="border-t border-border px-[clamp(1.25rem,4vw,2.5rem)] py-[clamp(4.5rem,12vh,7rem)]"
+      aria-labelledby="fix-heading"
+    >
+      <div class="mx-auto max-w-[72rem]">
+        <span class="mb-5 inline-block font-mono text-[0.8125rem] font-medium text-muted-foreground">
+          / the fix
+        </span>
+        <h2
+          id="fix-heading"
+          class="mt-0 mb-[clamp(2.5rem,6vh,3.5rem)] max-w-[26ch] font-sans text-[clamp(1.75rem,4.5vw,2.75rem)] font-semibold leading-[1.1] tracking-[-0.035em] text-foreground [text-wrap:balance]"
+        >
+          Two protocols that already work. One reader worth using.
         </h2>
 
-        <div class="grid grid-cols-1 items-start gap-[clamp(2rem,5vw,4rem)] min-[760px]:grid-cols-[1.6fr_1fr]">
-          <div class={manifestoBody}>
-            <p>
-              Sunred fetches RSS 2.0, Atom, and JSON Feed into a single timeline
-              you actually want to read. No ads, no tracking, no algorithm
-              deciding what reaches you. Just the sources you chose, in a calm
-              space built for reading.
+        <div class="grid grid-cols-1 gap-0 min-[820px]:grid-cols-2">
+          <div class="border-t border-border py-[clamp(2rem,5vh,3rem)] min-[820px]:pr-[clamp(2rem,4vw,3.5rem)] min-[820px]:border-r min-[820px]:border-r-border">
+            <h3 class="mt-0 mb-3 font-mono text-[1.0625rem] font-semibold tracking-[0.02em] text-foreground">
+              RSS
+            </h3>
+            <p class="mt-0 mb-4 font-sans text-[1.0625rem] font-semibold leading-[1.3] text-foreground">
+              Bring the web back to you.
             </p>
-            <p>
-              And now it's social: follow people, share articles, and discover
-              feeds through the people you trust. Your social graph runs on the
-              AT Protocol — the same one Bluesky uses — so it travels with you
-              across instances. <a href="/social">Learn how it works →</a>
+            <p class="m-0 max-w-[34rem] text-[0.9375rem] leading-[1.7] text-muted-foreground">
+              The web used to come to you. Then it stopped, and platforms decided
+              what you saw. RSS is the protocol that worked — subscribe to any
+              source, read in your own space, in the order things were published.
+              No algorithm. No tracking. No feed you don't control.
             </p>
-          </div>
-          <aside class="max-w-[22rem] border-l border-input pl-7 max-[640px]:border-l-0 max-[640px]:border-t max-[640px]:pt-6 max-[640px]:pl-0">
-            <p class="mt-0 mb-3 font-sans text-[1.5rem] font-semibold leading-[1.25] tracking-[-0.02em] text-[color-mix(in_oklab,var(--primary)_88%,var(--foreground))]">
-              "Your feeds, your terms."
-            </p>
-            <p class="m-0 text-[0.9375rem] leading-[1.55] text-muted-foreground/70">
-              The one line worth remembering. Everything else is in service of it.
-            </p>
-          </aside>
-        </div>
-
-        <CodeSample class="mt-[clamp(2.5rem,6vh,3.5rem)]">
-          <span class="font-semibold text-primary">$</span> sunred feeds add https://example.com/feed.xml
-          <span class="text-[oklch(0.6_0.012_50)]"># Added "Example Blog" to Technology</span>
-
-          <span class="font-semibold text-primary">$</span> sunred follow @elena
-          <span class="text-[oklch(0.6_0.012_50)]"># Now following elena — backfilling 3 shares</span>
-
-          <span class="font-semibold text-primary">$</span> sunred list --unread
-            planet4.local  Rust 2026 roadmap
-            @elena         Why RSS still matters
-            planet4.local  The end of Moore's law (again)
-        </CodeSample>
-      </div>
-    </section>
-
-    <!-- ═══ SOCIAL PREVIEW ═══ -->
-    <section class="border-t border-border py-[clamp(4.5rem,10vh,7rem)]" aria-labelledby="social-heading">
-      <div class="mx-auto max-w-[72rem] px-[clamp(1.25rem,4vw,2.5rem)]">
-        <SectionHead mark="/ social" headlineId="social-heading" lede="Follow people and see the articles they share in your timeline. Your graph is federated on the AT Protocol — it travels with you when you move instances.">
-          Reading is better with people you trust.
-        </SectionHead>
-
-        <div class="grid grid-cols-3 gap-5 max-[860px]:grid-cols-1">
-          <FeatureCell title="Follow people">
-            <span slot="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg></span>
-            Find people by handle or name — across instances, not just yours. New follows are backfilled into your timeline.
-          </FeatureCell>
-          <FeatureCell title="Share articles">
-            <span slot="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="m16 6-4-4-4 4" /><path d="M12 2v13" /></svg></span>
-            One click on any entry to share it. Your followers see it in their timeline with your name attached. No reposts, no engagement metrics.
-          </FeatureCell>
-          <FeatureCell title="Public profiles">
-            <span slot="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5" /><path d="M20 21a8 8 0 0 0-16 0" /></svg></span>
-            Every user gets a public page with their shared articles, public feeds, and follower counts — local and federated.
-          </FeatureCell>
-        </div>
-
-        <div class="mt-10 flex justify-start">
-          <Cta href="/social" variant="ghost">
-            Explore the social layer
-            <svg class="h-[17px] w-[17px] shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-          </Cta>
-        </div>
-      </div>
-    </section>
-
-    <!-- ═══ FEATURES BENTO ═══ -->
-    <section id="features" class="border-t border-border py-[clamp(4.5rem,10vh,7rem)]" aria-labelledby="features-heading">
-      <div class="mx-auto max-w-[72rem] px-[clamp(1.25rem,4vw,2.5rem)]">
-        <SectionHead mark="/ features" headlineId="features-heading" lede="No feature bloat. No tracking. Just the tools you need to subscribe, read, share, and self-host.">
-          Everything an RSS reader should be.
-        </SectionHead>
-
-        <div class={bento}>
-          <FeatureCell title="All feed formats" class={bentoTall}>
-            <span slot="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" fill="currentColor" stroke="none" /></svg></span>
-            RSS 2.0, Atom 1.0, and JSON Feed. Subscribe to anything with a feed URL — blogs, news, podcasts.
-            <ul slot="tags" class="mt-5 flex list-none flex-wrap gap-[0.4rem] p-0">
-              <li class="rounded-[0.3rem] border border-border px-[0.5rem] py-[0.2rem] font-mono text-[0.6875rem] text-muted-foreground">RSS 2.0</li>
-              <li class="rounded-[0.3rem] border border-border px-[0.5rem] py-[0.2rem] font-mono text-[0.6875rem] text-muted-foreground">Atom 1.0</li>
-              <li class="rounded-[0.3rem] border border-border px-[0.5rem] py-[0.2rem] font-mono text-[0.6875rem] text-muted-foreground">JSON Feed</li>
+            <ul class="m-0 mt-6 flex list-none flex-wrap gap-[0.4rem] p-0">
+              <li class="rounded-[0.3rem] border border-border px-[0.55rem] py-[0.2rem] font-mono text-[0.75rem] text-muted-foreground">RSS 2.0</li>
+              <li class="rounded-[0.3rem] border border-border px-[0.55rem] py-[0.2rem] font-mono text-[0.75rem] text-muted-foreground">Atom 1.0</li>
+              <li class="rounded-[0.3rem] border border-border px-[0.55rem] py-[0.2rem] font-mono text-[0.75rem] text-muted-foreground">JSON Feed</li>
             </ul>
-          </FeatureCell>
-          <FeatureCell title="Full-text search" class={bentoSpan4}>
-            <span slot="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></span>
-            Search across every entry from every feed. Find that article you read last month in seconds — the whole archive is indexed.
-          </FeatureCell>
-          <FeatureCell title="Star and save">
-            <span slot="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 2 9.6 8.6 3 10.5l6.6 1.9L11.5 19l1.9-6.6 6.6-1.9-6.6-1.9L11.5 2Z" /></svg></span>
-            Mark entries as starred for a permanent reading list. Unread, read, and removed statuses keep your timeline clean.
-          </FeatureCell>
-          <FeatureCell title="Categories">
-            <span slot="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2v11Z" /></svg></span>
-            Organize feeds into folders. Browse by topic, collapse what you're behind on, keep your sidebar tidy.
-          </FeatureCell>
-          <FeatureCell title="Self-hostable" class={bentoFull}>
-            <span slot="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="6" rx="1" /><rect x="3" y="14" width="18" height="6" rx="1" /><path d="M7 7h.01M7 17h.01" /></svg></span>
-            Run it on your own machine with Docker. Own your data end to end. Or use the hosted version and skip the setup — same API, same interfaces either way.
-          </FeatureCell>
-        </div>
+          </div>
 
-        <div class="mt-10 flex justify-start">
-          <a href="/features" class={linkArrow}>
-            See all features
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-          </a>
+          <div class="border-t border-border py-[clamp(2rem,5vh,3rem)] min-[820px]:pl-[clamp(2rem,4vw,3.5rem)] max-[819px]:border-t-0">
+            <h3 class="mt-0 mb-3 font-mono text-[1.0625rem] font-semibold tracking-[0.02em] text-foreground">
+              AT Protocol
+            </h3>
+            <p class="mt-0 mb-4 font-sans text-[1.0625rem] font-semibold leading-[1.3] text-foreground">
+              Make it yours to keep.
+            </p>
+            <p class="m-0 max-w-[34rem] text-[0.9375rem] leading-[1.7] text-muted-foreground">
+              Your identity, your follows, your shares are records on your own
+              data server. Move instances and your graph comes with you — no
+              export step, no lock-in. The same open protocol Bluesky uses,
+              applied to reading.
+            </p>
+            <ul class="m-0 mt-6 flex list-none flex-wrap gap-[0.4rem] p-0">
+              <li class="rounded-[0.3rem] border border-border px-[0.55rem] py-[0.2rem] font-mono text-[0.75rem] text-muted-foreground">Portable identity</li>
+              <li class="rounded-[0.3rem] border border-border px-[0.55rem] py-[0.2rem] font-mono text-[0.75rem] text-muted-foreground">Federated graph</li>
+              <li class="rounded-[0.3rem] border border-border px-[0.55rem] py-[0.2rem] font-mono text-[0.75rem] text-muted-foreground">Own your data</li>
+            </ul>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- ═══ INTERFACES ═══ -->
-    <section id="interfaces" class="border-t border-border py-[clamp(4.5rem,10vh,7rem)]" aria-labelledby="interfaces-heading">
-      <div class="mx-auto max-w-[72rem] px-[clamp(1.25rem,4vw,2.5rem)]">
-        <SectionHead mark="/ interfaces" headlineId="interfaces-heading" lede="The web app for browsing. The terminal UI for keyboard-driven reading. The CLI for scripts and automation. All backed by the same REST API.">
+    <section
+      class="border-t border-border px-[clamp(1.25rem,4vw,2.5rem)] py-[clamp(4rem,10vh,6rem)]"
+      aria-labelledby="interfaces-heading"
+    >
+      <div class="mx-auto max-w-[72rem]">
+        <span class="mb-5 inline-block font-mono text-[0.8125rem] font-medium text-muted-foreground">
+          / interfaces
+        </span>
+        <h2
+          id="interfaces-heading"
+          class="mt-0 mb-[clamp(2rem,5vh,3rem)] max-w-[24ch] font-sans text-[clamp(1.625rem,4vw,2.5rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-foreground [text-wrap:balance]"
+        >
           Read from wherever you work.
-        </SectionHead>
+        </h2>
 
-        <div class="grid grid-cols-3 gap-5 max-[860px]:grid-cols-1">
-          <!-- Web -->
-          <article class={interfaceCard}>
-            <div class="h-44 overflow-hidden border-b border-border bg-background" aria-hidden="true">
-              <div class="flex gap-[0.3rem] border-b border-border px-[0.7rem] py-[0.55rem]">
-                <span class="h-[0.45rem] w-[0.45rem] rounded-full bg-[oklch(1_0_0/0.14)]"></span>
-                <span class="h-[0.45rem] w-[0.45rem] rounded-full bg-[oklch(1_0_0/0.14)]"></span>
-                <span class="h-[0.45rem] w-[0.45rem] rounded-full bg-[oklch(1_0_0/0.14)]"></span>
-              </div>
-              <div class="grid h-[calc(100%-1.6rem)] grid-cols-[3.5rem_1fr] gap-2 p-[0.6rem]">
-                <div class="flex flex-col gap-[0.4rem] pt-[0.2rem]">
-                  <span class="h-[0.5rem] rounded-[0.25rem] bg-[oklch(1_0_0/0.08)]"></span>
-                  <span class="h-[0.5rem] rounded-[0.25rem] bg-[oklch(1_0_0/0.08)]"></span>
-                  <span class="h-[0.5rem] rounded-[0.25rem] bg-[oklch(1_0_0/0.08)]"></span>
-                  <span class="h-[0.5rem] rounded-[0.25rem] bg-[color-mix(in_oklab,var(--primary)_60%,transparent)]"></span>
-                  <span class="h-[0.5rem] rounded-[0.25rem] bg-[oklch(1_0_0/0.08)]"></span>
-                </div>
-                <div class="flex flex-col gap-2">
-                  <span class="h-[0.7rem] w-70% rounded-[0.25rem] bg-[oklch(1_0_0/0.16)]"></span>
-                  <span class="h-[0.5rem] rounded-[0.25rem] bg-[oklch(1_0_0/0.08)]"></span>
-                  <span class="h-[0.5rem] rounded-[0.25rem] bg-[oklch(1_0_0/0.08)]"></span>
-                  <span class="h-[0.5rem] w-40% rounded-[0.25rem] bg-[oklch(1_0_0/0.08)]"></span>
-                </div>
-              </div>
-            </div>
-            <div class={interfaceBadge}>Web</div>
-            <h3 class={interfaceH3}>A calm reading space</h3>
-            <p class={interfaceP}>A sidebar for navigation, a timeline for scanning, a reader for long-form. Keyboard shortcuts, optimistic starring, infinite scroll.</p>
-          </article>
-
-          <!-- TUI -->
-          <article class={interfaceCard}>
-            <div class="h-44 overflow-hidden border-b border-border bg-background" aria-hidden="true">
-              <pre class:list={[tuiScreen, "h-full"]}><code><span class="font-semibold text-foreground">▸ Technology</span>      <span class="text-[oklch(0.6_0.012_50)]">12</span>
-  Rust 2026 roadmap    <span class="text-[oklch(0.6_0.012_50)]">2h</span>
-  @elena Why RSS…     <span class="text-[oklch(0.6_0.012_50)]">2h</span>
-<span class="text-[oklch(0.6_0.012_50)]">▸ Self-hosting</span>     <span class="text-[oklch(0.6_0.012_50)]">7</span>
-
-<span class="text-[oklch(0.6_0.012_50)]">j/k move  g/G top/bot</span>
-<span class="text-[oklch(0.6_0.012_50)]">o open    s share  ? help</span></code></pre>
-            </div>
-            <div class={interfaceBadge}>TUI</div>
-            <h3 class={interfaceH3}>Terminal-native</h3>
-            <p class={interfaceP}>A full terminal user interface with vim-style navigation. Read and share feeds without leaving your terminal session.</p>
-          </article>
-
-          <!-- CLI -->
-          <article class={interfaceCard}>
-            <div class="h-44 overflow-hidden border-b border-border bg-background" aria-hidden="true">
-              <pre class:list={[tuiScreen, "h-full"]}><code><span class="font-semibold text-primary">$</span> sunred follow @elena
-<span class="text-[oklch(0.6_0.012_50)]"># backfilling 3 shares</span>
-
-<span class="font-semibold text-primary">$</span> sunred share 1
-<span class="text-[oklch(0.6_0.012_50)]"># shared to 14 followers</span>
-
-<span class="font-semibold text-primary">$</span> sunred list --unread</code></pre>
-            </div>
-            <div class={interfaceBadge}>CLI</div>
-            <h3 class={interfaceH3}>Scriptable</h3>
-            <p class={interfaceP}>Follow, share, list entries, mark as read — all from the command line. Pipe entries into your workflow.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- ═══ FAQ (short) ═══ -->
-    <section class="border-t border-border py-[clamp(4.5rem,10vh,7rem)]" aria-labelledby="faq-heading">
-      <div class="mx-auto max-w-[46rem] px-[clamp(1.25rem,4vw,2.5rem)]">
-        <SectionHead mark="/ faq" headlineId="faq-heading">Good to know.</SectionHead>
-
-        <div class="flex flex-col border-t border-border">
-          {
-            [
-              {
-                q: "Is the social graph really federated?",
-                a: <p>Yes. Follows and shares are AT Protocol records on your own PDS. When you sign into another Sunred instance, your follows and shares come with you — no export/import step. See <a href="/social" class={answerLink}>the social page</a> for how it works.</p>,
-              },
-              {
-                q: "Do I need a Bluesky account?",
-                a: <p>No. Sunred uses the AT Protocol for identity and federation, which is the same protocol Bluesky uses. Your Sunred account is its own AT Proto identity. If you already have a Bluesky account, the protocols are compatible but the accounts are separate.</p>,
-              },
-              {
-                q: "Is there tracking or advertising?",
-                a: <p>No. Sunred has no ads, no tracking, no analytics, no algorithmic feed. You see the entries from the feeds you subscribed to and the articles shared by people you follow, in the order they were published.</p>,
-              },
-            ].map((item) => (
-              <details class="group border-b border-border">
-                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-[1.35rem] font-sans text-[1.0625rem] font-medium text-foreground transition-colors duration-150 hover:text-[color-mix(in_oklab,var(--primary)_80%,var(--foreground))] [&::-webkit-details-marker]:hidden">
-                  {item.q}
-                  <span class="relative h-5 w-5 shrink-0 text-muted-foreground/70 transition-colors duration-150 group-hover:text-[color-mix(in_oklab,var(--primary)_70%,var(--muted-foreground))]" aria-hidden="true">
-                    <span class="absolute top-1/2 left-0 h-[1.5px] w-full -translate-y-1/2 rounded-[1px] bg-current" />
-                    <span class="absolute left-1/2 top-0 h-full w-[1.5px] -translate-x-1/2 rounded-[1px] bg-current transition-[scale] duration-200 group-open:scale-y-0" />
-                  </span>
-                </summary>
-                <div class="pb-[1.35rem]">{item.a}</div>
-              </details>
-            ))
-          }
-        </div>
-
-        <div class="mt-10">
-          <a href="/faq" class={linkArrow}>
-            All questions
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-          </a>
+        <div class="grid grid-cols-1 gap-0 min-[820px]:grid-cols-3">
+          <div class="border-t border-border py-[1.75rem] min-[820px]:pr-[clamp(1.5rem,3vw,2.5rem)] min-[820px]:border-r min-[820px]:border-r-border">
+            <div class="mb-2 font-mono text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground/70">Web</div>
+            <p class="m-0 text-[0.9375rem] leading-[1.6] text-muted-foreground">
+              A calm reading space — sidebar, timeline, reader. Keyboard shortcuts,
+              full-text search, infinite scroll.
+            </p>
+          </div>
+          <div class="border-t border-border py-[1.75rem] min-[820px]:px-[clamp(1.5rem,3vw,2.5rem)] min-[820px]:border-r min-[820px]:border-r-border max-[819px]:border-t-0">
+            <div class="mb-2 font-mono text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground/70">TUI</div>
+            <p class="m-0 text-[0.9375rem] leading-[1.6] text-muted-foreground">
+              A terminal user interface with vim-style navigation. Read and share
+              without leaving your shell.
+            </p>
+          </div>
+          <div class="border-t border-border py-[1.75rem] min-[820px]:pl-[clamp(1.5rem,3vw,2.5rem)] max-[819px]:border-t-0">
+            <div class="mb-2 font-mono text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground/70">CLI</div>
+            <p class="m-0 text-[0.9375rem] leading-[1.6] text-muted-foreground">
+              Follow, share, list, mark as read — all scriptable. Pipe entries into
+              your workflow. One REST API behind all three.
+            </p>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- ═══ CLOSING ═══ -->
-    <Closing headline="Start reading." lede="Subscribe to your first feed in under a minute. No credit card, no setup wizard, no algorithm.">
+    <Closing
+      headline="Start reading."
+      lede="Subscribe to your first feed in under a minute. No credit card, no setup wizard, no algorithm."
+    >
       <Cta href={loginUrl} variant="primary">
         <span>Open the app</span>
         <Fragment set:html={arrowSvg} />

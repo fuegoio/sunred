@@ -2,25 +2,22 @@
 @import "@workspace/ui/tokens.css";
 
 /*
- * Sunred marketing site.
+ * Sunred marketing site — one-pager.
  *
- * Colors and fonts come from the shared design tokens in @workspace/ui, so
- * the marketing surface stays in sync with the web app. The site supports
- * both light and dark themes: <html> carries the `dark` class when the
- * resolved theme is dark (see layouts/Base.astro and the pre-paint script),
- * and the shared tokens swap accordingly. Type uses the same families as
- * the web app — IBM Plex Sans (sans), Merriweather (serif), Geist Mono
- * (mono) — loaded from Google Fonts in Base.astro.
- *
- * Component and layout styling lives inline as Tailwind utilities in the
- * .astro markup, driven by the shared tokens. Only base element resets,
- * keyframes, and the reveal-animation helpers remain here.
+ * Type: Geist Sans carries body and headings (calm, technical-but-not-costume);
+ * Geist Mono is reserved for technical labels — protocol names, tags, the
+ * terminal path, code — the old-web tell used sparingly. Merriweather (serif)
+ * is for the Sunred wordmark only. Colors come from the shared design tokens
+ * in @workspace/ui so the marketing surface stays in sync with the web app.
+ * <html> carries the `dark` class when the resolved theme is dark (see
+ * layouts/Base.astro). No gradients anywhere — solid color, hairline rules,
+ * and type carry the structure.
  */
 
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-sans: "Geist", system-ui, sans-serif;
   --font-serif: "Merriweather", Georgia, serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
 }
@@ -46,21 +43,12 @@ html {
 
 body {
   margin: 0;
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   background-color: var(--background);
   color: var(--foreground);
-  font-size: 1.0625rem;
+  font-size: 1rem;
   line-height: 1.65;
   overflow-x: hidden;
-  /* Faint sun glow fixed at the top of the page — atmosphere, not decoration */
-  background-image: radial-gradient(
-    ellipse 80% 55% at 50% -8%,
-    oklch(0.74 0.2 45 / 0.1) 0%,
-    oklch(0.5 0.12 50 / 0.04) 38%,
-    transparent 70%
-  );
-  background-attachment: fixed;
-  background-repeat: no-repeat;
 }
 
 ::selection {
@@ -68,13 +56,15 @@ body {
   color: var(--foreground);
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
 button {
   font-family: inherit;
+}
+
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
 :focus-visible {
@@ -108,29 +98,6 @@ button {
   }
   to {
     opacity: 1;
-  }
-}
-
-@keyframes glow-bloom {
-  0% {
-    opacity: 0;
-    transform: scale(0.85);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes mock-in {
-  0%,
-  18% {
-    opacity: 0;
-    transform: translateY(1.2rem) scale(0.985);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 
