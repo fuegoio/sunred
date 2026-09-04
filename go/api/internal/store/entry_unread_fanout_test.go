@@ -166,3 +166,84 @@ func containsEntryByURL(entries []Entry, url string) bool {
 	}
 	return false
 }
+
+// TestMarkAllEntriesRead_DuplicateURLAcrossFeeds is the regression test for the
+// "pq: ON CONFLICT DO UPDATE command cannot affect row a second time" error.
+// When the same article URL exists in multiple subscribed feeds, the upsert
+// source yields one row per entry; the ON CONFLICT (user_id, article_url) then
+// tries to update the same conflict key more than once in a single statement,
+// which Postgres rejects. DISTINCT ON (e.url) collapses the source to one row
+// per URL so the statement succeeds.
+func TestMarkAllEntriesRead_DuplicateURLAcrossFeeds(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	userID := seedUser(t, s, "dup-url-markall@example.com")
+	articleURL := "https://example.com/shared-across-feeds"
+
+	// Two subscribed feeds carrying the same article URL.
+	seedFeedAndEntryWithURL(t, s, userID, "Dup Feed A", articleURL, "Entry in A")
+	seedFeedAndEntryWithURL(t, s, userID, "Dup Feed B", articleURL, "Entry in B")
+
+	if err := s.MarkAllEntriesRead(ctx, userID); err != nil {
+		t.Fatalf("MarkAllEntriesRead with duplicate URL across feeds: %v", err)
+	}
+
+	status, exists := entryReadStatus(t, s, userID, articleURL)
+	if !exists {
+		t.Fatal("expected a read status row for the shared URL")
+	}
+	if status != "read" {
+		t.Errorf("status=%q, want 'read'", status)
+	}
+}
+
+// TestMarkFeedEntriesRead_DuplicateURLAcrossFeeds guards the feed-scoped path
+// against the same conflict. The target feed itself has one entry, but a second
+// subscribed feed shares the same URL, so the visible-entry filter's OR branch
+// can surface both rows for the same conflict key.
+func TestMarkFeedEntriesRead_DuplicateURLAcrossFeeds(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	userID := seedUser(t, s, "dup-url-markfeed@example.com")
+	articleURL := "https://example.com/shared-across-feeds-2"
+
+	feedID, _ := seedFeedAndEntryWithURL(t, s, userID, "Target Feed", articleURL, "Target Entry")
+	seedFeedAndEntryWithURL(t, s, userID, "Other Feed", articleURL, "Other Entry")
+
+	if err := s.MarkFeedEntriesRead(ctx, feedID, userID); err != nil {
+		t.Fatalf("MarkFeedEntriesRead with duplicate URL across feeds: %v", err)
+	}
+
+	status, exists := entryReadStatus(t, s, userID, articleURL)
+	if !exists {
+		t.Fatal("expected a read status row for the shared URL")
+	}
+	if status != "read" {
+		t.Errorf("status=%q, want 'read'", status)
+	}
+}
+
+// TestUpdateEntryStatus_DuplicateURLAcrossFeeds guards the entry-ID bulk path:
+// passing entry IDs that map to the same article URL must not raise the
+// "affect row a second time" error.
+func TestUpdateEntryStatus_DuplicateURLAcrossFeeds(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	userID := seedUser(t, s, "dup-url-update@example.com")
+	articleURL := "https://example.com/shared-across-feeds-3"
+
+	_, entryID1 := seedFeedAndEntryWithURL(t, s, userID, "Upd Feed A", articleURL, "Entry A")
+	_, entryID2 := seedFeedAndEntryWithURL(t, s, userID, "Upd Feed B", articleURL, "Entry B")
+
+	if err := s.UpdateEntryStatus(ctx, []int64{entryID1, entryID2}, userID, "read"); err != nil {
+		t.Fatalf("UpdateEntryStatus with duplicate URL across feeds: %v", err)
+	}
+
+	status, exists := entryReadStatus(t, s, userID, articleURL)
+	if !exists {
+		t.Fatal("expected a read status row for the shared URL")
+	}
+	if status != "read" {
+		t.Errorf("status=%q, want 'read'", status)
+	}
+}
