@@ -563,9 +563,10 @@ func (s *Store) UpdateEntryStatus(ctx context.Context, entryIDs []int64, userID 
 	}
 	_, err := s.DB.ExecContext(ctx,
 		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
-		 SELECT $2, e.url, e.id, $3, NOW()
+		 SELECT DISTINCT ON (e.url) $2, e.url, e.id, $3, NOW()
 		 FROM entries e
 		 WHERE e.id = ANY($1) AND (`+visibleEntryFilter(userID)+`)
+		 ORDER BY e.url
 		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = EXCLUDED.status, changed_at = NOW()`,
 		pq.Array(entryIDs), userID, status)
 	return err
@@ -659,9 +660,10 @@ func (s *Store) UpdateEntryStatusByURL(ctx context.Context, userID int, articleU
 func (s *Store) MarkFeedEntriesRead(ctx context.Context, feedID, userID int) error {
 	_, err := s.DB.ExecContext(ctx,
 		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
-		 SELECT $2, e.url, e.id, 'read', NOW()
+		 SELECT DISTINCT ON (e.url) $2, e.url, e.id, 'read', NOW()
 		 FROM entries e
 		 WHERE e.feed_id = $1 AND (`+visibleEntryFilter(userID)+`)
+		 ORDER BY e.url
 		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = 'read', changed_at = NOW()`,
 		feedID, userID)
 	return err
@@ -682,9 +684,10 @@ func (s *Store) CountEntriesByFeed(ctx context.Context, feedID int) (int, error)
 func (s *Store) MarkAllEntriesRead(ctx context.Context, userID int) error {
 	_, err := s.DB.ExecContext(ctx,
 		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
-		 SELECT $1, e.url, e.id, 'read', NOW()
+		 SELECT DISTINCT ON (e.url) $1, e.url, e.id, 'read', NOW()
 		 FROM entries e
 		 WHERE (`+visibleEntryFilter(userID)+`)
+		 ORDER BY e.url
 		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = 'read', changed_at = NOW()`,
 		userID)
 	return err
