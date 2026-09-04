@@ -14,6 +14,10 @@ import type { Entry } from "@/lib/types";
  * does not, so a manual mark-read leaves the Unread view on the next refetch
  * rather than being pinned visible.
  *
+ * The session is capped at one entry: opening a new article drops any
+ * previously kept read row so only the most recently opened one stays
+ * visible in the Unread view.
+ *
  * The store is module-scoped: it survives background refetches but is wiped by
  * a full page reload or a client-side navigation (see `clearReadSession`,
  * invoked from the app shell on route change).
@@ -21,6 +25,7 @@ import type { Entry } from "@/lib/types";
 const readEntries = new Map<number, Entry>();
 
 export function markReadSession(entry: Entry) {
+  readEntries.clear();
   readEntries.set(entry.id, { ...entry, status: "read" });
 }
 
