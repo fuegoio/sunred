@@ -241,7 +241,6 @@ function WelcomeScreen({
           <Button
             ref={primaryRef}
             size="lg"
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={onAddFeed}
           >
             <Plus className="size-4" />
