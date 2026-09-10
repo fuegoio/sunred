@@ -3,3 +3,27 @@
 @import "@workspace/ui/tokens.css";
 @import "fumadocs-ui/css/preset.css";
 @import "fumadocs-openapi/css/preset.css";
+
+/* Adapt Fumadocs actions without recoloring navigation and search highlights. */
+:is(button, a, [role="button"]).bg-fd-primary.text-fd-primary-foreground:not(:disabled):not(
+    [aria-disabled="true"]
+  ) {
+  background-color: var(--button-primary);
+  color: var(--button-primary-foreground);
+
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--button-primary-hover);
+    }
+  }
+
+  &:active {
+    background-color: var(--button-primary-active);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--foreground);
+    outline-offset: 3px;
+    box-shadow: none;
+  }
+}

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Plus, ChevronRight } from "lucide-react";
+import { Plus, ChevronRight, LoaderCircle } from "lucide-react";
 
-import { Button } from "@workspace/ui/components/button";
+import { Button, buttonVariants } from "@workspace/ui/components/button";
 
 const meta: Meta<typeof Button> = {
   title: "UI/Button",
@@ -27,6 +27,22 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: { variant: "default", size: "default" },
+};
+
+export const PrimaryStates: Story = {
+  render: () => (
+    <div id="primary-actions" className="flex flex-wrap items-center gap-4">
+      <Button>Subscribe</Button>
+      <Button disabled>Subscribe</Button>
+      <Button disabled aria-busy="true">
+        <LoaderCircle className="animate-spin" aria-hidden="true" />
+        Subscribing
+      </Button>
+      <a href="#primary-actions" className={buttonVariants()}>
+        Open reader <ChevronRight aria-hidden="true" />
+      </a>
+    </div>
+  ),
 };
 
 export const Variants: Story = {

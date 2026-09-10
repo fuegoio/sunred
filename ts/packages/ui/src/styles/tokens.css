@@ -12,6 +12,12 @@
   --popover-foreground: oklch(0.148 0.005 79);
   --primary: oklch(0.8 0.19 39);
   --primary-foreground: oklch(0.15 0.01 79);
+  /* Opaque action colors keep white labels readable in both themes.
+     The brighter primary palette remains for logos and highlights. */
+  --button-primary: oklch(0.56 0.18 39);
+  --button-primary-hover: oklch(0.52 0.17 39);
+  --button-primary-active: oklch(0.48 0.16 39);
+  --button-primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.967 0.005 79);
   --secondary-foreground: oklch(0.21 0.01 79);
   --muted: oklch(0.963 0.005 79);
@@ -81,6 +87,10 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-button-primary: var(--button-primary);
+  --color-button-primary-hover: var(--button-primary-hover);
+  --color-button-primary-active: var(--button-primary-active);
+  --color-button-primary-foreground: var(--button-primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
