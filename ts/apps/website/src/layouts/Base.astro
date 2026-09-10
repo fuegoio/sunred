@@ -7,8 +7,8 @@ interface Props {
 }
 
 const {
-  title = "Sunred — Fix the web. RSS, federated.",
-  description = "Sunred is a self-hostable RSS reader on open protocols. RSS to bring the web back to you, AT Protocol to make it yours to keep.",
+  title = "Sunred — The web, back in your hands.",
+  description = "Follow websites with RSS. Connect with people through AT Proto. Sunred is an open-source, self-hostable reader for a web that puts you first.",
 } = Astro.props
 ---
 
@@ -20,8 +20,7 @@ const {
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fffffd" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1815" />
+    <meta name="theme-color" content="#fffffd" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -40,21 +39,19 @@ const {
       href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Geist+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap"
     />
 
-    <!-- Apply the resolved theme before paint to avoid a flash. Matches the
-         web app: default to the system preference, honour an explicit choice
-         stored under `theme` (same key the ThemeToggle writes). -->
+    <!-- Start light; honour the visitor's saved theme before the first paint. -->
     <script is:inline>
       (function () {
+        var isDark = false;
         try {
-          var stored = localStorage.getItem("theme");
-          var prefersDark = window.matchMedia(
-            "(prefers-color-scheme: dark)",
-          ).matches;
-          var isDark = stored ? stored === "dark" : prefersDark;
-          document.documentElement.classList.toggle("dark", isDark);
+          isDark = localStorage.getItem("theme") === "dark";
         } catch (e) {
-          /* localStorage may be unavailable (private mode); fall back to system. */
+          /* Storage is optional; the page remains light when it is unavailable. */
         }
+        document.documentElement.classList.toggle("dark", isDark);
+        document.querySelector('meta[name="theme-color"]').setAttribute(
+          "content", isDark ? "#1a1815" : "#fffffd",
+        );
       })();
     </script>
 

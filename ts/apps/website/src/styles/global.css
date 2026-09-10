@@ -1,21 +1,9 @@
 @import "tailwindcss";
 @import "@workspace/ui/tokens.css";
 
-/*
- * Sunred marketing site — one-pager.
- *
- * Type: Geist Sans carries body and headings (calm, technical-but-not-costume);
- * Geist Mono is reserved for technical labels — protocol names, tags, the
- * terminal path, code — the old-web tell used sparingly. Merriweather (serif)
- * is for the Sunred wordmark only. Colors come from the shared design tokens
- * in @workspace/ui so the marketing surface stays in sync with the web app.
- * <html> carries the `dark` class when the resolved theme is dark (see
- * layouts/Base.astro). No gradients anywhere — solid color, hairline rules,
- * and type carry the structure.
- */
-
 @custom-variant dark (&:is(.dark *));
 
+/* Keep the product's palette and type; reserve orange for the sun and action. */
 @theme {
   --font-sans: "IBM Plex Sans", system-ui, sans-serif;
   --font-serif: "Merriweather", Georgia, serif;
@@ -23,7 +11,8 @@
 }
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
+  --layer-skip-link: 10;
 }
 
 html.dark {
@@ -39,20 +28,37 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   scroll-behavior: smooth;
+  scroll-padding-top: 2rem;
 }
 
 body {
   margin: 0;
   font-family: var(--font-sans);
-  background-color: var(--background);
+  background: var(--background);
   color: var(--foreground);
   font-size: 1rem;
   line-height: 1.65;
-  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 ::selection {
-  background-color: color-mix(in oklab, var(--primary) 32%, transparent);
+  background: color-mix(in oklab, var(--primary) 32%, transparent);
   color: var(--foreground);
 }
 
@@ -68,66 +74,479 @@ button {
 }
 
 :focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 3px;
-  border-radius: 4px;
+  outline: 2px solid var(--foreground);
+  outline-offset: 5px;
+  border-radius: 2px;
 }
 
-/* ── Motion ─────────────────────────────────────────────────────
-   Refined entrance choreography for the hero. Elements start hidden
-   and reveal on load; the reduced-motion block at the bottom resets
-   them to visible instantly. Nothing gates content visibility on
-   scroll — every reveal fires on load so headless renderers and
-   background tabs still paint the page.
-*/
+.page-width {
+  width: min(100% - 3rem, 70rem);
+  margin-inline: auto;
+}
 
-@keyframes fade-up {
+.skip-link {
+  position: absolute;
+  z-index: var(--layer-skip-link);
+  top: 1rem;
+  left: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--foreground);
+  color: var(--background);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.nav-links > a,
+.footer-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+}
+
+.nav-links > a:hover,
+.footer-links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 3rem;
+  padding-block: clamp(3.5rem, 7vw, 6rem) 3.5rem;
+}
+
+.hero-intro {
+  margin-bottom: 1.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.9375rem;
+}
+
+.hero h1 {
+  font-size: clamp(2.875rem, 6.5vw, 5.25rem);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -0.04em;
+}
+
+.hero-description {
+  max-width: 31rem;
+  margin-top: 1.75rem;
+  color: var(--muted-foreground);
+  font-size: 1.125rem;
+  line-height: 1.65;
+}
+
+.hero-description strong {
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+  margin-top: 1.875rem;
+}
+
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 0.3em;
+  transition: text-decoration-color 180ms ease-out;
+}
+
+.text-link:hover {
+  text-decoration-color: currentColor;
+}
+
+.text-link svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+}
+
+.hero-note {
+  margin-top: 1rem;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+.dawn {
+  align-self: center;
+  margin-top: 3.5rem;
+}
+
+.dawn-sky {
+  height: clamp(8rem, 15vw, 12rem);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+.dawn-sun {
+  flex-shrink: 0;
+  width: clamp(15rem, 28vw, 23rem);
+  height: auto;
+  align-self: flex-start;
+  animation: sunrise 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dawn-horizon {
+  height: 1px;
+  background: var(--border);
+}
+
+.dawn p {
+  margin-top: 1rem;
+  text-align: center;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+}
+
+.app-preview {
+  margin-block: 0;
+}
+
+.preview-frame {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 32px -16px color-mix(in oklab, var(--foreground) 16%, transparent);
+}
+
+.preview-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--sidebar);
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+
+.preview-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.preview-status {
+  margin-left: auto;
+}
+
+.preview-viewport {
+  aspect-ratio: 2.2;
+  overflow: hidden;
+  background: var(--card);
+}
+
+.preview-viewport img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.preview-viewport .preview-dark,
+.dark .preview-light {
+  display: none;
+}
+
+.dark .preview-dark {
+  display: block;
+}
+
+.app-preview figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.25rem 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+.app-preview figcaption .text-link {
+  font-size: inherit;
+}
+
+.protocols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.65fr);
+  gap: clamp(2rem, 6vw, 5rem);
+  padding-block: clamp(4rem, 8vw, 7rem);
+}
+
+h2 {
+  font-size: clamp(1.875rem, 3.2vw, 2.5rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.protocols-intro > p {
+  max-width: 28ch;
+  margin-top: 1.25rem;
+  color: var(--muted-foreground);
+}
+
+.protocol {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 1.25rem;
+  padding-block: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.protocol:first-child {
+  padding-top: 0.375rem;
+  border-top: 0;
+}
+
+.protocol:last-child {
+  padding-bottom: 0;
+}
+
+.protocol-name {
+  display: flex;
+  align-items: center;
+  align-self: start;
+  gap: 0.625rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  line-height: 1.75rem;
+}
+
+.at-mark {
+  font-family: var(--font-sans);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.protocol-heading {
+  margin-bottom: 0.625rem;
+  font-size: 1.1875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--foreground);
+}
+
+.protocol-heading + p {
+  color: var(--muted-foreground);
+  font-size: 0.9375rem;
+}
+
+.protocol-detail {
+  margin-top: 1rem;
+  font-size: 0.8125rem;
+}
+
+p.protocol-detail {
+  color: var(--muted-foreground);
+}
+
+.closing {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-block: 3rem;
+  border-block: 1px solid var(--border);
+}
+
+.closing p {
+  margin-top: 1rem;
+  color: var(--muted-foreground);
+}
+
+.closing-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.site-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem 2rem;
+  padding-block: 2rem;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+@keyframes sunrise {
   from {
-    opacity: 0;
-    transform: translateY(0.6rem);
+    transform: translateY(25%) rotate(-12deg);
   }
   to {
-    opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) rotate(0);
   }
 }
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
+@media (max-width: 900px) {
+  .hero {
+    gap: 1.5rem;
   }
-  to {
-    opacity: 1;
+  .protocols {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  .protocols-intro > p {
+    max-width: 45ch;
+  }
+  .protocol {
+    grid-template-columns: 9rem minmax(0, 1fr);
+  }
+  .protocol:first-child {
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
   }
 }
 
-.reveal {
-  opacity: 0;
-  animation: fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+@media (max-width: 600px) {
+  .page-width {
+    width: calc(100% - 2.5rem);
+  }
+  .site-nav {
+    min-height: 4.75rem;
+  }
+  .nav-links {
+    gap: 1rem;
+  }
+  .nav-about {
+    display: none !important;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding-block: 3rem 2rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.75rem, 10vw, 3.75rem);
+  }
+  .hero-intro {
+    font-size: 0.8125rem;
+    margin-bottom: 1.25rem;
+  }
+  .hero-description {
+    font-size: 1rem;
+    margin-top: 1.5rem;
+  }
+  .hero-actions {
+    gap: 0.5rem 1rem;
+    margin-top: 1.5rem;
+  }
+  .hero-note {
+    font-size: 0.75rem;
+  }
+  .dawn {
+    display: none;
+  }
+  .preview-toolbar {
+    font-size: 0.6875rem;
+    padding: 0.625rem 0.75rem;
+  }
+  .preview-status {
+    display: none;
+  }
+  .preview-viewport {
+    aspect-ratio: 1.15;
+  }
+  .preview-viewport img {
+    width: 165%;
+    max-width: none;
+  }
+  .app-preview figcaption {
+    margin-top: 1rem;
+  }
+  .protocols {
+    padding-block: 3.5rem;
+    gap: 2rem;
+  }
+  .protocol {
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+  }
+  .closing {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-block: 2.5rem;
+  }
+  .closing-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+  }
+  .desktop-break {
+    display: none;
+  }
+  .site-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding-block: 1.5rem;
+  }
 }
-.reveal-fade {
-  opacity: 0;
-  animation: fade-in 1s ease-out forwards;
-}
-
-/* ── Reduced motion ──────────────────────────────────────────────
-   Crossfade / instant. Content is visible immediately.
-*/
 
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-
-  .reveal,
-  .reveal-fade {
-    opacity: 1 !important;
-    transform: none !important;
     animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }
