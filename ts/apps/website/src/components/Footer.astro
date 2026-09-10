@@ -1,31 +1,8 @@
----
-import Logo from "./Logo.astro"
-
-const loginUrl = "/login"
-const selfHostUrl = "https://github.com/fuegoio/sunred"
----
-
-<footer class="border-t border-border px-6 pt-12 pb-14">
-  <div
-    class="mx-auto flex max-w-[72rem] flex-col items-center gap-5 text-center"
-  >
-    <a
-      class="flex items-center gap-[0.6rem] font-serif text-[1.0625rem] font-bold tracking-[-0.01em] text-foreground"
-      href="/"
-    >
-      <Logo class="h-6 w-6 shrink-0" static />
-      <span>Sunred</span>
-    </a>
-    <nav
-      aria-label="Footer"
-      class="flex flex-wrap justify-center gap-6 text-[0.875rem] font-medium"
-    >
-      <a class="text-muted-foreground transition-colors duration-150 hover:text-foreground" href={loginUrl}>Open the app</a>
-      <a class="text-muted-foreground transition-colors duration-150 hover:text-foreground" href={selfHostUrl}>GitHub</a>
-      <a class="text-muted-foreground transition-colors duration-150 hover:text-foreground" href="https://sunred.dev/docs">Docs</a>
-    </nav>
-    <p class="m-0 max-w-[30rem] font-mono text-[0.8125rem] text-muted-foreground/70">
-      Open source. Self-hostable. Federated on the AT Protocol.
-    </p>
-  </div>
+<footer class="site-footer page-width">
+  <p>Sunred. A reader for the web we believe in.</p>
+  <nav class="footer-links" aria-label="Footer">
+    <a href="https://github.com/fuegoio/sunred">GitHub</a>
+    <a href="/docs">Documentation</a>
+    <a href="/docs/self-hosting">Self-hosting guide</a>
+  </nav>
 </footer>

@@ -9,9 +9,11 @@ const { class: className = "" } = Astro.props
 <button
   id="theme-toggle"
   type="button"
-  aria-label="Toggle theme"
+  aria-label="Dark mode"
+  aria-pressed="false"
+  hidden
   class:list={[
-    "relative inline-flex h-9 w-9 items-center justify-center rounded-[0.5rem] border border-border bg-transparent text-foreground transition-colors duration-150 hover:bg-[color-mix(in_oklab,var(--foreground)_6%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-primary",
+    "relative inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-transparent text-foreground transition-colors duration-150 hover:bg-muted [&[hidden]]:hidden",
     className,
   ]}
 >
@@ -56,33 +58,29 @@ const { class: className = "" } = Astro.props
     function apply(next) {
       var isDark = next === "dark";
       document.documentElement.classList.toggle("dark", isDark);
+      btn.setAttribute("aria-pressed", String(isDark));
+      document.querySelector('meta[name="theme-color"]').setAttribute(
+        "content", isDark ? "#1a1815" : "#fffffd",
+      );
+    }
+
+    apply(resolved());
+    btn.hidden = false;
+
+    btn.addEventListener("click", function () {
+      var next = resolved() === "dark" ? "light" : "dark";
+      apply(next);
       try {
         localStorage.setItem("theme", next);
       } catch (e) {
-        /* ignore storage failures */
+        /* The toggle still works when storage is unavailable. */
       }
-      var metas = document.querySelectorAll('meta[name="theme-color"]');
-      metas.forEach(function (m) {
-        m.setAttribute("content", isDark ? "#1a1815" : "#fffffd");
-      });
-    }
-
-    btn.addEventListener("click", function () {
-      apply(resolved() === "dark" ? "light" : "dark");
     });
 
-    // Keep the toggle in sync if the system preference changes and the user
-    // hasn't made an explicit choice.
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", function (e) {
-        var stored;
-        try {
-          stored = localStorage.getItem("theme");
-        } catch (err) {
-          stored = null;
-        }
-        if (!stored) apply(e.matches ? "dark" : "light");
-      });
+    window.addEventListener("storage", function (event) {
+      if (event.key === "theme" || event.key === null) {
+        apply(event.newValue === "dark" ? "dark" : "light");
+      }
+    });
   })();
 </script>

@@ -3,196 +3,122 @@ import Base from "../layouts/Base.astro"
 import Nav from "../components/Nav.astro"
 import Footer from "../components/Footer.astro"
 import Cta from "../components/Cta.astro"
-import Closing from "../components/Closing.astro"
-import MockWindow from "../components/MockWindow.astro"
+import Logo from "../components/Logo.astro"
 
 const loginUrl = "/login"
 const selfHostUrl = "https://github.com/fuegoio/sunred"
-
-const arrowSvg =
-  '<svg class="h-[17px] w-[17px] shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
 ---
 
 <Base>
-  <a
-    href="#hero"
-    class="absolute -top-full left-4 z-[100] rounded-[0.5rem] bg-primary px-5 py-[0.625rem] text-sm font-semibold text-primary-foreground transition-[top] duration-200 focus:top-4"
-  >
-    Skip to content
-  </a>
+  <a href="#main" class="skip-link">Skip to content</a>
   <Nav />
 
-  <main>
-    <!-- ═══ HERO ═══ -->
-    <section
-      id="hero"
-      aria-label="Hero"
-      class="px-[clamp(1.25rem,4vw,2.5rem)] pt-[clamp(3.5rem,10vh,6rem)] pb-[clamp(3rem,7vh,5rem)]"
-    >
-      <div class="mx-auto max-w-[72rem]">
-        <h1
-          class:list={["reveal", "mt-0 max-w-[18ch] font-sans text-[clamp(2.75rem,9vw,6rem)] font-semibold leading-[0.98] tracking-[-0.04em] text-foreground text-balance"]}
-          style="animation-delay:0.10s"
-        >
-          Let's bring back the
-          <br />
-          <span class="text-[color-mix(in_oklab,var(--primary)_88%,var(--foreground))]">old web</span>
-        </h1>
-
-        <p
-          class:list={["reveal", "mt-7 max-w-[34rem] leading-[1.65] text-muted-foreground text-pretty"]}
-          style="animation-delay:0.20s"
-        >
-          Sunred is a modern self-hostable RSS reader with social capabilities build on the AT Protocol.
+  <main id="main" tabindex="-1">
+    <section class="hero page-width" aria-labelledby="hero-heading">
+      <div class="hero-copy">
+        <p class="hero-intro">An RSS reader. An open web. A fresh start.</p>
+        <h1 id="hero-heading">The web, back<br />in your hands.</h1>
+        <p class="hero-description">
+          Follow the sites you love with <strong>RSS</strong>.
+          Connect with people through <strong>AT Proto</strong>.
+          Sunred brings them together in a reader that puts you first.
         </p>
-
-        <div class:list={["reveal", "mt-9 flex flex-wrap items-center gap-3"]} style="animation-delay:0.30s">
-          <Cta href={loginUrl} variant="primary">
-            <span>Open the app</span>
-            <svg class="h-[17px] w-[17px] shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-              <path d="M4.5 10h11m0 0-4.5-4.5M15.5 10 11 14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+        <div class="hero-actions">
+          <Cta href={loginUrl}>
+            Open the app
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
             </svg>
           </Cta>
-          <Cta href={selfHostUrl} variant="ghost">Self-host</Cta>
+          <a class="text-link" href={selfHostUrl}>Or host it yourself <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12 12 4M4 4h8v8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
         </div>
+        <p class="hero-note">Open source. Self-hostable.</p>
       </div>
+      <div class="dawn" aria-hidden="true">
+        <div class="dawn-sky"><Logo class="dawn-sun" static /></div>
+        <div class="dawn-horizon"></div>
+        <p>A new day for the open web.</p>
+      </div>
+    </section>
 
-      <!-- App screenshot -->
-      <div class="reveal-fade mx-auto mt-[clamp(2.5rem,6vh,4rem)] max-w-[72rem]" style="animation-delay:0.4s">
-        <MockWindow path="sunred — Unread">
+    <figure class="app-preview page-width">
+      <div class="preview-frame">
+        <div class="preview-toolbar" aria-hidden="true">
+          <span class="preview-dot"></span>
+          <span>Sunred / Your reading space</span>
+          <span class="preview-status">Your feeds. Your pace.</span>
+        </div>
+        <div class="preview-viewport">
           <img
             src="/app.light.png"
-            alt="Sunred web app showing a feed timeline and sidebar"
+            alt="Sunred's reading list, with subscribed feeds on the left and articles in a chronological timeline."
             width="1559"
             height="1023"
-            loading="lazy"
-            class="block w-full dark:hidden"
+            fetchpriority="high"
+            class="preview-light"
           />
           <img
             src="/app.dark.png"
-            alt="Sunred web app showing a feed timeline and sidebar"
+            alt="Sunred's reading list, with subscribed feeds on the left and articles in a chronological timeline."
             width="1559"
             height="1023"
             loading="lazy"
-            class="hidden w-full dark:block"
+            class="preview-dark"
           />
-        </MockWindow>
-      </div>
-    </section>
-
-    <!-- ═══ THE FIX: RSS & AT PROTOCOL ═══ -->
-    <section
-      class="border-t border-border px-[clamp(1.25rem,4vw,2.5rem)] py-[clamp(4.5rem,12vh,7rem)]"
-      aria-labelledby="fix-heading"
-    >
-      <div class="mx-auto max-w-[72rem]">
-        <span class="mb-5 inline-block font-mono text-[0.8125rem] font-medium text-muted-foreground">
-          / the fix
-        </span>
-        <h2
-          id="fix-heading"
-          class="mt-0 mb-[clamp(2.5rem,6vh,3.5rem)] max-w-[26ch] font-sans text-[clamp(1.75rem,4.5vw,2.75rem)] font-semibold leading-[1.1] tracking-[-0.035em] text-foreground [text-wrap:balance]"
-        >
-          Two protocols that already work. One reader worth using.
-        </h2>
-
-        <div class="grid grid-cols-1 gap-0 min-[820px]:grid-cols-2">
-          <div class="border-t border-border py-[clamp(2rem,5vh,3rem)] min-[820px]:pr-[clamp(2rem,4vw,3.5rem)] min-[820px]:border-r min-[820px]:border-r-border">
-            <h3 class="mt-0 mb-3 font-mono text-[1.0625rem] font-semibold tracking-[0.02em] text-foreground">
-              RSS
-            </h3>
-            <p class="mt-0 mb-4 font-sans text-[1.0625rem] font-semibold leading-[1.3] text-foreground">
-              Bring the web back to you.
-            </p>
-            <p class="m-0 max-w-[34rem] text-[0.9375rem] leading-[1.7] text-muted-foreground">
-              The web used to come to you. Then it stopped, and platforms decided
-              what you saw. RSS is the protocol that worked — subscribe to any
-              source, read in your own space, in the order things were published.
-              No algorithm. No tracking. No feed you don't control.
-            </p>
-            <ul class="m-0 mt-6 flex list-none flex-wrap gap-[0.4rem] p-0">
-              <li class="rounded-[0.3rem] border border-border px-[0.55rem] py-[0.2rem] font-mono text-[0.75rem] text-muted-foreground">RSS 2.0</li>
-              <li class="rounded-[0.3rem] border border-border px-[0.55rem] py-[0.2rem] font-mono text-[0.75rem] text-muted-foreground">Atom 1.0</li>
-              <li class="rounded-[0.3rem] border border-border px-[0.55rem] py-[0.2rem] font-mono text-[0.75rem] text-muted-foreground">JSON Feed</li>
-            </ul>
-          </div>
-
-          <div class="border-t border-border py-[clamp(2rem,5vh,3rem)] min-[820px]:pl-[clamp(2rem,4vw,3.5rem)] max-[819px]:border-t-0">
-            <h3 class="mt-0 mb-3 font-mono text-[1.0625rem] font-semibold tracking-[0.02em] text-foreground">
-              AT Protocol
-            </h3>
-            <p class="mt-0 mb-4 font-sans text-[1.0625rem] font-semibold leading-[1.3] text-foreground">
-              Make it yours to keep.
-            </p>
-            <p class="m-0 max-w-[34rem] text-[0.9375rem] leading-[1.7] text-muted-foreground">
-              Your identity, your follows, your shares are records on your own
-              data server. Move instances and your graph comes with you — no
-              export step, no lock-in. The same open protocol Bluesky uses,
-              applied to reading.
-            </p>
-            <ul class="m-0 mt-6 flex list-none flex-wrap gap-[0.4rem] p-0">
-              <li class="rounded-[0.3rem] border border-border px-[0.55rem] py-[0.2rem] font-mono text-[0.75rem] text-muted-foreground">Portable identity</li>
-              <li class="rounded-[0.3rem] border border-border px-[0.55rem] py-[0.2rem] font-mono text-[0.75rem] text-muted-foreground">Federated graph</li>
-              <li class="rounded-[0.3rem] border border-border px-[0.55rem] py-[0.2rem] font-mono text-[0.75rem] text-muted-foreground">Own your data</li>
-            </ul>
-          </div>
         </div>
       </div>
-    </section>
+      <figcaption>
+        <span>A little less scrolling. A little more reading.</span>
+        <a class="text-link" href="/docs/cli">Also at home in your terminal <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12 12 4M4 4h8v8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+      </figcaption>
+    </figure>
 
-    <!-- ═══ INTERFACES ═══ -->
-    <section
-      class="border-t border-border px-[clamp(1.25rem,4vw,2.5rem)] py-[clamp(4rem,10vh,6rem)]"
-      aria-labelledby="interfaces-heading"
-    >
-      <div class="mx-auto max-w-[72rem]">
-        <span class="mb-5 inline-block font-mono text-[0.8125rem] font-medium text-muted-foreground">
-          / interfaces
-        </span>
-        <h2
-          id="interfaces-heading"
-          class="mt-0 mb-[clamp(2rem,5vh,3rem)] max-w-[24ch] font-sans text-[clamp(1.625rem,4vw,2.5rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-foreground [text-wrap:balance]"
-        >
-          Read from wherever you work.
-        </h2>
-
-        <div class="grid grid-cols-1 gap-0 min-[820px]:grid-cols-3">
-          <div class="border-t border-border py-[1.75rem] min-[820px]:pr-[clamp(1.5rem,3vw,2.5rem)] min-[820px]:border-r min-[820px]:border-r-border">
-            <div class="mb-2 font-mono text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground/70">Web</div>
-            <p class="m-0 text-[0.9375rem] leading-[1.6] text-muted-foreground">
-              A calm reading space — sidebar, timeline, reader. Keyboard shortcuts,
-              full-text search, infinite scroll.
-            </p>
+    <section id="protocols" class="protocols page-width" aria-labelledby="protocols-heading">
+      <div class="protocols-intro">
+        <h2 id="protocols-heading">Open protocols.<br />Not another platform.</h2>
+        <p>The internet was made for people, not platforms. Let's get back to that.</p>
+      </div>
+      <div class="protocol-list">
+        <article class="protocol">
+          <h3 class="protocol-name">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="5" cy="19" r="2" fill="currentColor"></circle>
+              <path d="M3 10a11 11 0 0 1 11 11M3 3a18 18 0 0 1 18 18" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"></path>
+            </svg>
+            RSS
+          </h3>
+          <div>
+            <p class="protocol-heading">Your curiosity sets the feed.</p>
+            <p>Blogs, news, independent voices. Subscribe to the websites you care about and get their latest posts in one place. Newest first. Nothing ranked for you.</p>
+            <p class="protocol-detail">RSS, Atom &amp; JSON Feed. Bring your subscriptions with OPML.</p>
           </div>
-          <div class="border-t border-border py-[1.75rem] min-[820px]:px-[clamp(1.5rem,3vw,2.5rem)] min-[820px]:border-r min-[820px]:border-r-border max-[819px]:border-t-0">
-            <div class="mb-2 font-mono text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground/70">TUI</div>
-            <p class="m-0 text-[0.9375rem] leading-[1.6] text-muted-foreground">
-              A terminal user interface with vim-style navigation. Read and share
-              without leaving your shell.
-            </p>
+        </article>
+        <article class="protocol">
+          <h3 class="protocol-name"><span class="at-mark" aria-hidden="true">@</span> AT Proto</h3>
+          <div>
+            <p class="protocol-heading">Good reading is better shared.</p>
+            <p>Follow people and share articles across Sunred instances. Built on AT Protocol, the same open network as Bluesky, with an identity that isn't tied to one app.</p>
+            <a class="text-link protocol-detail" href="/docs/at-proto">How federation works <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12 12 4M4 4h8v8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
           </div>
-          <div class="border-t border-border py-[1.75rem] min-[820px]:pl-[clamp(1.5rem,3vw,2.5rem)] max-[819px]:border-t-0">
-            <div class="mb-2 font-mono text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground/70">CLI</div>
-            <p class="m-0 text-[0.9375rem] leading-[1.6] text-muted-foreground">
-              Follow, share, list, mark as read — all scriptable. Pipe entries into
-              your workflow. One REST API behind all three.
-            </p>
-          </div>
-        </div>
+        </article>
       </div>
     </section>
 
-    <!-- ═══ CLOSING ═══ -->
-    <Closing
-      headline="Start reading."
-      lede="Subscribe to your first feed in under a minute. No credit card, no setup wizard, no algorithm."
-    >
-      <Cta href={loginUrl} variant="primary">
-        <span>Open the app</span>
-        <Fragment set:html={arrowSvg} />
-      </Cta>
-      <Cta href={selfHostUrl} variant="ghost">Self-host</Cta>
-    </Closing>
+    <section class="closing page-width" aria-labelledby="closing-heading">
+      <div>
+        <h2 id="closing-heading">Your web. Your way.</h2>
+        <p>Use our instance, or run your own. The code is open.<br class="desktop-break" /> The choice is yours.</p>
+      </div>
+      <div class="closing-actions">
+        <Cta href={loginUrl}>
+          Open the app
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </Cta>
+        <a class="text-link" href={selfHostUrl}>Self-host Sunred <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12 12 4M4 4h8v8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+      </div>
+    </section>
   </main>
 
   <Footer />

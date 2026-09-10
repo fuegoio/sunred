@@ -19,7 +19,7 @@ const { class: className, static: isStatic = false } = Astro.props
   role="img"
   aria-label="Sunred sun logo"
 >
-  <g clip-path="url(#sunred-logo-clip)">
+  <g>
     <circle cx="308" cy="307" r="160" fill="var(--primary)"></circle>
     <rect
       x="138.452"
@@ -118,9 +118,4 @@ const { class: className, static: isStatic = false } = Astro.props
       fill="var(--primary)"
     ></rect>
   </g>
-  <defs>
-    <clipPath id="sunred-logo-clip">
-      <rect width="615" height="615" fill="white"></rect>
-    </clipPath>
-  </defs>
 </svg>
