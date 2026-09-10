@@ -3,7 +3,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Keep the product's palette and type; reserve orange for the sun and action. */
+/* Keep the product's palette and type; reserve orange for brand accents. */
 @theme {
   --font-sans: "IBM Plex Sans", system-ui, sans-serif;
   --font-serif: "Merriweather", Georgia, serif;
