@@ -81,9 +81,16 @@ export async function proxyToApp(context: APIContext): Promise<Response> {
           }
         }
 
+        // 304, 204, and 1xx responses must not have a body — the Web
+        // Response constructor throws if one is provided. Drain the
+        // upstream stream so it doesn't leak.
+        const status = res.statusCode ?? 200;
+        const noBody = status === 304 || status === 204 || (status >= 100 && status < 200);
+        if (noBody) res.resume();
+
         resolve(
-          new Response(Readable.toWeb(res) as ReadableStream, {
-            status: res.statusCode ?? 200,
+          new Response(noBody ? null : (Readable.toWeb(res) as ReadableStream), {
+            status,
             statusText: res.statusMessage ?? "",
             headers: resHeaders,
           }),
