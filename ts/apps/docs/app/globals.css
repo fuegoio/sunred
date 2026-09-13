@@ -4,6 +4,34 @@
 @import "fumadocs-ui/css/preset.css";
 @import "fumadocs-openapi/css/preset.css";
 
+/*
+ * Fumadocs' grid sizes the reading column as layout width minus sidebar and
+ * TOC. The 97rem default leaves a ~900px body; 78rem brings prose docs to
+ * ~712px — a Linear-like measure (~70ch) with the TOC hugging the text.
+ * OpenAPI pages keep the wider default for side-by-side request examples.
+ */
+.sunred-prose-layout {
+  --fd-layout-width: 78rem;
+}
+
+@media (max-width: 767px) {
+  #nd-subnav button[aria-label="Open Search"],
+  #nd-subnav button[aria-label="Open Sidebar"],
+  aside a,
+  aside button {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  #nd-docs-layout {
+    --fd-toc-popover-height: 2.75rem;
+  }
+
+  [class*="toc-popover"] button {
+    height: 2.75rem;
+  }
+}
+
 /* Adapt Fumadocs actions without recoloring navigation and search highlights. */
 :is(button, a, [role="button"]).bg-fd-primary.text-fd-primary-foreground:not(:disabled):not(
     [aria-disabled="true"]
