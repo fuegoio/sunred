@@ -98,27 +98,3 @@ Concrete rules:
   interesting part — not a stylized fragment with placeholders everywhere.
 - **Link, don't repeat.** When a topic has its own page, mention it in one
   sentence and link. Restating the mechanism in three places is how docs rot.
-
-### A worked contrast
-
-Before (manual voice, noun heading, list-first):
-
-> ### Read statuses
->
-> Sunred supports three read statuses, which are described below:
->
-> - `unread`: The entry has not yet been opened.
-> - `read`: The entry has been opened by the user.
-> - `removed`: The entry has been hidden by the user.
-
-After (Linear voice):
-
-> ### Get an entry out of your way
->
-> Every entry is either unread, read, or removed. Opening an article marks it
-> read; clicking the dot marks it unread again if you want it back. Removing
-> an entry hides it without marking it read — useful when something's not
-> worth reading but you don't want it counted as done.
-
-Same facts, but the second tells the reader what it means for them and
-sounds like a person.
