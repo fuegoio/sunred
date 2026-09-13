@@ -1,16 +1,16 @@
 ---
-title: The web should come to you
+title: Decentralized publishing is the only hope for the web
 description: Why federating through RSS and individual websites is the best thing that can happen to the web.
 pubDate: 2026-09-13
 ---
 
-For most of its life, the web came to you. You kept a short list of sites you trusted, perhaps a blogger or a friend's project page, and your reader checked them for you. New posts arrived in the order they were published, without anyone ranking them or watching you read. If a site you liked published something, you saw it. The system was simple enough that nobody thought to name it.
+Twenty years ago, the web was a magical place. You kept a short list of sites you trusted, perhaps a blogger or a friend's project page, and you reader checked them out regularly. RSS was introduced, and with it readers applications. New posts arrived in the order they were published, without anyone ranking them or watching you read. If a site you liked published something, you saw it. The system was simple enough that nobody thought to name it.
 
-Then publishing moved indoors. Platforms solved problems that websites made you handle yourself. Hosting took work and spam was relentless. Finding readers often meant begging strangers for links. The price looked small at first: platforms kept the relationship. They held the audience and the archive. You published, while they decided who saw it.
+Then publishing opinions moved indoors, on social medias. Twitter, Facebook, ... solved problems that websites made you handle yourself. Hosting took work and finding readers often meant begging strangers for links. The price looked small at first: platforms kept the relationship. They held the audience and the archive. You published, while they decided who saw it.
 
-We are twenty years into that arrangement. We know how it goes. Publishing became frictionless and reading became algorithmic. The address of a post became an internal ID in someone else's database. The archive evaporates in a pivot. The audience is rented, and the rent goes up in ways no reader or writer ever votes on.
+We are twenty years into that arrangement. We all know how it went: the web is now a depressing place where social medias have decided to take control over your feed, showing you what you never asked for. Influence is now a business and getting as much views on your opinion seems to be the only goal of the people whose posts are presented to me.
 
-The web's own structure offers a way back: individual websites syndicated over open protocols.
+We have to revert this, and the web's own structure offers a way back: individual websites syndicated over open protocols.
 
 ## What a feed guarantees
 
@@ -26,7 +26,7 @@ The word federation now evokes newer protocols. Sunred builds on one of them. Bu
 
 Newer identity protocols let people carry their follow relationships and handles from one app to another. The content should still live on websites with addresses, served to whoever asks. That keeps identity portable without putting the archive at risk. A feed requires no permission at all.
 
-## The objections, briefly
+## RSS is not dead
 
 People still call RSS dead, though it carries nearly every podcast on earth. It has no marketing department, but it has plenty of users. Podcast apps are RSS readers, and people happily pay for them.
 
