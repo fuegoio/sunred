@@ -1,5 +1,6 @@
 import { loader } from "fumadocs-core/source";
 import { docs } from "collections/server";
+import { resolveIcon } from "./icons";
 import { openapi } from "./openapi";
 
 // Three sections served from a single source so the sidebar can cross-link them:
@@ -18,6 +19,7 @@ export const source = loader(
   },
   {
     baseUrl: "/",
+    icon: resolveIcon,
     url: (slugs) => {
       if (slugs[0] === "openapi") {
         const rest = slugs.slice(1);

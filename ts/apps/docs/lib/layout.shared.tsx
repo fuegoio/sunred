@@ -1,7 +1,7 @@
 import type { BaseLayoutProps, LayoutTab } from "fumadocs-ui/layouts/shared";
 import type { Folder, Node } from "fumadocs-core/page-tree";
 import { Logo } from "@/components/logo";
-import { source } from "@/lib/source";
+import { getSidebarTree } from "@/lib/sidebar-tree";
 
 // Fumadocs only renders the section selector for the tab it considers active,
 // which it detects by URL. Prefix matching works for /self-hosting and
@@ -25,7 +25,7 @@ function collectPageUrls(folder: Folder): Set<string> {
 }
 
 function sectionUrls(tabUrl: string): Set<string> | undefined {
-  const folder = source.pageTree.children.find(
+  const folder = getSidebarTree().children.find(
     (c): c is Folder =>
       c.type === "folder" &&
       (c.index?.url ??

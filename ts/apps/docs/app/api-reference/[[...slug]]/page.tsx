@@ -14,11 +14,9 @@ export default async function Page({ params }: { params: Promise<{ slug?: string
 
   if (page.type === "openapi") {
     return (
-      <DocsPage full>
+      <DocsPage full toc={page.data.toc}>
         <DocsTitle>{page.data.title}</DocsTitle>
-        {page.data.description ? (
-          <DocsDescription>{page.data.description}</DocsDescription>
-        ) : null}
+        {page.data.description ? <DocsDescription>{page.data.description}</DocsDescription> : null}
         <DocsBody>
           <OpenAPIPage {...page.data.getOpenAPIPageProps()} />
         </DocsBody>
@@ -29,14 +27,14 @@ export default async function Page({ params }: { params: Promise<{ slug?: string
   const MDXContent = page.data.body;
 
   return (
-    <DocsPage>
+    <DocsPage toc={page.data.toc}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
         <MDXContent
           components={getMDXComponents({
             OpenAPIPage: async (props) => (
-              <OpenAPIPage {...(await openapi.preloadOpenAPIPage(page))} {...props} />
+              <OpenAPIPage {...await openapi.preloadOpenAPIPage(page)} {...props} />
             ),
           })}
         />
