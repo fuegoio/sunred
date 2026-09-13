@@ -71,9 +71,10 @@ visitor choose.
 
 ## Design Principles
 
-- **One page.** A single, scrolled argument. No nav beyond the
-  essential, no multi-page structure to maintain. The whole pitch fits
-  one read.
+- **One page, plus the blog.** The pitch itself stays a single, scrolled
+  argument — no nav beyond the essential. `/blog` extends the voice without
+  fragmenting it: posts are markdown files dropped into `src/content/blog/`,
+  rendered at `/blog/<slug>` with an RSS feed at `/blog/rss.xml`.
 - **Minimalist.** If a section doesn't carry the argument, it isn't
   there. Hairline rules and type carry the structure; decoration does
   not.
