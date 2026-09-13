@@ -142,7 +142,8 @@ func (f *Fanout) EnsureSubscribed(parentCtx context.Context, did, pdsURL string,
 	go f.runWorker(workerCtx, did, pdsURL, cursorSeq)
 }
 
-// Subscribe registers an instance listener and returns its event channel.
+// Subscribe registers an instance listener and returns its event channel. A
+// new connection from the same instance replaces any previous one.
 func (f *Fanout) Subscribe(instanceURL string) chan *store.RelayEvent {
 	ch := make(chan *store.RelayEvent, 256)
 	f.subsMu.Lock()
@@ -151,10 +152,17 @@ func (f *Fanout) Subscribe(instanceURL string) chan *store.RelayEvent {
 	return ch
 }
 
-// Unsubscribe removes an instance listener.
-func (f *Fanout) Unsubscribe(instanceURL string) {
+// Unsubscribe removes an instance listener, but only when it is still the
+// registered channel. An instance can re-register under the same URL (API
+// container restart) while its previous connection is still being torn down;
+// deleting unconditionally would unregister the live connection, and because
+// the keepalive pings keep its socket healthy nothing would ever error — the
+// instance would silently stop receiving events.
+func (f *Fanout) Unsubscribe(instanceURL string, ch chan *store.RelayEvent) {
 	f.subsMu.Lock()
-	delete(f.subscribers, instanceURL)
+	if f.subscribers[instanceURL] == ch {
+		delete(f.subscribers, instanceURL)
+	}
 	f.subsMu.Unlock()
 }
 
