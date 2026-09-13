@@ -1,13 +1,13 @@
 ---
-title: Production
-description: Reverse proxy setup and database backups for a production Sunred deployment.
+title: Run Sunred in production
+description: Reverse proxy, cross-origin sessions, and database backups.
 ---
 
-## Reverse proxy
+## Terminate TLS with a reverse proxy
 
-Neither service terminates TLS directly. Put both behind a reverse proxy (nginx, Caddy, Traefik).
-
-Example nginx configuration. The API runs on its own subdomain (`api.your-domain.com`); the web app is served from the main domain.
+Neither service terminates TLS directly, so put both behind a reverse proxy —
+nginx, Caddy, and Traefik all work. In the example below the API runs on its
+own subdomain (`api.your-domain.com`) and the web app serves the main domain.
 
 ```nginx
 server {
@@ -43,13 +43,20 @@ server {
 }
 ```
 
-## Cross-origin sessions
+## Share a session across origins
 
-When the API and the web app are served from different origins (e.g. `api.sunred.app` and `app.sunred.app`), the default session cookie is host-only on the API domain, so the web app never receives it. How you fix this depends on whether the two share a registrable domain.
+When the API and the web app are served from different origins (e.g.
+`api.sunred.app` and `app.sunred.app`), the default session cookie is
+host-only on the API domain, so the web app never receives it. How you fix
+this depends on whether the two share a registrable domain.
 
 ### Same registrable domain (subdomains)
 
-If the API and web app share a registrable domain (e.g. `api.sunred.app` and `app.sunred.app` both under `sunred.app`), set the cookie `Domain` to that registrable domain. The browser then sends the session cookie to both the web app and the API (requests between them are same-site, so the default `SameSite=Lax` works):
+If the API and web app share a registrable domain (e.g. `api.sunred.app` and
+`app.sunred.app` both under `sunred.app`), set the cookie `Domain` to that
+registrable domain. The browser then sends the session cookie to both the web
+app and the API — requests between them are same-site, so the default
+`SameSite=Lax` works:
 
 ```
 SUNRED_COOKIE_SECURE=true
@@ -57,11 +64,14 @@ SUNRED_COOKIE_DOMAIN=sunred.app
 SUNRED_TRUSTED_ORIGINS=https://app.sunred.app
 ```
 
-`SUNRED_COOKIE_DOMAIN` must be a bare host (no scheme or path). `Secure` requires the API to be served over HTTPS.
+`SUNRED_COOKIE_DOMAIN` must be a bare host (no scheme or path). `Secure`
+requires the API to be served over HTTPS.
 
 ### Different registrable domains
 
-If the API and web app are on entirely different registrable domains (e.g. `api.sunred.app` and `myapp.com`), a shared cookie domain is not possible. Use `SameSite=None` so the browser sends the cookie cross-site:
+If the API and web app are on entirely different registrable domains (e.g.
+`api.sunred.app` and `myapp.com`), a shared cookie domain isn't possible. Use
+`SameSite=None` so the browser sends the cookie cross-site:
 
 ```
 SUNRED_COOKIE_SECURE=true
@@ -69,9 +79,13 @@ SUNRED_COOKIE_SAMESITE=none
 SUNRED_TRUSTED_ORIGINS=https://myapp.com
 ```
 
-`SameSite=None` without `Secure` is rejected by browsers, so the API rejects that combination at startup. Set `SUNRED_TRUSTED_ORIGINS` to the web app origin(s) so the API only returns `Access-Control-Allow-Credentials` for trusted frontends. The value of `SUNRED_WEB_URL` is always added to the allowlist automatically, so you only need to list any additional origins.
+Browsers reject `SameSite=None` without `Secure`, so the API rejects that
+combination at startup. Set `SUNRED_TRUSTED_ORIGINS` to the web app origin(s)
+so the API only returns `Access-Control-Allow-Credentials` for trusted
+frontends. `SUNRED_WEB_URL` is always added to the allowlist automatically, so
+you only need to list any additional origins.
 
-## Database backup
+## Back up the databases
 
 Sunred uses two separate PostgreSQL databases — one for the instance (API) and
 one for the relay. See [Data responsibilities](/self-hosting/at-proto#data-responsibilities)
@@ -90,11 +104,12 @@ cat backup.sql | docker compose exec -T postgres psql -U sunred sunred
 ```
 
 The relay database holds only aggregated social-graph metadata and can be
-rebuilt by re-subscribing to PDS repo streams, so it does not need the same
+rebuilt by re-subscribing to PDS repo streams, so it doesn't need the same
 backup regime. Back it up if you want to avoid the re-aggregation delay:
 
 ```bash
 docker compose exec relay-postgres pg_dump -U sunred sunred_relay > relay-backup.sql
 ```
 
-Schedule `pg_dump` with a cron job and store backups off-site for automated backups.
+For automated backups, schedule `pg_dump` with a cron job and store the dumps
+off-site.

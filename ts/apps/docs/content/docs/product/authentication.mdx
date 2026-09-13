@@ -1,25 +1,25 @@
 ---
 title: Authentication
-description: How sign-in works, and how to create API tokens for the CLI and scripts.
+description: Signing in with your AT Proto handle, and creating API tokens for the CLI and scripts.
 ---
 
-Sunred identity is your [AT Protocol](https://atproto.com) identity. You sign in with your AT Proto handle — the same account you use on Bluesky or any other AT Proto app. There are no Sunred-specific passwords. See [Identity & sync](/at-proto) for the full picture.
+Sunred identity is your [AT Protocol](https://atproto.com) identity — the same account you use on Bluesky or any other AT Proto app. You sign in with your AT Proto handle, and there are no Sunred-specific passwords. [Sign in and sync with AT Proto](/at-proto) has the full picture.
 
-## Signing in (web)
+## Sign in on the web
 
-On the login page, enter your handle (for example `alice.bsky.social`) or click the default-PDS button if your instance shows one. Sunred redirects you to your PDS to approve the login, then brings you back with an active session.
+On the login page, enter your handle — `alice.bsky.social`, for example — or click the default-PDS button if your instance shows one. Sunred redirects you to your PDS to approve the login, then brings you back with an active session.
 
-The session is a cookie your browser sends automatically on every request. All your data — feeds, entries, tokens — is scoped to the signed-in user, so you only ever see your own.
+The session is a cookie your browser sends automatically on every request. Everything you see — feeds, entries, tokens — is scoped to the signed-in user, so you only ever see your own.
 
-## API tokens
+## Call the API with a token
 
-API tokens let the CLI, scripts, and custom integrations call the [API](/api-reference) on your behalf. They're an alternative to the session cookie, sent in the `Authorization` header as a bearer token.
+Session cookies are for browsers. Scripts, the CLI, and custom integrations use API tokens instead: the same access, sent in the `Authorization` header as a bearer token.
 
 ### Create a token
 
-Go to **Settings → Tokens** and create one. Give it a label so you remember what it's for — say "laptop CLI" or "nightly script".
+Go to **Settings → Tokens** and create one. Give it a label you'll recognize later — "laptop CLI", "nightly script".
 
-The token value is shown **only once**, right after you create it. Copy it and save it somewhere safe — you won't see it again. Tokens start with `pla_`.
+The token value is shown **only once**, right after you create it. Copy it somewhere safe, because you won't see it again. Tokens start with `pla_`.
 
 ### Use a token
 
@@ -30,21 +30,21 @@ curl https://api.your-instance.com/v1/feeds \
   -H "Authorization: Bearer pla_your-token"
 ```
 
-The CLI stores it for you with `sunred config set token pla_...` (or via `sunred login`, below).
+The CLI can store it for you with `sunred config set token pla_...`, or you can skip headers entirely with `sunred login` below.
 
 ### Revoke a token
 
-Delete a token from **Settings → Tokens** to revoke it immediately — any request using it fails with `401` from that point on. Use this if a token leaks or you no longer need it.
+Delete a token from **Settings → Tokens** and it stops working immediately — every request using it fails with `401` from that point on. This is the move when a token leaks or you just stop needing it.
 
-## CLI login (device flow)
+## Log in from the CLI
 
-The CLI logs in without you pasting a token. Run:
+You don't have to copy a token into the CLI. Run:
 
 ```bash
 sunred login
 ```
 
-It opens a browser to a confirmation page where you approve the request, using your existing web session. If a browser can't open automatically, the CLI prints a URL to open on any device where you're signed in. Once approved, the CLI stores the token and you're ready to go.
+It opens a browser to a confirmation page, where you approve the request using your existing web session. If a browser can't open automatically, the CLI prints a URL you can open on any device where you're signed in. Once you approve, the CLI stores the token and you're ready to go.
 
 Use `--no-browser` to skip auto-opening a browser, or `--url` to point at a different API for this login only:
 
@@ -52,13 +52,10 @@ Use `--no-browser` to skip auto-opening a browser, or `--url` to point at a diff
 sunred login --no-browser --url https://api.your-instance.com
 ```
 
-Tokens issued through the device flow expire after 14 days and show up in your token list labeled `CLI (device flow)` so you can spot and revoke them. Run `sunred login` again to refresh.
+Tokens issued through the device flow expire after 14 days. They show up in your token list labeled `CLI (device flow)`, so they're easy to spot and revoke; run `sunred login` again to refresh one.
 
-## Token lifetime
+Tokens you create yourself — in the web UI or with `sunred tokens create` — don't expire.
 
-- Tokens you create in the web UI or with `sunred tokens create` **do not expire**.
-- Tokens issued via `sunred login` (device flow) **expire after 14 days**.
+## Manage tokens from the API
 
-## Programmatic access
-
-Create, list, and revoke tokens through the [Tokens API](/api-reference?tag=Tokens).
+You can create, list, and revoke tokens through the [Tokens API](/api-reference?tag=Tokens) instead of the web UI.

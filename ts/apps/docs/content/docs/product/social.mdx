@@ -1,37 +1,36 @@
 ---
-title: Social
-description: Follow people, share articles, and see what others are reading.
+title: Follow people and share articles
+description: Following people, sharing articles, and reading what others share.
 ---
 
-Sunred is social. Because identity runs on the [AT Protocol](/at-proto), you can follow other Sunred users and share articles with them — the same social graph you already have on Bluesky.
+Sunred is social. Identity runs on the [AT Protocol](/at-proto), so you can follow other Sunred users and share articles with them — the same social graph you already have on Bluesky.
 
 ## Follow people
 
-There are two ways to follow someone:
+The quickest way is the **Find people** dialog: click the **+** next to **Follows** in the sidebar and search by handle or name. Results cover people on your instance and, when a relay is configured, people on other instances too. Click **Follow** next to anyone.
 
-- **From the sidebar** — open the **Find people** dialog (the **+** next to **Follows**) and search by handle or name. Results include people on your instance and, when a relay is configured, people on other instances too. Click **Follow** next to anyone.
-- **From a profile** — open any user's profile at `/users/{handle}` and click **Follow**.
+You can also follow from a profile. Open any user's profile at `/users/{handle}` and click **Follow** there.
 
-The people you follow appear under **Follows** in the sidebar. Click a name to open their profile, where you can follow or unfollow them.
+Everyone you follow shows up under **Follows** in the sidebar. Click a name to open their profile, where you can follow or unfollow them.
 
-The people you follow are part of your AT Proto social graph, so they travel with you when you sign into another instance. See [Identity & sync](/at-proto) for how that works.
+Follows are part of your AT Proto social graph, so they travel with you when you sign into another instance. See [Sign in and sync with AT Proto](/at-proto) for how that works.
 
-## Share articles
+## Share an article
 
-Click the **share** icon on any entry card to share it. The people who follow you will see the article in their main timeline, with your name attached.
+Click the **share** icon on any entry card. Everyone who follows you sees the article in their main timeline, with your name attached.
 
-Sharing an article doesn't change its read status or starring — it's an independent action. You can share something you've already read, or star something you've shared.
+Sharing is independent of read status and starring — you can share something you've already read, or star something you've shared.
 
-## Shares in your timeline
+## Read what others share
 
-Articles shared by people you follow appear in your **Unread** and **All** views alongside entries from your own subscriptions — there is no separate Social view. Each shared entry shows who shared it ("shared by @handle") and, if it comes from a feed you don't subscribe to, a **Subscribe** button so you can add the source feed in one click.
+Articles shared by people you follow appear in your **Unread** and **All** views alongside entries from your own subscriptions; there is no separate Social view. Each shared entry says who shared it ("shared by @handle"), and if it comes from a feed you don't subscribe to, a **Subscribe** button adds the source feed in one click.
 
-When you follow someone, Sunred backfills their existing shares into your timeline, so you don't miss what they've already shared.
+When you follow someone, Sunred backfills their existing shares into your timeline, so you don't miss what they shared before you followed them.
 
-## Your profile
+## Edit your profile
 
-Under **Settings → Profile**, set the display name, bio, and avatar other Sunred users see on your profile. These are cached from your standard `app.bsky.actor.profile` record (the same profile Bluesky uses), and any change is mirrored back to your Bluesky account. Your handle comes from your AT Proto account and is not editable from Sunred — change it from a Bluesky client and Sunred picks it up.
+Under **Settings → Profile**, set the display name, bio, and avatar that other Sunred users see. These are cached from your standard `app.bsky.actor.profile` record — the same profile Bluesky uses — and changes are mirrored back to your Bluesky account. Your handle isn't editable from Sunred: change it in a Bluesky client and Sunred picks it up.
 
-## Programmatic access
+## Use the Social API
 
 Share articles, list who you follow, and search for users through the [Social API](/api-reference?tag=Social).

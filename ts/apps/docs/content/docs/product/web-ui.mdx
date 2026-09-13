@@ -1,83 +1,64 @@
 ---
-title: Web UI Guide
-description: Tour the Sunred web app — sidebar, timeline, reader, search, and settings.
+title: Use the web app
+description: The Sunred web app — sidebar, timeline, reader, search, and settings.
 ---
 
-The web app has two main areas: a **sidebar** for navigation and a **main pane** for browsing and reading. On mobile, the sidebar collapses into a drawer you can open from the top.
+The web app has two areas: a **sidebar** for navigation and a **main pane** for browsing and reading. On mobile, the sidebar collapses into a drawer you open from the top.
 
-## Sidebar
+## Navigate from the sidebar
 
-The sidebar is split into two parts. At the top are your views; below them, your feeds.
+The sidebar splits in two: your views on top, your feeds below.
 
-### Views
+### Switch between views
 
-- **Unread** — entries you haven't read yet, across every feed. This is the default home view.
-- **All** — every entry, read or unread.
-- **Starred** — entries you've starred.
+**Unread** shows entries you haven't read yet, across every feed — it's the default home view. **All** shows everything, read or unread. **Starred** shows what you've starred. Click any of them to filter the timeline.
 
-Click any view to filter the timeline. A search box sits at the very top — type a query and press Enter to search across every entry.
+A search box sits at the very top of the sidebar. Type a query and press Enter to search across every entry — see [Search across every entry](#search-across-every-entry).
 
-### Feeds
+### Work with your feeds
 
-Below the views, your subscriptions are listed and grouped by folder. Two small buttons next to the **Feeds** heading let you create a folder or subscribe to a new feed.
+Below the views, your subscriptions are grouped by folder. Two small buttons next to the **Feeds** heading let you create a folder or subscribe to a new feed.
 
-Click the **Feeds** heading to see only entries from your own subscriptions — shared articles from people you follow are excluded. Click a feed to open its page, where you can refresh it, mark all its entries as read, rename it, move it to a folder, or unsubscribe.
+Click the **Feeds** heading to see only entries from your own subscriptions — articles shared by people you follow are excluded. Click a feed to open its page, where you can refresh it, mark all its entries as read, rename it, move it to a folder, or unsubscribe.
 
-### Follows
+### Follow people
 
-Below your feeds, the **Follows** section lists the people you follow. Click the **+** next to the heading to open the **Find people** dialog and search for users by handle or name — on federated setups this searches across instances too. Click the **Follows** heading to see only articles shared by the people you follow. See [Social](/social).
+Below your feeds, the **Follows** section lists the people you follow. Click the **+** next to the heading to open the **Find people** dialog and search for users by handle or name — on federated setups this searches across instances too. Click the **Follows** heading to see only articles shared by the people you follow. See [Follow people and share articles](/social).
 
-### Account menu
+### Open the account menu
 
-At the bottom of the sidebar, your avatar opens a menu with **Settings**, a light/dark theme toggle, and **Sign out**.
+Your avatar at the bottom of the sidebar opens a menu with **Settings**, a light/dark theme toggle, and **Sign out**. The theme choice is remembered on this device.
 
-## Timeline
+## Read entries in the timeline
 
-Each entry card shows the feed, the article title, the publication date, and a short preview. Unread entries have a dot on the left.
+Each entry card shows the feed, the article title, the publication date, and a short preview, with a dot on the left for unread entries. Click the title to open the original in a new tab — Sunred marks the entry as read. Click anywhere else on the card to open the in-app reader instead.
 
-- **Open the article** — click the title to open the original in a new tab. Sunred marks the entry as read.
-- **Read in Sunred** — click the card body to open the in-app reader.
-- **Star** — click the star icon to bookmark an entry. It appears under **Starred**.
-- **Share** — click the share icon to share the article with people who follow you. Shared articles appear in their timeline.
-- **Mark unread again** — click the dot on a read entry to bring it back to unread.
+The icons on the card handle the rest. The **star** icon bookmarks an entry under **Starred**, and the **share** icon shares the article with people who follow you. On a read entry, click the dot to bring it back to unread.
 
 On filtered views like Unread and Starred, entries animate out as you read or unstar them, keeping the list focused on what's left.
 
-## Reader view
+## Read in the in-app reader
 
-The in-app reader shows the entry's title, author, date, tags, and a summary. It does not render the full article body — most feeds only carry a summary, and opening the original is one click away.
+The in-app reader shows the entry's title, author, date, tags, and a summary. It doesn't render the full article body — most feeds only carry a summary, and opening the original is one click away.
 
-Use the back button or press `Esc` to return to the timeline. Links inside the reader open in a new tab. Use the star icon in the header to star the entry.
+Press `Esc` or the back button to return to the timeline. Links inside the reader open in a new tab. The star icon in the header stars the entry.
 
-## Search
+## Search across every entry
 
-Search runs a full-text query across every entry's title and content. Type a query in the search box and press Enter; results appear in the timeline like any other view.
+Search runs a full-text query across every entry's title and content. Type a query in the search box at the top of the sidebar and press Enter; results appear in the timeline like any other view.
 
-## Feed page
+## Manage a single feed
 
-Clicking a feed in the sidebar opens its page: a header with the feed's title, description, and a subscriber count, plus that feed's entry timeline.
+Clicking a feed in the sidebar opens its page: a header with the feed's title, description, and subscriber count, plus that feed's timeline. The toolbar has everything you need to manage the feed.
 
-The toolbar lets you:
+**Refresh** fetches new entries immediately, without waiting for the scheduler. **Mark all as read** clears the unread count for this feed. **Move to folder** reassigns the feed to a different folder, and **Rename** gives it a custom title in your sidebar. **Unsubscribe** drops your subscription — the feed itself stays for other subscribers. **Open website** and **Open feed** link to the site and its raw feed URL.
 
-- **Mark all as read** — clears the unread count for this feed.
-- **Refresh** — fetch new entries immediately, without waiting for the scheduler.
-- **Move to folder** — reassign the feed to a different folder.
-- **Rename** — give the feed a custom title in your sidebar.
-- **Unsubscribe** — drops your subscription to the feed. The feed itself stays for other subscribers.
-- **Open website** / **Open feed** — links to the site and its raw feed URL.
+## Change your settings
 
-## Settings
+Settings live at `/settings` and have three sections.
 
-Settings live at `/settings` and have three sections:
+**Profile** holds your display name — cached from your `app.bsky.actor.profile` record — plus a social handle and bio that other Sunred users see in search results and the Follows list. **OPML** moves subscriptions in and out of Sunred; see [Import and export subscriptions](#import-and-export-subscriptions) below. **Tokens** creates and revokes API tokens for the CLI and scripts — see [Authentication](/authentication).
 
-- **Profile** — your display name, cached from your `app.bsky.actor.profile` record, plus a social handle and bio other Sunred users see in search results and the Follows list.
-- **OPML** — import subscriptions from another reader, or export yours. See [OPML import & export](#opml-import-export) below.
-- **Tokens** — create and revoke API tokens for the CLI and scripts. See [Authentication](/authentication).
+### Import and export subscriptions
 
-### OPML import & export
-
-Bring subscriptions over from another RSS reader: export an OPML file from your old reader, then import it under **Settings → OPML**. Sunred subscribes you to every feed in the file. Export works the other way — download an OPML file of all your subscriptions to move elsewhere or back up.
-
-## Dark mode
-
-Toggle light and dark themes from the account menu at the bottom of the sidebar. The choice is remembered on this device.
+To bring subscriptions over from another RSS reader, export an OPML file from the old reader and import it under **Settings → OPML**. Sunred subscribes you to every feed in the file. Export works the other way: download an OPML file of all your subscriptions to move to another reader or keep as a backup.

@@ -40,8 +40,85 @@ Do not write prose here; the content is rendered from the OpenAPI spec.
 - Internal implementation details: Go package layout, database schema, SQL queries.
 - Test instructions or internal tooling.
 
-### Tone
+## Writing style
 
-- Clear, task-oriented, skimmable.
-- Imperative mood, short sentences.
-- Show the user what to do and what to expect.
+The reference for tone is Linear's documentation (e.g.
+https://linear.app/docs/editing-issues). Read it if you can. The goal is prose
+that sounds like a sharp colleague explaining the product, not a manual.
+Concrete rules:
+
+### Structure
+
+- **Titles are plain verb phrases** — "Edit issues", not "Issue Editing
+  Capabilities". The frontmatter `description` is a short fragment
+  ("Making changes to an issue."), never a marketing line.
+- **Headings are actions or questions the reader has** — "Move an issue to
+  another team", "Subscribe to a feed" — not nouns ("Feeds", "Entries").
+  An index page may use a noun title; everything else should name the task.
+- **Lead with why, then how.** One or two sentences of context before the
+  mechanics: when would you do this, what happens as a result. Linear's
+  pattern: *"When work needs to be passed over to another team, issues can be
+  moved…"* — the action is framed by the situation, not the other way around.
+- **Short sections.** A heading every 2–4 short paragraphs. If a section runs
+  long, it's covering two topics.
+
+### Voice
+
+- **Second person, present tense.** "Click the star icon. The entry moves to
+  Starred." Not "the user can click", not "the star icon will be clicked".
+- **Write like you speak, then trim.** Contractions are fine ("you don't need
+  to", "it's there when you want it"). Short sentences. Vary their length —
+  a run of same-length sentences reads like a robot.
+- **An honest aside beats a hedge.** Linear writes *"unfortunately, this
+  doesn't work for old issue titles"* — a plain admission in the flow of a
+  sentence. When something is awkward or limited, just say so, briefly,
+  in the same voice as the rest of the page. Don't wrap every caveat in a
+  warning callout.
+- **No hype.** No "powerful", "seamless", "elegant", "robust", no exclamation
+  marks. The product is interesting or it isn't; the prose shouldn't insist.
+- **Confident but honest.** Say what the product does plainly, including
+  where it stops. "The reader doesn't render the full article, because most
+  feeds only carry a summary" — a limit stated with its reason reads as
+  design, not weakness.
+
+### Mechanics on the page
+
+- **Prose first, lists as a last resort.** Short steps belong in sentences.
+  Use bullets only when every item is genuinely parallel and a sentence
+  would turn into mush. Prefer "the toolbar has everything you need to
+  manage the feed" followed by the one action the reader actually came for.
+- **Bold UI labels** (**Refresh**, **Settings → Tokens**), `code` for CLI
+  commands, config values, and IDs. Keyboard shortcuts inline where the action
+  is described, not in a separate table.
+- **Tables only for reference data** — a compact grid the reader will scan or
+  compare (formats, statuses, properties and their effects). Never use a table
+  to write prose sideways. If a table's cells hold full sentences, it should
+  be paragraphs.
+- **Code blocks** show a real, runnable command with a comment line for the
+  interesting part — not a stylized fragment with placeholders everywhere.
+- **Link, don't repeat.** When a topic has its own page, mention it in one
+  sentence and link. Restating the mechanism in three places is how docs rot.
+
+### A worked contrast
+
+Before (manual voice, noun heading, list-first):
+
+> ### Read statuses
+>
+> Sunred supports three read statuses, which are described below:
+>
+> - `unread`: The entry has not yet been opened.
+> - `read`: The entry has been opened by the user.
+> - `removed`: The entry has been hidden by the user.
+
+After (Linear voice):
+
+> ### Get an entry out of your way
+>
+> Every entry is either unread, read, or removed. Opening an article marks it
+> read; clicking the dot marks it unread again if you want it back. Removing
+> an entry hides it without marking it read — useful when something's not
+> worth reading but you don't want it counted as done.
+
+Same facts, but the second tells the reader what it means for them and
+sounds like a person.

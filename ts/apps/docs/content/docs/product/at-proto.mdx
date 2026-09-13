@@ -1,55 +1,28 @@
 ---
-title: Identity & sync
-description: How Sunred identity works with AT Proto, and how your data stays in sync.
+title: Sign in and sync with AT Proto
+description: Signing in with your AT Proto handle and how your data syncs across instances.
 ---
 
-Sunred uses the [AT Protocol](https://atproto.com) for identity. Your Sunred
-account is your AT Proto account — the same one you use on Bluesky or any
-other AT Proto app. There is no separate Sunred password.
+Sunred runs identity on the [AT Protocol](https://atproto.com) — the same network Bluesky uses. Your Sunred account is your AT Proto account, the same one you use on Bluesky or any other AT Proto app. There is no separate Sunred password.
 
-## Logging in
+## Sign in
 
-Sign in with your AT Proto handle (for example `alice.bsky.social`). Sunred
-sends you to your PDS to approve the login, then brings you back signed in.
-There's no separate Sunred password — you use the same account you already
-have in the Bluesky app (or any other AT Proto client).
+Sign in with your AT Proto handle, for example `alice.bsky.social`. Sunred sends you to your PDS to approve the login, then brings you back signed in.
 
-You can log into any Sunred instance with your handle — you are not tied to a
-single server. If your friend runs a Sunred instance and you have a Bluesky
-account, you can log into their instance directly. Some instances also offer
-to create a new account directly from the login page.
+You're not tied to one server: any Sunred instance accepts your handle, so if a friend runs an instance you can log into it directly. Some instances can also create a new account for you from the login page.
 
 ## Where your data lives
 
-Your social data lives on your PDS as public records, not locked inside
-Sunred:
+Your social data lives on your PDS as public records, not locked inside Sunred: who you follow, the articles you share and star, the feeds you subscribe to, and your Sunred profile (display name and bio, cached from your standard `app.bsky.actor.profile` record — the same profile Bluesky uses).
 
-- Who you **follow**
-- Articles you **share**
-- Articles you **star** (bookmark)
-- Feeds you **subscribe to**
-- Your Sunred **profile** (display name and bio, cached from your standard `app.bsky.actor.profile` record)
+Sunred keeps a local cache of these records so the app stays fast, but your PDS is the source of truth. When you follow, share, star, or subscribe, Sunred writes the record to your PDS, and other Sunred users see it through the relay.
 
-Sunred keeps a local **cache** of these records so the app stays fast, but
-your PDS is the source of truth. When you follow, share, star, or subscribe,
-Sunred writes the record to your PDS, and other Sunred users see it through
-the relay.
+## Switch instances
 
-## Syncing to a new instance
+The first time you sign into an instance, it pulls your existing `io.sunred.*` records from your PDS into its local cache, so your follows, shares, stars, and feed subscriptions are all there immediately. After that, the relay keeps them in sync.
 
-The first time you log into an Sunred instance, it pulls your existing
-`io.sunred.*` records from your PDS into its local cache so your follows,
-shares, stars, and feed subscriptions are all there immediately. After
-that it stays in sync via the relay. Your profile (display name and bio) is
-cached from the standard `app.bsky.actor.profile` record on your PDS.
+Not everything travels. State that isn't part of your AT Proto records — which entries you've read, your folders, your per-instance settings — stays on the instance where you created it. Your social graph comes with you; your local reading state does not.
 
-State that is not part of your AT Proto records — which entries you've read,
-your folders, your per-instance settings — stays on the instance where you
-created it. Switching instances means your social graph comes with you (it's
-on your PDS), but your local reading state does not.
+## Take your account elsewhere
 
-## Portability
-
-Because your identity and social graph live on your PDS, you're not locked
-into Sunred. Another AT Proto-compatible RSS reader can read the same
-records, and you can move your PDS without losing your Sunred social data.
+Because your identity and social graph live on your PDS, you're not locked into Sunred. Another AT Proto-compatible RSS reader can read the same records, and you can move your PDS without losing your Sunred social data.
