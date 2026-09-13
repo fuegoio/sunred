@@ -551,7 +551,7 @@ func (s *Server) handleSubscribeEvents(ws *websocket.Conn) {
 	// Register for live events first so nothing is missed during replay.
 	// The channel buffer (capacity 256) holds events emitted while we replay.
 	ch := s.fanout.Subscribe(instanceURL)
-	defer s.fanout.Unsubscribe(instanceURL)
+	defer s.fanout.Unsubscribe(instanceURL, ch)
 
 	// Replay missed events from cursor.
 	if cursor > 0 {

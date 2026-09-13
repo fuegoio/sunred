@@ -492,7 +492,7 @@ func TestSubscribe_And_Unsubscribe(t *testing.T) {
 		t.Fatal("timeout waiting for event")
 	}
 
-	f.Unsubscribe("https://instance.example.com")
+	f.Unsubscribe("https://instance.example.com", ch)
 	if len(f.subscribers) != 0 {
 		t.Errorf("expected 0 subscribers after unsubscribe, got %d", len(f.subscribers))
 	}
@@ -518,5 +518,37 @@ func TestParseTime(t *testing.T) {
 		if got.IsZero() {
 			t.Errorf("parseTime(%v) returned zero time", tc.in)
 		}
+	}
+}
+
+// --- subscribe/unsubscribe ---
+
+// Regression test: an instance that reconnects (replacing its channel) while
+// its previous connection is still being torn down must not lose its new
+// subscription when the stale connection unsubscribes. This exact race
+// silently starved a production instance of events: the keepalive pings kept
+// the socket healthy, so neither side ever errored.
+func TestUnsubscribe_StaleConnectionDoesNotRemoveReplacement(t *testing.T) {
+	f := &Fanout{subscribers: make(map[string]chan *store.RelayEvent)}
+
+	ch1 := f.Subscribe("https://api.sunred.app")
+	ch2 := f.Subscribe("https://api.sunred.app") // reconnect: ch2 replaces ch1
+
+	// Teardown of the stale connection (ch1) must leave the live one intact.
+	f.Unsubscribe("https://api.sunred.app", ch1)
+	f.subsMu.RLock()
+	_, live := f.subscribers["https://api.sunred.app"]
+	f.subsMu.RUnlock()
+	if !live {
+		t.Fatal("unsubscribing a stale connection removed the live subscriber")
+	}
+
+	// Teardown of the live connection (ch2) still unregisters.
+	f.Unsubscribe("https://api.sunred.app", ch2)
+	f.subsMu.RLock()
+	_, live = f.subscribers["https://api.sunred.app"]
+	f.subsMu.RUnlock()
+	if live {
+		t.Fatal("unsubscribing the live connection left the subscriber registered")
 	}
 }
