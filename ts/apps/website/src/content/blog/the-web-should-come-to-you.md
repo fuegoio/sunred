@@ -4,38 +4,38 @@ description: Why federating through RSS and individual websites is the best thin
 pubDate: 2026-09-13
 ---
 
-For most of its life, the web came to you. You kept a short list of sites you trusted — a blogger, a newspaper, a friend's project page — and your reader checked them for you. Whatever was new arrived in the order it was published. Nobody ranked it. Nobody watched you read it. If a site you liked published something, you saw it, and that was the whole system. It worked so well that nobody thought to call it anything.
+For most of its life, the web came to you. You kept a short list of sites you trusted, perhaps a blogger or a friend's project page, and your reader checked them for you. New posts arrived in the order they were published, without anyone ranking them or watching you read. If a site you liked published something, you saw it. The system was simple enough that nobody thought to name it.
 
-Then publishing moved indoors. The platforms solved real problems — hosting was a chore, spam was relentless, and distribution meant begging strangers for links. In exchange, they asked for something that seemed small at the time: the relationship. They would hold the audience, the archive, and the address. You would publish, and they would decide who sees it.
+Then publishing moved indoors. Platforms solved problems that websites made you handle yourself. Hosting took work and spam was relentless. Finding readers often meant begging strangers for links. The price looked small at first: platforms kept the relationship. They held the audience and the archive. You published, while they decided who saw it.
 
 We are twenty years into that arrangement. We know how it goes. Publishing became frictionless and reading became algorithmic. The address of a post became an internal ID in someone else's database. The archive evaporates in a pivot. The audience is rented, and the rent goes up in ways no reader or writer ever votes on.
 
-The way back is not a better platform. It is the web's own shape: individual websites, syndicated over open protocols.
+The web's own structure offers a way back: individual websites syndicated over open protocols.
 
-## A feed is a promise
+## What a feed guarantees
 
-RSS is the oldest honest deal on the web. A feed says: here is everything I publish, in the order I published it, in a format any software can read. Complete. Chronological. No ranking, no engagement metrics, no terms of service that quietly change next quarter. A feed is a promise the publisher cannot quietly break — if a post exists, it is in the feed, and readers can tell when it isn't.
+RSS offers a simple bargain. A feed lists everything you publish in chronological order, using a format any software can read. It carries the posts rather than a ranking or a set of engagement metrics. Its terms do not change next quarter. The promise is easy to check: if a post exists, it appears in the feed.
 
-The individual website is the other half of the deal. A page with an address you control. An archive that outlives any company's roadmap. A design that answers to you, not to a template shared by a hundred million other accounts. A website is not a profile inside someone's product; it is the source of record, the place that remains true even if every app around it goes dark.
+The website provides the other half. It gives the writer a permanent address and control of the archive. The design answers to the writer instead of a template shared by millions of accounts. A profile sits inside a company's product. A website remains the source of record even if every app around it goes dark.
 
-Together they are the quiet, total opposite of the platform deal. You keep the publishing; your readers keep the reading; nobody in the middle can rank, throttle, or sunset the exchange. Syndication is federation in its oldest form: publish once, and let a thousand different readers — apps, terminals, scripts, other websites — each come to their own conclusion about how to read it.
+Put the site and feed together, and each side keeps control of its part of the exchange. The writer owns the publication while readers choose their software. Nobody in the middle can rank, throttle, or stop the exchange. This is federation in its oldest form. Publish once, then let different readers, apps, terminals, scripts, and other websites decide how to present it.
 
-## Federation, the quiet way
+## Federation without a platform
 
-The word federation now evokes big new protocols. Some of them are very good — we build on one. But the deepest federation layer is older and quieter than all of them: a web of independent websites, each with a door. You do not need everyone to join the same network. You need every website to keep a door open. RSS is that door. It has no owner to negotiate with, no API key to revoke, no rate limit to hit.
+The word federation now evokes newer protocols. Sunred builds on one of them. But independent websites have federated for years by leaving a door open. RSS is that door. Anyone can read it without negotiating with an owner or requesting an API key. No platform sets a rate limit.
 
-Newer identity protocols make the social graph portable, and that matters: follow relationships and handles should not evaporate because a company did. But the content itself should live on the open web — on websites with addresses, served to whoever asks. Identity can move. The archive must not evaporate. A feed is the part of the promise that needs no permission at all.
+Newer identity protocols let people carry their follow relationships and handles from one app to another. The content should still live on websites with addresses, served to whoever asks. That keeps identity portable without putting the archive at risk. A feed requires no permission at all.
 
 ## The objections, briefly
 
-**RSS is dead.** It carries nearly every podcast on earth. The most successful open publishing format in history turns out to have no marketing department, which is not the same as having no users. Every podcast app is an RSS reader that people happily pay for.
+People still call RSS dead, though it carries nearly every podcast on earth. It has no marketing department, but it has plenty of users. Podcast apps are RSS readers, and people happily pay for them.
 
-**You'll miss things without an algorithm.** You miss things with one, too. The difference is who chooses which things. Chronology is honest: what you missed is visible, and fixing it is up to you. "For you" is opaque: you will never know what you missed, and that is the point.
+People also worry that they will miss things without an algorithm. Algorithms miss things too, and you never know what they left out. Chronological order puts that tradeoff in view: you can see what you missed and decide what to do about it.
 
-**Websites are hard.** They were never hard; platforms spent a decade making them look optional. A website is a folder of files any server can serve, forever. There are more ways to publish one today than there were ways to create an account yesterday, and none of them can shut you down.
+Websites take work, but platforms spent a decade making them look optional. A website can be a folder of files that any server can serve for as long as its owner wants. Today there are many ways to publish one, and none can take the address away from its owner.
 
-## The best thing for the web
+## Keep publishing on the web
 
-The best thing for the web is that it stays web-shaped. Pages with addresses. Feeds anyone can subscribe to. Archives under their authors' control. Readers that belong to readers. Every part of that sentence already exists, has existed for decades, and asks permission from no one. That is the rare thing worth remembering: the fix for the web is not waiting to be invented. It is waiting to be used.
+The web works best when pages have stable addresses, feeds accept any reader, and authors control their archives. Those pieces have existed for decades and do not require permission from a platform. We can use them now.
 
-We built Sunred because we want the web to come to you again — new posts from sites you chose, newest first, nothing in between. If that argument lands, subscribe to this blog while you're here. [It has a feed, of course.](/blog/rss.xml)
+We built Sunred because we want the web to come to you again. It shows new posts from sites you choose in chronological order, with nothing in between. [Subscribe to the blog's RSS feed.](/blog/rss.xml)
