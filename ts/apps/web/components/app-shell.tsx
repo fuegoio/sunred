@@ -6,7 +6,6 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { OnboardingOverlay } from "@/components/onboarding-overlay";
 import { SettingsSidebar } from "@/components/settings-sidebar";
 import { ShellContext } from "@/components/shell-context";
-import { SyncStatusBar } from "@/components/sync-status-bar";
 
 export function AppShell({
   children,
@@ -38,17 +37,14 @@ export function AppShell({
         <div className="hidden flex-1 bg-sidebar lg:block" />
 
         <div className="flex w-full min-w-0 max-w-5xl shrink-0 overflow-hidden">
-          <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <SyncStatusBar initialStatus={pdsSyncStatus} />
-            <main className="flex-1 overflow-hidden bg-background">{children}</main>
-          </div>
+          <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} pdsSyncStatus={pdsSyncStatus} />
+          <main className="flex-1 overflow-hidden bg-background">{children}</main>
         </div>
 
         {/* Right filler — matches main content bg on wide screens */}
         <div className="hidden flex-1 bg-background lg:block" />
 
-        <OnboardingOverlay initialSyncStatus={pdsSyncStatus} initialOnboarded={userOnboarded} userDisplayName={userDisplayName} />
+        <OnboardingOverlay initialOnboarded={userOnboarded} userDisplayName={userDisplayName} />
       </div>
     </ShellContext>
   );
