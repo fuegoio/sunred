@@ -1,49 +1,49 @@
 ---
 title: Feeds
-description: Subscribe to websites, organize them with folders, and keep them fresh.
+description: Subscribing to and organizing feeds.
 ---
 
-A **feed** is a website that publishes an RSS, Atom, or JSON Feed. Sunred fetches each feed in the background and adds new articles to your timeline as they appear. You don't have to refresh anything yourself. Feeds are shared across the instance — one feed serves every subscriber — but your subscription, your folders, and your read state are yours alone.
+A **feed** is a website that publishes an RSS, Atom, or JSON Feed. Sunred fetches each feed in the background and adds new articles to your timeline as they appear — you never refresh anything yourself. Feeds are shared across the instance: one feed serves every subscriber. Your subscription, your folders, and your read state stay yours alone.
 
 ## Subscribe to a feed
 
-Click the **+** next to **Feeds** in the sidebar and paste a URL. It can be a feed URL or an ordinary website URL — Sunred discovers the feed automatically by looking for `<link rel="alternate">` tags in the page.
+Click the **+** next to **Feeds** in the sidebar and paste a URL. A feed URL or an ordinary website URL both work — Sunred looks for `<link rel="alternate">` tags in the page and finds the feed itself.
 
-Before you subscribe, Sunred shows a preview: the feed's title, description, favicon, and its most recent articles. If it's the right feed, click **Subscribe to this feed**.
+Before you commit, Sunred shows a preview: the feed's title, description, favicon, and most recent articles. If it's the right one, click **Subscribe to this feed**.
 
-You can star, mark as read, and share articles straight from the preview — before subscribing. Your state persists by article URL, so it carries over if you later subscribe to the feed.
+You can star, mark as read, and share articles straight from the preview, before subscribing. Your state persists by article URL, so it carries over if you subscribe later.
 
 The feed's title and site link fill in after the first refresh. Subscribing to the same URL twice is a no-op.
 
 ## Organize with folders
 
-Folders group feeds in the sidebar — they don't affect the timeline. Create one with the **folder** icon next to **Feeds**, then move a feed into it from the feed's page using the folder picker.
+Group feeds into folders when your sidebar starts to crowd. Folders only affect the sidebar — they don't change the timeline. Create one with the **folder** icon next to **Feeds**, then move a feed into it from the feed's page with the folder picker.
 
-Deleting a folder leaves its feeds behind, now ungrouped — it never deletes feeds.
+Deleting a folder leaves its feeds behind, just ungrouped. A folder never deletes feeds.
 
-## The feed page
+## Manage a feed
 
-Click a feed in the sidebar to open its page. The header shows the feed's title, description, and how many people subscribe to it (across the instance). Below the header is that feed's entry timeline.
+Click a feed in the sidebar to open its page. The header shows the feed's title, description, and how many people across the instance subscribe to it; below that is the feed's own entry timeline.
 
 The toolbar has everything you need to manage the feed:
 
-- **Refresh** — fetch new entries right away, without waiting for the scheduler. Useful right after subscribing, or when you know a site just published.
-- **Mark all as read** — clears every unread entry in this feed in one click.
+- **Refresh** — fetch new entries right away instead of waiting for the scheduler. Useful right after subscribing, or when you know a site just published.
+- **Mark all as read** — clear every unread entry in the feed in one click.
 - **Move to folder** — reassign the feed to a different folder.
 - **Rename** — give the feed a custom title for your sidebar.
-- **Unsubscribe** — drops your subscription to the feed. The feed itself stays for other subscribers.
+- **Unsubscribe** — drop your subscription. The feed itself stays for other subscribers.
 - **Open website** / **Open feed** — jump to the site or its raw feed URL in a new tab.
 
-## How and when feeds refresh
+## How feeds refresh
 
-Sunred refreshes feeds automatically on a schedule that adapts to each feed. A site that publishes daily is checked roughly once a day; a site that publishes hourly is checked more often. The interval is based on how frequently the feed actually publishes new items.
+Sunred refreshes each feed on a schedule that adapts to how often it publishes. A site that posts daily gets checked roughly once a day; a site that posts hourly gets checked more often.
 
-If a feed fails to fetch or parse, Sunred retries on a shorter interval and shows the last error on the feed page until it succeeds again. You don't need to manage any of this — but the **Refresh** button is there when you want new entries now.
+If a fetch or parse fails, Sunred retries on a shorter interval and shows the last error on the feed page until it succeeds again. You don't manage any of this — but the **Refresh** button is there when you want new entries now.
 
 ## Move from another reader
 
-Coming from another RSS reader? Export your subscriptions as an OPML file and import it under **Settings → OPML**. Sunred subscribes you to every feed in the file at once.
+Export your subscriptions from your old reader as an OPML file, then import it under **Settings → OPML**. Sunred subscribes you to every feed in the file at once.
 
-## Programmatic access
+## Use the APIs
 
-Everything above is also available through the [Feeds API](/api-reference?tag=Feeds) and the [Folders API](/api-reference?tag=Folders) — subscribe, list, refresh, move, and unsubscribe from scripts or the CLI.
+Everything above also works through the [Feeds API](/api-reference?tag=Feeds) and the [Folders API](/api-reference?tag=Folders) — subscribe, list, refresh, move, and unsubscribe from scripts or the CLI.

@@ -1,17 +1,15 @@
 ---
 title: Sunred
-description: A modern RSS reader with a web app, terminal UI, and CLI — powered by the AT Protocol.
+description: An RSS reader with a web app, terminal UI, and CLI.
 ---
 
 Sunred is an RSS reader. You subscribe to websites, Sunred fetches their feeds in the background, and you read new articles as they arrive — in a web app, a terminal UI, or from the command line.
 
-Your identity lives on the [AT Protocol](https://atproto.com) — the same network Bluesky uses. You sign in with your handle, follow people, and share articles. Your social graph belongs to you, not to Sunred.
+Your identity lives on the [AT Protocol](https://atproto.com), the same network Bluesky uses. Sign in with your handle, follow people, and share articles. Your social graph belongs to you, not to Sunred.
 
 ## How it works
 
-1. **Subscribe to a feed.** Paste any website or feed URL. Sunred discovers the RSS, Atom, or JSON Feed automatically.
-2. **Sunred fetches in the background.** An adaptive scheduler checks each feed as often as it publishes — a daily blog is checked daily, an hourly news feed hourly.
-3. **Read new entries.** Articles appear in your timeline the moment they're published. Star the ones you want to keep, mark the rest as read.
+Paste any website or feed URL and Sunred discovers the RSS, Atom, or JSON Feed automatically. An adaptive scheduler then checks each feed as often as it publishes — a daily blog is checked daily, an hourly news feed hourly. New articles appear in your timeline the moment they're published: star the ones you want to keep and mark the rest as read.
 
 ## Three interfaces, one account
 
@@ -23,13 +21,13 @@ Everything is backed by a single [REST API](/api-reference).
 
 ## Concepts
 
-- **[Feeds](/feeds)** — your subscriptions. RSS, Atom, and JSON Feed, organized into folders.
+- **[Feeds](/feeds)** — your subscriptions: RSS, Atom, and JSON Feed, organized into folders.
 - **[Entries](/entries)** — individual articles. Each has a read status and a starred flag.
-- **[Social](/social)** — follow people and share articles. See what the people you follow are reading.
-- **[Identity & sync](/at-proto)** — your AT Proto account. Sign in anywhere, take your social graph with you.
+- **[Follow people and share articles](/social)** — the social side: see what the people you follow are reading.
+- **[Sign in and sync with AT Proto](/at-proto)** — your AT Proto account. Sign in anywhere, take your social graph with you.
 
 ## Where to start
 
-New here? Read [Getting started](/getting-started) to sign in and read your first article.
+New here? [Get started](/getting-started) walks you through signing in and reading your first article.
 
 Running your own server? See [Self-Hosting](/self-hosting).

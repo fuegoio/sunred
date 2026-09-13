@@ -5,7 +5,7 @@ description: The sunred command-line tool and sunred-tui interactive terminal UI
 
 `sunred` manages feeds, entries, folders, and API tokens from the terminal. `sunred-tui` is an interactive, full-screen feed browser.
 
-## Install
+## Install the CLI
 
 Build both binaries from source:
 
@@ -14,42 +14,35 @@ cd go/cli
 make build
 ```
 
-Download pre-built binaries from the [GitHub releases page](https://github.com/fuegoio/sunred/releases) and add them to your `PATH`.
+Pre-built binaries are on the [GitHub releases page](https://github.com/fuegoio/sunred/releases) — download the one for your platform and add it to your `PATH`.
 
-## Configuration
+## Point the CLI at your instance
 
-Point the CLI at your API server. The default is `http://localhost:8080`; set it to your instance's API URL:
+By default the CLI talks to `http://localhost:8080`. If your API lives elsewhere, tell it once:
 
 ```bash
 ./sunred config set base_url https://api.your-instance.com
 ```
 
-Configuration is stored at `~/.config/sunred/config.json` (or the
-equivalent on your OS).
+Configuration is stored at `~/.config/sunred/config.json` (or the equivalent on your OS).
 
-## Login
+## Log in from the CLI
 
-Log in with the device flow — it opens a browser to a confirmation page
-where you approve the CLI's access:
+The CLI uses the device flow: it opens a browser to a confirmation page where you approve its access.
 
 ```bash
 ./sunred login
 ```
 
-The CLI displays a confirmation code and a URL. If a browser can't be
-opened automatically, copy the URL into a browser on any device where
-you're signed in. Once you approve, the CLI stores the token and you're
-ready to go.
+The CLI displays a confirmation code and a URL. If a browser can't be opened automatically, take the URL to any device where you're signed in and approve there. Once you approve, the CLI stores the token and you're ready to go.
 
-Use `--no-browser` to skip auto-opening a browser, or `--url` to
-override the API base URL for this login only:
+Use `--no-browser` to skip auto-opening a browser, or `--url` to override the API base URL for this login only:
 
 ```bash
 ./sunred login --no-browser --url https://api.example.com
 ```
 
-Tokens issued via the device flow expire after 14 days. Run `sunred
-login` again to refresh.
+Tokens issued via the device flow expire after 14 days. Run `sunred login` again to refresh.
 
 <details>
 <summary>Manual token setup (alternative)</summary>
@@ -65,14 +58,14 @@ API and set it manually:
 
 ## Commands
 
-### login
+### Log in
 
 ```bash
 sunred login                # log in via the browser (device flow)
 sunred login --no-browser    # print the URL instead of opening a browser
 ```
 
-### feeds
+### Manage feeds
 
 ```bash
 sunred feeds list              # list all subscriptions
@@ -80,7 +73,7 @@ sunred feeds add <url>         # subscribe to a feed
 sunred feeds delete <id>       # unsubscribe from a feed
 ```
 
-### entries
+### Work with entries
 
 ```bash
 sunred entries list             # list recent entries
@@ -92,7 +85,7 @@ sunred entries read <id>        # read a single entry
 
 Run `sunred entries list --help` to see all available filters.
 
-### folders
+### Organize with folders
 
 ```bash
 sunred folders list          # list folders
@@ -100,7 +93,7 @@ sunred folders create <title>  # create a folder
 sunred folders delete <id>   # delete a folder
 ```
 
-### tokens
+### Manage API tokens
 
 ```bash
 sunred tokens list              # list API tokens
@@ -108,22 +101,21 @@ sunred tokens create <label>   # create a token (shown once)
 sunred tokens delete <id>       # delete a token
 ```
 
-### me
+### Show your profile
 
 ```bash
 sunred me                       # show current user profile
 ```
 
-### health
+### Check API health
 
 ```bash
 sunred health                   # check API health
 ```
 
-## TUI
+## Browse feeds in the TUI
 
-The TUI is an interactive feed browser. If you're not logged in, it
-runs the device-flow login automatically before starting:
+If you want to read rather than script, the TUI is an interactive feed browser. If you're not logged in, it runs the device-flow login automatically before starting:
 
 ```bash
 ./sunred-tui
@@ -135,20 +127,6 @@ Pass `--login` to force a re-login even if a token is already saved:
 ./sunred-tui --login
 ```
 
-### Navigation
+You move through three views: **Feeds** lists your subscriptions, and pressing enter opens one. **Entries** lists the entries in the selected feed; press enter to read. **Entry** shows the full content, and `esc` takes you back.
 
-| Key           | Action             |
-| ------------- | ------------------ |
-| `j` / `↓`     | move cursor down   |
-| `k` / `↑`     | move cursor up     |
-| `enter` / `l` | open selected item |
-| `h` / `esc`   | go back            |
-| `r`           | refresh feed list  |
-| `q`           | quit               |
-
-The TUI has three views:
-
-1. **Feeds** — lists all subscriptions. Press enter to browse entries.
-2. **Entries** — lists entries in the selected feed. Press enter to
-   read.
-3. **Entry** — shows the full entry content. Press esc to go back.
+Navigation is vim-flavored: move the cursor with `j` / `↓` and `k` / `↑`, open the selected item with `enter` / `l`, go back with `h` / `esc`, refresh the feed list with `r`, and quit with `q`.

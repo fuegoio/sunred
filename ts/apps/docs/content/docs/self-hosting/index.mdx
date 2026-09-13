@@ -3,7 +3,7 @@ title: Docker Compose
 description: Deploy Sunred with Docker Compose.
 ---
 
-Sunred publishes images to GitHub Container Registry on every push to `main` and every release:
+The fastest way to run Sunred yourself is Docker Compose. Sunred publishes images to GitHub Container Registry on every push to `main` and every release:
 
 | Image | Registry                        |
 | ----- | ------------------------------- |
@@ -15,7 +15,9 @@ Tags: `latest` (main branch), `1.2.3` / `v1.2.3` (release), `1.2` (minor), `1` (
 
 Both containers run as a non-root user (`uid 10001`). The API listens on port 8080, the web app on port 3000.
 
-## Docker Compose
+## Run the stack
+
+The compose file below brings up the API, the web app, and the relay, each with its own PostgreSQL database. Replace the password and domain placeholders before you start.
 
 ```yaml
 services:
@@ -93,21 +95,22 @@ volumes:
   relay-pgdata:
 ```
 
-Start:
+Bring the stack up:
 
 ```bash
 docker compose up -d
 ```
 
-Run database migrations on first start. The API and relay each need their own
-database:
+Migrations don't run on their own — run them once on first start. The API and relay each have their own database:
 
 ```bash
 docker compose exec api /app/sunred --migrate
 docker compose exec relay /app/sunred-relay --migrate
 ```
 
-`SUNRED_API_URL` is the server-side URL the web container uses to reach the API over the Docker network. `NEXT_PUBLIC_SUNRED_API_URL` is baked into the browser bundle and must be publicly reachable.
+Two variables tell the web app where the API is, and they're not interchangeable. `SUNRED_API_URL` is the server-side URL the web container uses to reach the API over the Docker network. `NEXT_PUBLIC_SUNRED_API_URL` is baked into the browser bundle and must be publicly reachable.
+
+## Run the relay (optional)
 
 The `relay` service is optional but recommended — it enables cross-instance
 social features (global counts, federated shares). See

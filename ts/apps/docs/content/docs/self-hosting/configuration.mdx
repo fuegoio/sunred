@@ -3,7 +3,9 @@ title: Configuration
 description: Environment variables for the API and web containers.
 ---
 
-## API
+Everything you can configure in Sunred is an environment variable. The compose file in [Docker Compose](/self-hosting) is a working starting point; the tables below are the full list.
+
+## API variables
 
 | Variable                         | Default                                                                   | Description                                                |
 | -------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------- |
@@ -27,10 +29,12 @@ description: Environment variables for the API and web containers.
 | `SUNRED_RELAY_URL`            | (unset)                                                                   | URL of the Sunred relay. Optional; enables cross-instance social features (global counts, federated shares). See [AT Proto & identity](/self-hosting/at-proto) |
 | `SUNRED_DEFAULT_PDS`         | `https://snrd.social`                                                                   | PDS URL for the `/auth/oauth/signup` endpoint (server-side fallback; the web UI uses `NEXT_PUBLIC_SUNRED_DEFAULT_PDS`). See [AT Proto & identity](/self-hosting/at-proto) |
 
-## Web
+## Web variables
 
 | Variable                        | Default                 | Description                                          |
 | ------------------------------- | ----------------------- | ---------------------------------------------------- |
 | `SUNRED_API_URL`             | `http://127.0.0.1:8080` | Server-side API URL (reachable from the container)   |
 | `NEXT_PUBLIC_SUNRED_API_URL` | `http://localhost:8080` | Client-side API URL (reachable from the browser)     |
 | `NEXT_PUBLIC_SUNRED_DEFAULT_PDS` | `https://snrd.social` | Default PDS for the first-party login button on the login page |
+
+The cookie and origin variables (`SUNRED_COOKIE_SECURE`, `SUNRED_COOKIE_SAMESITE`, `SUNRED_COOKIE_DOMAIN`, `SUNRED_TRUSTED_ORIGINS`) only matter once the API and web app sit on different origins — [Run Sunred in production](/self-hosting/production) walks through the combinations.

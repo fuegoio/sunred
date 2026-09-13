@@ -7,8 +7,9 @@ Sunred uses the [AT Protocol](https://atproto.com) for identity. Users log in
 with an AT Proto handle — the same account they use on Bluesky or any other
 AT Proto client. There are no Sunred-specific passwords.
 
-This page covers what an operator needs to know: the components involved, how
-login works, and how to run the PDS and relay alongside Sunred.
+This page covers what you need to know as an operator: which components are
+involved, how login works, and what happens if you run the relay alongside
+Sunred.
 
 ## How identity works
 
@@ -20,8 +21,8 @@ on their **PDS** (Personal Data Server). A handle (`alice.bsky.social`,
 handle  ──resolve──▶  DID  ──points to──▶  PDS  ──holds──▶  user records
 ```
 
-Sunred does not store passwords or issue its own identities. It authenticates
-users against their PDS using **AT Proto OAuth** (OAuth 2.0 with PKCE, DPoP,
+Sunred doesn't store passwords or issue its own identities. It authenticates
+users against their PDS with **AT Proto OAuth** (OAuth 2.0 with PKCE, DPoP,
 and PAR). After a successful login, Sunred issues its own session cookie so
 the web app can make authenticated requests.
 
@@ -30,14 +31,14 @@ the web app can make authenticated requests.
 Every Sunred server can authenticate **any** DID, regardless of which PDS
 hosts it. A user with a Bluesky account (`alice.bsky.social`) and a user with
 an account on your own PDS (`bob.your-domain.com`) can both log into the same
-Sunred instance. You are not limited to users on your PDS.
+instance. You're not limited to users on your PDS.
 
-This means Sunred is a **cache and view** of each user's AT Proto data, not
-the source of truth. The PDS is the source of truth.
+This also means Sunred is a **cache and view** of each user's AT Proto data,
+not the source of truth. The PDS is the source of truth.
 
-## Components
+## The four pieces
 
-A full Sunred deployment has four pieces:
+A full deployment has four pieces:
 
 | Component | Role | Required? |
 | --- | --- | --- |
@@ -48,14 +49,14 @@ A full Sunred deployment has four pieces:
 
 ### The PDS
 
-Each user's data lives on a PDS — but Sunred does not run or ship a PDS. Users
+Each user's data lives on a PDS — but Sunred doesn't run or ship one. Users
 log in with their own AT Proto handle, typically a Bluesky account
 (`*.bsky.social`) or an account on a personal PDS they run themselves. Sunred
 authenticates against the user's PDS at login time via OAuth.
 
-If you want to offer accounts on your own domain, you can run a PDS separately
-using the [official PDS image](https://github.com/bluesky-social/pds). That's a
-deployment decision outside Sunred's scope — Sunred works with any
+If you want to offer accounts on your own domain, you can run a PDS
+separately with the [official PDS image](https://github.com/bluesky-social/pds).
+That's a deployment decision outside Sunred's scope — Sunred works with any
 standards-compliant AT Proto PDS, yours or anyone else's.
 
 ### Offering signup
@@ -63,9 +64,8 @@ standards-compliant AT Proto PDS, yours or anyone else's.
 The login page shows a **Continue with [PDS]** button that starts the OAuth
 flow against the instance's default PDS. The PDS decides whether to show
 login or signup — users without an existing account can create one on that
-PDS and are logged into Sunred in one step. The default PDS is configured
-on the web side via `NEXT_PUBLIC_SUNRED_DEFAULT_PDS` (default
-`https://snrd.social`).
+PDS and are logged into Sunred in one step. Set the default PDS on the web
+side with `NEXT_PUBLIC_SUNRED_DEFAULT_PDS` (default `https://snrd.social`).
 
 Users who already have an AT Proto account (Bluesky, another PDS) can always
 click **Login with a different handle** and enter their handle, regardless of
@@ -73,21 +73,22 @@ the default PDS.
 
 ### The relay
 
-The relay watches the repo streams of every PDS that hosts an Sunred user and
+The relay watches the repo streams of every PDS that hosts a Sunred user and
 aggregates `io.sunred.*` records (follows, article shares, stars, feed
-subscriptions) into global counts. It then streams those events back to Sunred instances so
-they stay in sync across the federated network. The relay also indexes every
-known DID and handle, enabling cross-instance user search and follow.
+subscriptions) into global counts. It then streams those events back to Sunred
+instances so they stay in sync across the federated network. The relay also
+indexes every known DID and handle, which enables cross-instance user search
+and follow.
 
 The relay is a separate Go service with its own database. Point the API at it
-with `SUNRED_RELAY_URL`. If unset, cross-instance social features (global
-follower counts, federated shares, cross-instance user search) are disabled —
-the instance still works standalone.
+with `SUNRED_RELAY_URL`. If you leave that unset, cross-instance social
+features (global follower counts, federated shares, cross-instance user
+search) are disabled — the instance still works standalone.
 
 ## Data responsibilities
 
-Each component owns a different slice of the data. This matters for backups and
-for understanding what federates versus what stays local.
+Each component owns a different slice of the data. This matters for backups
+and for understanding what federates versus what stays local.
 
 | Data | Source of truth | Instance (API) | Relay |
 | --- | --- | --- | --- |
@@ -125,7 +126,7 @@ The relay never stores article content, feed entries, per-user private state, or
 OAuth material. Losing the relay database disables cross-instance features until
 it re-aggregates from PDS repo streams; no user content is lost.
 
-## Login flow
+## How a login works
 
 ```
 1. User clicks "Continue with [PDS]" or enters their handle in the web UI
@@ -148,10 +149,10 @@ session cookie (host-only on `localhost`) is shared across the web (port 3000)
 and API (port 8080).
 
 Sunred holds a DPoP keypair per account so it can sign PDS requests with the
-bound access token. You do not need to manage these keys manually — Sunred
-generates and stores them.
+bound access token. You don't need to manage these keys — Sunred generates and
+stores them.
 
-## Sync on first login
+## What happens on first login
 
 Because Sunred is a cache of the user's PDS, the first time a DID logs into a
 given instance Sunred backfills the local database from the PDS:
@@ -165,9 +166,9 @@ given instance Sunred backfills the local database from the PDS:
 4. Subscribe to the relay's event stream for that DID to receive live updates.
 
 Subsequent logins reuse the existing cache and resume the relay subscription.
-Local-only state that is not part of the AT Proto records — read state,
+Local-only state that isn't part of the AT Proto records — read state,
 folders, per-instance settings — stays on the instance where it was created
-and does not transfer with the DID.
+and doesn't transfer with the DID.
 
 ## Writing back to the PDS
 
