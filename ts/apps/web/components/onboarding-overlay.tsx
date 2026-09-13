@@ -8,15 +8,17 @@ import { Plus, ChevronRight, X } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { Button } from "@workspace/ui/components/button";
 import { Logo } from "@/components/logo";
-import { getClient, getMe, listFeeds, completeMeOnboarding, unwrap } from "@/lib/sunred";
+import { getClient, listFeeds, completeMeOnboarding, unwrap } from "@/lib/sunred";
 import { getApiErrorMessage } from "@/lib/errors";
-import type { Feed, User } from "@/lib/types";
+import type { Feed } from "@/lib/types";
 
 /**
  * First-run onboarding for new accounts.
  *
- * Triggered once, after the post-login PDS sync settles, for any user whose
- * `onboarded` flag is false. The flow has two beats:
+ * Triggered once, for any user whose `onboarded` flag is false — including
+ * while the post-login PDS sync is still importing, so a fresh signup sees
+ * the welcome screen right away instead of waiting behind a sync spinner.
+ * The flow has two beats:
  *
  *   1. Welcome screen — a full-screen surface asking the user to add their
  *      first RSS feed (only when they have no feeds yet; users whose PDS sync
@@ -70,11 +72,9 @@ const TOUR_STEPS = [
 ] as const;
 
 export function OnboardingOverlay({
-  initialSyncStatus,
   initialOnboarded,
   userDisplayName,
 }: {
-  initialSyncStatus: string;
   initialOnboarded: boolean;
   userDisplayName?: string;
 }) {
@@ -82,24 +82,11 @@ export function OnboardingOverlay({
   const pathname = usePathname();
   const queryClient = useQueryClient();
 
-  // Poll /v1/me while a sync is in flight (shares the ["me"] cache with
-  // SyncStatusBar, so this adds no extra requests). Once sync settles, the
-  // query goes idle and we read the final status + onboarded flag.
-  const { data: me } = useQuery<User>({
-    queryKey: ["me"],
-    queryFn: async () => unwrap(getMe({ client: await getClient() })),
-    enabled: initialSyncStatus === "syncing",
-    refetchInterval: (query) =>
-      query.state.data?.pds_sync_status === "syncing" ? 2000 : false,
-  });
-
   const feedsQuery = useQuery<Feed[]>({
     queryKey: ["feeds"],
     queryFn: async () => unwrap(listFeeds({ client: await getClient() })),
   });
 
-  const syncStatus = me?.pds_sync_status ?? initialSyncStatus;
-  const onboarded = me?.onboarded ?? initialOnboarded;
   const hasFeeds = (feedsQuery.data?.length ?? 0) > 0;
 
   // The tour highlights sidebar elements, which only exist on non-settings
@@ -107,23 +94,24 @@ export function OnboardingOverlay({
   // about the reading surface, so we keep it to the app routes.
   const onReadingSurface = !pathname.startsWith("/settings");
 
-  const eligible =
-    syncStatus !== "syncing" && !onboarded && feedsQuery.isSuccess && onReadingSurface;
+  const eligible = !initialOnboarded && feedsQuery.isSuccess && onReadingSurface;
 
   const [step, setStep] = useState<Step | null>(null);
   const [dismissed, setDismissed] = useState(false);
 
   // Decide which beat to show once eligible. A user with feeds (e.g. imported
-  // from their PDS) skips the welcome and goes straight to the tour.
+  // from their PDS) skips the welcome and goes straight to the tour. The choice
+  // is made once: feeds arriving mid-flow (the PDS sync still importing) must
+  // not yank a user off the welcome screen they are already on.
   useEffect(() => {
-    if (!eligible || dismissed) return;
+    if (!eligible || dismissed || step) return;
     const stored = readStep();
-    if (stored === "tour" || hasFeeds) {
+    if (stored === "tour" || (stored === null && hasFeeds)) {
       setStep("tour");
-    } else if (stored === "welcome" || stored === null) {
-      setStep((prev) => prev ?? "welcome");
+    } else {
+      setStep("welcome");
     }
-  }, [eligible, dismissed, hasFeeds]);
+  }, [eligible, dismissed, step, hasFeeds]);
 
   const complete = useCallback(async () => {
     const { error } = await completeMeOnboarding({ client: await getClient() });

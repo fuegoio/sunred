@@ -40,7 +40,7 @@ function HelpButton() {
   );
 }
 
-function SettingsSidebarContent({ userHandle, userDisplayName, userHasAvatar }: { userHandle: string; userDisplayName?: string; userHasAvatar?: boolean }) {
+function SettingsSidebarContent({ userHandle, userDisplayName, userHasAvatar, pdsSyncStatus }: { userHandle: string; userDisplayName?: string; userHasAvatar?: boolean; pdsSyncStatus: string }) {
   const pathname = usePathname();
 
   return (
@@ -52,7 +52,7 @@ function SettingsSidebarContent({ userHandle, userDisplayName, userHasAvatar }: 
         </Link>
         <div className="flex-1" />
         <OfflineBadge />
-        <AccountButton userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
+        <AccountButton userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} pdsSyncStatus={pdsSyncStatus} />
       </div>
 
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-3">
@@ -100,17 +100,19 @@ export function SettingsSidebar({
   userHandle,
   userDisplayName,
   userHasAvatar,
+  pdsSyncStatus,
 }: {
   open: boolean;
   onClose: () => void;
   userHandle: string;
   userDisplayName?: string;
   userHasAvatar?: boolean;
+  pdsSyncStatus: string;
 }) {
   return (
     <>
       <aside className="hidden w-64 shrink-0 border-r border-sidebar-border bg-sidebar lg:flex lg:flex-col">
-        <SettingsSidebarContent userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
+        <SettingsSidebarContent userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} pdsSyncStatus={pdsSyncStatus} />
       </aside>
 
       {open && (
@@ -126,7 +128,7 @@ export function SettingsSidebar({
               if ((e.target as HTMLElement).closest("a")) onClose();
             }}
           >
-            <SettingsSidebarContent userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
+            <SettingsSidebarContent userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} pdsSyncStatus={pdsSyncStatus} />
           </aside>
         </div>
       )}

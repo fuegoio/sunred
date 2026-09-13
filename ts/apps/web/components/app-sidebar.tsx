@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutList, Circle, Star, Plus, Settings, LogOut, Sun, Moon, User, CircleHelp } from "lucide-react";
+import { LayoutList, Circle, Star, Plus, Settings, LogOut, Sun, Moon, User, CircleHelp, Loader2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Menu } from "@base-ui/react/menu";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import { getClient, listFeeds, listFolders, listFollowing, unwrap, avatarUrl } from "@/lib/sunred";
+import { getClient, listFeeds, listFolders, listFollowing, getMe, unwrap, avatarUrl } from "@/lib/sunred";
 import { signout } from "@/lib/auth";
 import { Logo } from "@/components/logo";
 import { OfflineBadge } from "@/components/offline-badge";
@@ -19,7 +19,7 @@ import { buttonVariants } from "@workspace/ui/components/button";
 import { FolderCreateDialog } from "@/components/folder-create-dialog";
 import { cn } from "@workspace/ui/lib/utils";
 import { Separator } from "@workspace/ui/components/separator";
-import type { Feed, Folder, UserProfile } from "@/lib/types";
+import type { Feed, Folder, UserProfile, User as ApiUser } from "@/lib/types";
 
 export const navLinkClass = cn(
   "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium",
@@ -62,9 +62,21 @@ function SidebarNav() {
   );
 }
 
-export function AccountButton({ userHandle, userDisplayName, userHasAvatar }: { userHandle: string; userDisplayName?: string; userHasAvatar?: boolean }) {
+export function AccountButton({ userHandle, userDisplayName, userHasAvatar, pdsSyncStatus }: { userHandle: string; userDisplayName?: string; userHasAvatar?: boolean; pdsSyncStatus: string }) {
   const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
+
+  // Poll /v1/me while the post-login PDS backfill is in flight, so the sync
+  // row below settles and hides itself once the import finishes. For users who
+  // are not syncing, the query stays disabled so no extra request is made.
+  const { data: me } = useQuery<ApiUser>({
+    queryKey: ["me"],
+    queryFn: async () => unwrap(getMe({ client: await getClient() })),
+    enabled: pdsSyncStatus === "syncing",
+    refetchInterval: (query) =>
+      query.state.data?.pds_sync_status === "syncing" ? 2000 : false,
+  });
+  const syncStatus = me?.pds_sync_status ?? pdsSyncStatus;
 
   async function handleSignout() {
     await signout();
@@ -110,6 +122,12 @@ export function AccountButton({ userHandle, userDisplayName, userHasAvatar }: { 
                 <span className="truncate text-xs text-muted-foreground">@{userHandle}</span>
               </div>
             </div>
+            {syncStatus === "syncing" ? (
+              <div role="status" className="flex items-center gap-2 px-2 pb-2 text-xs text-muted-foreground">
+                <Loader2 className="size-3.5 shrink-0 animate-spin" />
+                <span>Importing feeds and follows from your PDS&hellip;</span>
+              </div>
+            ) : null}
             <hr className="-mx-1 my-1 border-border" />
             <Menu.Item className={menuItemClass} render={<Link href={`/users/${userHandle}`} />}>
               <User className="size-4" />
@@ -158,7 +176,7 @@ function HelpButton() {
   );
 }
 
-function SidebarContent({ userHandle, userDisplayName, userHasAvatar }: { userHandle: string; userDisplayName?: string; userHasAvatar?: boolean }) {
+function SidebarContent({ userHandle, userDisplayName, userHasAvatar, pdsSyncStatus }: { userHandle: string; userDisplayName?: string; userHasAvatar?: boolean; pdsSyncStatus: string }) {
   const pathname = usePathname();
   const { data: feeds, isLoading: feedsLoading } = useQuery<Feed[]>({
     queryKey: ["feeds"],
@@ -186,7 +204,7 @@ function SidebarContent({ userHandle, userDisplayName, userHasAvatar }: { userHa
         </Link>
         <div className="flex-1" />
         <OfflineBadge />
-        <AccountButton userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
+        <AccountButton userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} pdsSyncStatus={pdsSyncStatus} />
       </div>
 
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-3">
@@ -309,17 +327,19 @@ export function AppSidebar({
   userHandle,
   userDisplayName,
   userHasAvatar,
+  pdsSyncStatus,
 }: {
   open: boolean;
   onClose: () => void;
   userHandle: string;
   userDisplayName?: string;
   userHasAvatar?: boolean;
+  pdsSyncStatus: string;
 }) {
   return (
     <>
       <aside className="hidden w-64 shrink-0 border-r border-sidebar-border bg-sidebar lg:flex lg:flex-col">
-        <SidebarContent userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
+        <SidebarContent userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} pdsSyncStatus={pdsSyncStatus} />
       </aside>
 
       {open && (
@@ -335,7 +355,7 @@ export function AppSidebar({
               if ((e.target as HTMLElement).closest("a")) onClose();
             }}
           >
-            <SidebarContent userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} />
+            <SidebarContent userHandle={userHandle} userDisplayName={userDisplayName} userHasAvatar={userHasAvatar} pdsSyncStatus={pdsSyncStatus} />
           </aside>
         </div>
       )}
