@@ -58,6 +58,17 @@ const {
       })();
     </script>
 
+    {
+      import.meta.env.PROD && (
+        <script
+          is:inline
+          defer
+          src="https://umami.alexistac.net/script.js"
+          data-website-id="c31ff124-7710-4ee7-bf24-d1cad767d72e"
+        ></script>
+      )
+    }
+
     <title>{title}</title>
   </head>
   <body>

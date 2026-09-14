@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Merriweather, IBM_Plex_Sans } from "next/font/google";
+import Script from "next/script";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { SerwistProvider } from "@serwist/turbopack/react";
 
 import "@workspace/ui/globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/query-provider";
+import { env } from "@/lib/env";
 import { PublicEnv } from "@/lib/public-env";
 import { cn } from "@workspace/ui/lib/utils";
 
@@ -69,6 +71,13 @@ export default function RootLayout({
             </QueryProvider>
           </ThemeProvider>
         </SerwistProvider>
+        {env.TELEMETRY && (
+          <Script
+            defer
+            src="https://umami.alexistac.net/script.js"
+            data-website-id="c31ff124-7710-4ee7-bf24-d1cad767d72e"
+          />
+        )}
       </body>
     </html>
   );
