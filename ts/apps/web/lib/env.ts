@@ -10,6 +10,10 @@ import { getPublicEnv } from "./public-env";
 export const env = createEnv({
   server: {
     SUNRED_API_URL: z.string().url().default("http://127.0.0.1:8080"),
+    TELEMETRY: z
+      .enum(["true", "false"])
+      .default("false")
+      .transform((value) => value === "true"),
   },
   client: {
     NEXT_PUBLIC_SUNRED_API_URL: z.string().url().default("http://localhost:8080"),
@@ -17,6 +21,7 @@ export const env = createEnv({
   },
   runtimeEnv: {
     SUNRED_API_URL: process.env.SUNRED_API_URL,
+    TELEMETRY: process.env.TELEMETRY,
     NEXT_PUBLIC_SUNRED_API_URL: getPublicEnv().NEXT_PUBLIC_SUNRED_API_URL,
     NEXT_PUBLIC_SUNRED_DEFAULT_PDS: getPublicEnv().NEXT_PUBLIC_SUNRED_DEFAULT_PDS,
   },

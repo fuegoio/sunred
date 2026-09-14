@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { RootProvider } from "fumadocs-ui/provider/next";
 import { Geist_Mono, Merriweather, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
@@ -21,6 +22,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="flex flex-col min-h-screen">
         <RootProvider>{children}</RootProvider>
+        {process.env.NODE_ENV === "production" && (
+          <Script
+            defer
+            src="https://umami.alexistac.net/script.js"
+            data-website-id="c31ff124-7710-4ee7-bf24-d1cad767d72e"
+          />
+        )}
       </body>
     </html>
   );
