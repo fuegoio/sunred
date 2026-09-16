@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQueryClient, type InfiniteData, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { motion } from "motion/react";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, FolderDown } from "lucide-react";
 import { StarToggle } from "@/components/star-toggle";
 import { ShareToggle } from "@/components/share-toggle";
 import { FeedIcon } from "@/components/feed-icon";
@@ -13,7 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { getClient, updateEntries, updateEntryStatusByUrl } from "@/lib/sunred";
 import { markReadSession, removeReadSession } from "@/lib/entry-read-session";
 import { getApiErrorMessage } from "@/lib/errors";
-import { formatRelative, htmlSnippet } from "@/lib/format";
+import { formatRelative, htmlSnippet, siteDomain } from "@/lib/format";
 import { cn } from "@workspace/ui/lib/utils";
 import type { Entry, Feed } from "@/lib/types";
 
@@ -91,6 +91,13 @@ export function EntryCard({
   // page; preview articles (synthetic feed with id 0) go to the discovery
   // view, which previews them and offers a one-click subscribe.
   const feedFeedURL = feed?.feed_url || entry.feed?.feed_url;
+  // Aggregator feeds (e.g. hnrss) often link to articles on a different
+  // site than the feed itself. When that's the case, offer a one-click
+  // subscribe to the article's site — the subscribe page discovers its RSS
+  // feed automatically and shows the preview before committing.
+  const articleDomain = siteDomain(entry.url);
+  const feedDomain = siteDomain(feedSiteUrl) || siteDomain(feedFeedURL);
+  const canSubscribeSource = !!entry.url && !!feedDomain && articleDomain !== feedDomain;
   const feedHref =
     feed && feed.id > 0
       ? `/feeds/${feed.id}`
@@ -347,6 +354,21 @@ export function EntryCard({
         />
         {(entry.star_count ?? 0) > 0 && (
           <span className="text-sm text-muted-foreground">{entry.star_count}</span>
+        )}
+        {canSubscribeSource && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              router.push(`/feeds/new?url=${encodeURIComponent(entry.url)}`);
+            }}
+            aria-label={`Subscribe to ${articleDomain}`}
+            title={`Subscribe to ${articleDomain}`}
+            className="ml-2 flex size-8 items-center justify-center rounded-4xl text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <FolderDown className="size-3.5" />
+          </button>
         )}
         {entry.comments_url && (
           <button
