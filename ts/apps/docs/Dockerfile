@@ -37,6 +37,11 @@ RUN addgroup -g 10001 -S nodejs \
 COPY --from=builder --chown=nextjs:nodejs /app/apps/docs/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/docs/.next/static ./apps/docs/.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/apps/docs/public ./apps/docs/public
+# openapi/openapi.json is re-read at request time (the standalone server
+# chdirs to its own directory, and the spec path is resolved relative to it),
+# so it must ship with the image. Without it, the sitemap and search routes
+# fail at runtime even though they prerender fine at build time.
+COPY --from=builder --chown=nextjs:nodejs /app/apps/docs/openapi ./apps/docs/openapi
 
 USER nextjs
 EXPOSE 3000
