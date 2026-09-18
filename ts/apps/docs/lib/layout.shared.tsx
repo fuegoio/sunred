@@ -1,5 +1,6 @@
 import type { BaseLayoutProps, LayoutTab } from "fumadocs-ui/layouts/shared";
 import type { Folder, Node } from "fumadocs-core/page-tree";
+import type { ReactNode } from "react";
 import { Logo } from "@/components/logo";
 import { getSidebarTree } from "@/lib/sidebar-tree";
 
@@ -35,7 +36,17 @@ function sectionUrls(tabUrl: string): Set<string> | undefined {
   return folder ? collectPageUrls(folder) : undefined;
 }
 
-const DocsIcon = (
+// Fumadocs' tab selector (trigger and dropdown items) wraps each icon in a
+// fixed-size box (size-9 on mobile, md:size-5 on desktop) and its preflight
+// renders SVGs as block, leaving them top-aligned inside that box. Wrap the
+// icons so they center in the box on every viewport.
+function centerIcon(icon: ReactNode): ReactNode {
+  return (
+    <span className="flex size-full items-center justify-center">{icon}</span>
+  );
+}
+
+const DocsIcon = centerIcon(
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="16"
@@ -51,7 +62,7 @@ const DocsIcon = (
     <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
   </svg>
 );
-const SelfHostIcon = (
+const SelfHostIcon = centerIcon(
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="16"
@@ -69,7 +80,7 @@ const SelfHostIcon = (
     <line x1="6" x2="6.01" y1="18" y2="18" />
   </svg>
 );
-const ApiRefIcon = (
+const ApiRefIcon = centerIcon(
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="16"
