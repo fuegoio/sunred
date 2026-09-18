@@ -1,8 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { AlertCircle } from "lucide-react";
-import { Button } from "@workspace/ui/components/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@workspace/ui/components/empty";
+import { Button, buttonVariants } from "@workspace/ui/components/button";
 
 export default function Error({
   error,
@@ -16,19 +25,32 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 px-6 py-20 text-center">
-      <div className="flex size-12 items-center justify-center rounded-xl bg-destructive/10">
-        <AlertCircle className="size-6 text-destructive" />
-      </div>
-      <div>
-        <h1 className="font-serif text-lg font-bold tracking-normal">Something went wrong</h1>
-        <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-          An unexpected error occurred while loading this page.
-        </p>
-      </div>
-      <Button onClick={reset} size="sm">
-        Try again
-      </Button>
+    <div role="alert" className="flex h-full items-center justify-center p-4">
+      <Empty className="border w-full max-w-md">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <AlertCircle className="size-6 text-destructive" />
+          </EmptyMedia>
+          <EmptyTitle>Something went wrong</EmptyTitle>
+          <EmptyDescription>
+            An unexpected error interrupted this page. Trying again usually
+            fixes it.
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent className="flex-row">
+          <Button onClick={() => reset()} size="sm">
+            Try again
+          </Button>
+          <Link href="/" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            Back to timeline
+          </Link>
+        </EmptyContent>
+        {error.digest ? (
+          <p className="font-mono text-xs text-muted-foreground">
+            Error ID: {error.digest}
+          </p>
+        ) : null}
+      </Empty>
     </div>
   );
 }
