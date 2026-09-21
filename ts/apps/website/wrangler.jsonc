@@ -16,9 +16,10 @@
   },
   "vars": {
     // Origin of the Next.js app the catch-all proxy forwards to. The local
-    // default matches the dev server; set the production origin here (or
-    // via the dashboard) before deploying — it must be reachable from
-    // Workers, e.g. a Cloudflare-proxied hostname or a cloudflared tunnel.
+    // default matches the dev server. Deploying from this config replaces the
+    // Worker's vars, so set the production origin here (it's not secret) — it
+    // must be reachable from Workers, e.g. a Cloudflare-proxied hostname or a
+    // cloudflared tunnel.
     "APP_URL": "http://localhost:3000",
   },
 }
