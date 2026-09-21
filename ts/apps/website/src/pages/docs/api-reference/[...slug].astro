@@ -2,6 +2,7 @@
 import { render } from "astro:content";
 import { source } from "../../../lib/source";
 import { getSidebarTree } from "../../../lib/sidebar-tree";
+import { getPageImageUrl } from "../../../lib/shared";
 import { Docs } from "../../../components/docs/docs";
 import DocsBase from "../../../layouts/DocsBase.astro";
 import defaultMdxComponents from "fumadocs-ui/mdx";
@@ -25,6 +26,7 @@ export async function getStaticPaths() {
           params,
           props: {
             kind: "openapi" as const,
+            ogImage: getPageImageUrl(p).url,
             toc: p.data.toc,
             title: p.data.title,
             description: p.data.description,
@@ -32,11 +34,15 @@ export async function getStaticPaths() {
           },
         };
       }
-      return { params, props: { kind: "mdx" as const, page: p.data._raw } };
+      return {
+            params,
+            props: { kind: "mdx" as const, page: p.data._raw, ogImage: getPageImageUrl(p).url },
+          };
     });
 }
 
 const spec = "api" in Astro.props ? Astro.props : undefined;
+const ogImage = "ogImage" in Astro.props ? Astro.props.ogImage : undefined;
 const entry = spec ? undefined : Astro.props.page;
 const { Content, headings } = entry ? await render(entry) : { Content: undefined, headings: [] };
 
@@ -52,7 +58,7 @@ const title = spec ? spec.title : entry!.data.title;
 const description = spec ? spec.description : entry!.data.description;
 ---
 
-<DocsBase title={title} description={description}>
+<DocsBase title={title} description={description} ogImage={ogImage}>
   {
     spec ? (
       <Docs
