@@ -1,0 +1,37 @@
+---
+title: How Sunred works
+icon: layers
+description: Feed formats, background refresh, search, and content safety. What affects your reading.
+---
+
+Sunred fetches feeds, parses them, and stores entries in the background. You don't manage any of it, but a few details shape what you see.
+
+## Which feed formats does Sunred read?
+
+Sunred reads the three formats sites actually publish:
+
+| Format    | What it is                                 |
+| --------- | ------------------------------------------ |
+| RSS 2.0   | The most common format for blogs and news. |
+| Atom 1.0  | An older, XML-based standard.              |
+| JSON Feed | A modern, JSON-based format.               |
+
+Detection is automatic. Whichever format a site publishes, Sunred normalizes it into the same shape: title, link, content, author, date, tags, and any media attachments.
+
+## When do feeds refresh?
+
+Sunred doesn't check every feed on a fixed clock. It adapts the refresh interval to each feed: how often a feed publishes sets how often it's checked. A daily blog gets checked roughly daily, an hourly news feed more often. Frequent publishers stay fresh without requests being wasted on quiet ones.
+
+If a fetch or parse fails, Sunred retries on a shorter interval. The feed page shows the last error until the next refresh succeeds; otherwise you don't have to think about it. You can always fetch new entries yourself with the **Refresh** button on a feed's page.
+
+## Is entry content safe to read?
+
+Entry content comes from external sites, so Sunred sanitizes the HTML before storing it. Scripts and unsafe markup are stripped, links are forced to open safely, and `javascript:` or `data:` URLs are removed. What you read is the article's text and images, nothing the feed's author could sneak in.
+
+## How does search work?
+
+Entry titles and content are indexed for search, so the search box in the sidebar can find articles by any word in the title or body. One caveat: search uses English-language matching.
+
+## Use the API
+
+The full [API reference](/api-reference) covers every endpoint behind these features.

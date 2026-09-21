@@ -5,8 +5,8 @@ export const prerender = true;
 
 // Served at https://sunred.app/sitemap.xml (prerendered assets win over the
 // catch-all proxy, same as blog/rss.xml.ts). Covers the pages the website
-// owns: the marketing home page and the blog. The docs app serves its own
-// sitemap at /docs/sitemap.xml; both are listed in public/robots.txt.
+// owns: the marketing home page and the blog. The docs sitemap is served by
+// this app at /docs/sitemap.xml; both are listed in public/robots.txt.
 export const GET: APIRoute = async ({ site }) => {
   const origin = (site ?? new URL("https://sunred.app")).toString().replace(/\/+$/, "");
 

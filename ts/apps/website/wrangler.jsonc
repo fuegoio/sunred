@@ -1,0 +1,24 @@
+{
+  // Worker name and bindings for the website front door (Astro on Workers).
+  // The Cloudflare adapter generates the assets/worker settings at build
+  // time; this file only carries what's specific to us.
+  "name": "sunred-website",
+  "compatibility_date": "2026-09-08",
+  "observability": {
+    "enabled": true,
+  },
+  "assets": {
+    // Keep the non-slash URLs the site has always used
+    // (/docs, /blog/...) — Workers assets default to adding a trailing
+    // slash, which would change every canonical URL.
+    "binding": "ASSETS",
+    "html_handling": "drop-trailing-slash",
+  },
+  "vars": {
+    // Origin of the Next.js app the catch-all proxy forwards to. The local
+    // default matches the dev server; set the production origin here (or
+    // via the dashboard) before deploying — it must be reachable from
+    // Workers, e.g. a Cloudflare-proxied hostname or a cloudflared tunnel.
+    "APP_URL": "http://localhost:3000",
+  },
+}

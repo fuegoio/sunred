@@ -1,11 +1,4 @@
 import type { APIContext } from "astro";
-import { Readable } from "node:stream";
-import http from "node:http";
-import https from "node:https";
-
-// Origin of the Next.js app the website proxies unknown paths to. Defaults
-// to the local dev server; set APP_URL (e.g. http://web:3000) in production.
-const APP_URL = process.env.APP_URL?.replace(/\/+$/, "") ?? "http://localhost:3000";
 
 // Hop-by-hop headers that must not be forwarded across a proxy boundary.
 const HOP_BY_HOP = new Set([
@@ -21,20 +14,34 @@ const HOP_BY_HOP = new Set([
 
 // Request headers that describe the incoming body and must not be copied
 // verbatim onto the upstream request: `host` must point at the app, and
-// `content-length` is recomputed by Node for the buffered body we send.
+// content-length is recomputed by the runtime for the forwarded body.
 const DROP_REQUEST = new Set(["host", "content-length"]);
+
+// Response headers from the upstream that describe its on-the-wire encoding.
+// The Workers runtime decodes the body on fetch and re-encodes the response
+// to the client itself, so forwarding these would make the browser try to
+// decode an already-decoded body.
+const DROP_RESPONSE = new Set(["content-encoding", "content-length"]);
+
+// Origin of the Next.js app the website proxies unknown paths to. Reads the
+// APP_URL var from the Worker environment (wrangler.jsonc); falls back to
+// the local dev server when running outside Workers (astro preview).
+async function getAppUrl(): Promise<string> {
+  try {
+    const { env } = (await import("cloudflare:workers")) as {
+      env: Record<string, string | undefined>;
+    };
+    if (env.APP_URL) return env.APP_URL;
+  } catch {
+    // Not running on Workers (local dev / prerendering).
+  }
+  return process.env.APP_URL ?? "http://localhost:3000";
+}
 
 /**
  * proxyToApp forwards the incoming request to the Next.js app and returns its
  * response. It is used by the catch-all route (every path the website doesn't
  * own) and by the middleware (logged-in "/" so the app renders there).
- *
- * This uses Node's `http`/`https` modules rather than global `fetch` so the
- * upstream body is streamed through **byte-for-byte without decompression**.
- * `fetch` (undici) transparently gunzips responses but leaves the original
- * `content-encoding` header in place, so forwarding its `Response` makes the
- * browser try to decode an already-decoded body (ERR_CONTENT_DECODING_*).
- * Raw passthrough keeps gzip/brotli end-to-end and lets the browser decode.
  *
  * The app's absolute redirect Location headers are rewritten to the public
  * origin so redirects (e.g. unauth /feeds -> /login) stay on the public host
@@ -42,64 +49,56 @@ const DROP_REQUEST = new Set(["host", "content-length"]);
  */
 export async function proxyToApp(context: APIContext): Promise<Response> {
   const { url, request } = context;
-  const target = new URL(url.pathname + url.search, APP_URL);
-  const transport = target.protocol === "https:" ? https : http;
+  const appUrl = (await getAppUrl()).replace(/\/+$/, "");
+  const target = new URL(url.pathname + url.search, appUrl);
 
-  const reqHeaders: Record<string, string> = {};
+  const reqHeaders = new Headers();
   for (const [key, value] of request.headers) {
     const lower = key.toLowerCase();
     if (HOP_BY_HOP.has(lower) || DROP_REQUEST.has(lower)) continue;
-    reqHeaders[key] = value;
+    reqHeaders.set(key, value);
   }
   // Let the app build public URLs (redirects, canonical links) from the
   // original request instead of the internal proxy address.
-  reqHeaders["x-forwarded-host"] = url.host;
-  reqHeaders["x-forwarded-proto"] = url.protocol.replace(":", "");
-  reqHeaders["x-forwarded-for"] = request.headers.get("x-forwarded-for") ?? "";
+  reqHeaders.set("x-forwarded-host", url.host);
+  reqHeaders.set("x-forwarded-proto", url.protocol.replace(":", ""));
+  reqHeaders.set("x-forwarded-for", request.headers.get("x-forwarded-for") ?? "");
 
-  // Buffer the request body for non-GET/HEAD so server actions and form posts
-  // pass through. Buffering (rather than streaming) lets Node set the correct
-  // content-length on the upstream request.
   const hasBody = request.method !== "GET" && request.method !== "HEAD";
-  const body = hasBody ? Buffer.from(await request.arrayBuffer()) : undefined;
+  const upstream = await fetch(target, {
+    method: request.method,
+    headers: reqHeaders,
+    body: hasBody ? request.body : undefined,
+    // Surface the app's own redirects (3xx + Location) instead of following
+    // them here, so Location can be rewritten to the public origin below.
+    redirect: "manual",
+    // Required when sending a stream body per the fetch spec; ignored by
+    // runtimes that don't implement it.
+    duplex: "half",
+  }).catch((error: unknown) => {
+    throw new Error(`website proxy: failed to reach the app at ${appUrl}: ${String(error)}`, {
+      cause: error,
+    });
+  });
 
-  return new Promise<Response>((resolve, reject) => {
-    const upstream = transport.request(
-      target,
-      { method: request.method, headers: reqHeaders },
-      (res) => {
-        const resHeaders = new Headers();
-        for (const [key, value] of Object.entries(res.headers)) {
-          if (value == null) continue;
-          const lower = key.toLowerCase();
-          if (HOP_BY_HOP.has(lower)) continue;
-          const val = Array.isArray(value) ? value.join(", ") : value;
-          if (lower === "location") {
-            resHeaders.set(key, rewriteLocation(val, url));
-          } else {
-            resHeaders.set(key, val);
-          }
-        }
+  const resHeaders = new Headers();
+  for (const [key, value] of upstream.headers) {
+    const lower = key.toLowerCase();
+    if (HOP_BY_HOP.has(lower) || DROP_RESPONSE.has(lower) || lower === "set-cookie") continue;
+    resHeaders.set(key, value);
+  }
+  // Set-Cookie must round-trip individually (the app sets its session cookie
+  // through the proxy); Header iteration would merge them.
+  for (const cookie of upstream.headers.getSetCookie()) {
+    resHeaders.append("set-cookie", cookie);
+  }
+  const location = upstream.headers.get("location");
+  if (location) resHeaders.set("location", rewriteLocation(location, url));
 
-        // 304, 204, and 1xx responses must not have a body — the Web
-        // Response constructor throws if one is provided. Drain the
-        // upstream stream so it doesn't leak.
-        const status = res.statusCode ?? 200;
-        const noBody = status === 304 || status === 204 || (status >= 100 && status < 200);
-        if (noBody) res.resume();
-
-        resolve(
-          new Response(noBody ? null : (Readable.toWeb(res) as ReadableStream), {
-            status,
-            statusText: res.statusMessage ?? "",
-            headers: resHeaders,
-          }),
-        );
-      },
-    );
-    upstream.on("error", reject);
-    if (body) upstream.end(body);
-    else upstream.end();
+  return new Response(upstream.body, {
+    status: upstream.status,
+    statusText: upstream.statusText,
+    headers: resHeaders,
   });
 }
 

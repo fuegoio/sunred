@@ -1,5 +1,4 @@
-.PHONY: gen gen-openapi gen-sdk gen-ts build api cli web docs lint test cover dev fmt clean
-
+.PHONY: gen gen-openapi gen-sdk gen-ts build api cli web lint test cover dev fmt clean
 # --- Code generation ---
 
 gen: gen-openapi gen-sdk gen-ts
@@ -25,9 +24,6 @@ cli:
 
 web:
 	cd ts && pnpm --filter web build
-
-docs:
-	cd ts && pnpm --filter docs build
 
 # --- Lint & Test ---
 
