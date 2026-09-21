@@ -102,7 +102,7 @@ Bring the stack up:
 docker compose up -d
 ```
 
-Migrations don't run on their own — run them once on first start. The API and relay each have their own database:
+Migrations don't run on their own; run them once on first start. The API and relay each have their own database:
 
 ```bash
 docker compose exec api /app/sunred --migrate
@@ -113,8 +113,8 @@ Two variables tell the web app where the API is, and they're not interchangeable
 
 ## Run the relay (optional)
 
-The `relay` service is optional but recommended — it enables cross-instance
+The `relay` service is optional but recommended: it enables cross-instance
 social features (global counts, federated shares). See
 [AT Proto & identity](/self-hosting/at-proto) for what it does and how to
-configure it. Users log in with their own AT Proto handle — the default PDS is
+configure it. Users log in with their own AT Proto handle; the default PDS is
 `https://snrd.social`, or users can bring their own PDS.

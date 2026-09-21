@@ -4,13 +4,13 @@ icon: key-round
 description: Signing in with your AT Proto handle, and creating API tokens for the CLI and scripts.
 ---
 
-Sunred identity is your [AT Protocol](https://atproto.com) identity — the same account you use on Bluesky or any other AT Proto app. You sign in with your AT Proto handle, and there are no Sunred-specific passwords. [Sign in and sync with AT Proto](/at-proto) has the full picture.
+Sunred identity is your [AT Protocol](https://atproto.com) identity, the same account you use on Bluesky or any other AT Proto app. You sign in with your AT Proto handle, and there are no Sunred-specific passwords. [Sign in and sync with AT Proto](/at-proto) has the full picture.
 
 ## Sign in on the web
 
-On the login page, enter your handle — `alice.bsky.social`, for example — or click the default-PDS button if your instance shows one. Sunred redirects you to your PDS to approve the login, then brings you back with an active session.
+On the login page, enter your handle (`alice.bsky.social`, for example) or click the default-PDS button if your instance shows one. Sunred redirects you to your PDS to approve the login, then brings you back with an active session.
 
-The session is a cookie your browser sends automatically on every request. Everything you see — feeds, entries, tokens — is scoped to the signed-in user, so you only ever see your own.
+The session is a cookie your browser sends automatically on every request. Everything you see, from feeds to entries to tokens, is scoped to the signed-in user, so you only ever see your own.
 
 ## Call the API with a token
 
@@ -18,7 +18,7 @@ Session cookies are for browsers. Scripts, the CLI, and custom integrations use 
 
 ### Create a token
 
-Go to **Settings → Tokens** and create one. Give it a label you'll recognize later — "laptop CLI", "nightly script".
+Go to **Settings → Tokens** and create one. Give it a label you'll recognize later, like "laptop CLI" or "nightly script".
 
 The token value is shown **only once**, right after you create it. Copy it somewhere safe, because you won't see it again. Tokens start with `pla_`.
 
@@ -35,7 +35,7 @@ The CLI can store it for you with `sunred config set token pla_...`, or you can 
 
 ### Revoke a token
 
-Delete a token from **Settings → Tokens** and it stops working immediately — every request using it fails with `401` from that point on. This is the move when a token leaks or you just stop needing it.
+Delete a token from **Settings → Tokens** and it stops working immediately; every request using it fails with `401` from that point on. This is the move when a token leaks or you just stop needing it.
 
 ## Log in from the CLI
 
@@ -55,7 +55,7 @@ sunred login --no-browser --url https://api.your-instance.com
 
 Tokens issued through the device flow expire after 14 days. They show up in your token list labeled `CLI (device flow)`, so they're easy to spot and revoke; run `sunred login` again to refresh one.
 
-Tokens you create yourself — in the web UI or with `sunred tokens create` — don't expire.
+Tokens you create yourself, in the web UI or with `sunred tokens create`, don't expire.
 
 ## Manage tokens from the API
 
