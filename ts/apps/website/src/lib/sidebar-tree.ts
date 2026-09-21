@@ -39,14 +39,16 @@ function foldSeparators(children: Node[]): Node[] {
 function specPageMeta(): Map<string, { method: string; deprecated?: boolean }> {
   const out = new Map<string, { method: string; deprecated?: boolean }>();
   for (const page of source.getPages()) {
-    const meta = (page.data as { _openapi?: { method?: string; deprecated?: boolean } })
-      ._openapi;
+    const meta = (page.data as { _openapi?: { method?: string; deprecated?: boolean } })._openapi;
     if (meta?.method) out.set(page.url, { method: meta.method, deprecated: meta.deprecated });
   }
   return out;
 }
 
-function attachSpecMeta(children: Node[], meta: Map<string, { method: string; deprecated?: boolean }>): Node[] {
+function attachSpecMeta(
+  children: Node[],
+  meta: Map<string, { method: string; deprecated?: boolean }>,
+): Node[] {
   return children.map((node) => {
     if (node.type === "page" && node.url) {
       const page = meta.get(node.url);
