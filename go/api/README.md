@@ -406,7 +406,7 @@ make migrate    # run migrations and exit (equivalent to ./sunred --migrate)
 ### OpenAPI generation
 
 ```sh
-make gen-openapi   # dump openapi.json, copy to ts/apps/docs, regenerate TS client
+make gen-openapi   # dump openapi.json, copy to ts/apps/website, regenerate TS client
 ```
 
 ### Docker

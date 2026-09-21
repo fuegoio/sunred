@@ -11,7 +11,7 @@ migrate: build
 
 gen-openapi: build
 	./sunred --openapi 2>/dev/null | python3 -m json.tool > openapi.json
-	cp openapi.json ../../ts/apps/docs/openapi/openapi.json
+	cp openapi.json ../../ts/apps/website/openapi/openapi.json
 	cd ../../ts/packages/api-client && pnpm gen
 
 test: build

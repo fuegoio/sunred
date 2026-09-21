@@ -1,0 +1,45 @@
+---
+title: Entries
+icon: newspaper
+description: Reading and managing entries.
+---
+
+An **entry** is a single article fetched from a feed. Each one carries a read status, a starred flag, and sanitized HTML content. Your timeline shows entries newest-first, including articles shared by people you follow, which surface alongside entries from your own subscriptions.
+
+## Keep track of what you've read
+
+Every entry is in one of three states:
+
+| Status    | What it means                                                |
+| --------- | ------------------------------------------------------------ |
+| `unread`  | New: you haven't opened it yet. Shows a dot in the timeline. |
+| `read`    | You've opened it. Hidden from the **Unread** view.           |
+| `removed` | Hidden from the normal views without being marked read.      |
+
+New entries start `unread`. Opening an article marks it `read` automatically. Click a read entry's dot to mark it unread again, useful when you want to come back to something.
+
+## Read an entry
+
+Click the entry's title to open the original on its source site in a new tab; Sunred marks it read. To stay inside Sunred, click the card body instead; the in-app reader shows the title, author, date, tags, and a summary, with the full article one click away in a new tab.
+
+The reader doesn't render the full article body, because most feeds only carry a summary.
+
+## Star an entry
+
+Click the star icon on a card or in the reader header to bookmark an entry. Starred entries live under **Starred** in the sidebar whatever their read status. Click the star again to unstar.
+
+## Share an entry
+
+Click the share icon on a card to pass the article on to people who follow you. Articles shared by people you follow appear in your **Unread** and **All** views alongside your own subscriptions. See [Follow people and share articles](/social) for the full picture.
+
+## Search your entries
+
+The search box at the top of the sidebar runs a full-text query across every entry's title and content. Type a query and press Enter; results appear in the timeline like any other view. For more targeted queries, combine search with read-status and starred filters through the [Entries API](/api-reference?tag=Entries).
+
+## Mark all as read
+
+To clear a feed at once, open its page and click **Mark all as read**. The unread count drops to zero and those entries leave the **Unread** view.
+
+## Use the Entries API
+
+List, filter, update, and star entries through the [Entries API](/api-reference?tag=Entries): filter by feed, folder, status, starred, or a search query, and paginate with `limit` and `offset`.

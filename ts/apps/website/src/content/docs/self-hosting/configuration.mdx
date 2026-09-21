@@ -1,0 +1,42 @@
+---
+title: Configuration
+icon: sliders-horizontal
+description: Environment variables for the API and web containers.
+---
+
+Everything you can configure in Sunred is an environment variable. The compose file in [Docker Compose](/self-hosting) is a working starting point; the tables below are the full list.
+
+## API variables
+
+| Variable                      | Default                                                          | Description                                                                                                                                                                                |
+| ----------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SUNRED_DATABASE_URL`         | `postgres://sunred:sunred@localhost:5432/sunred?sslmode=disable` | PostgreSQL connection string                                                                                                                                                               |
+| `SUNRED_HTTP_ADDR`            | `:8080`                                                          | HTTP listen address                                                                                                                                                                        |
+| `SUNRED_BASE_URL`             | `http://127.0.0.1:8080`                                          | Public URL of the API (used for auth redirects)                                                                                                                                            |
+| `SUNRED_WEB_URL`              | `http://localhost:3000`                                          | Public URL of the web frontend                                                                                                                                                             |
+| `SUNRED_LOG_FORMAT`           | `pretty`                                                         | Log format: `pretty` or `json`                                                                                                                                                             |
+| `SUNRED_POLLING_FREQUENCY`    | `60s`                                                            | How often the scheduler checks for due feeds                                                                                                                                               |
+| `SUNRED_BATCH_SIZE`           | `100`                                                            | Feeds processed per scheduler tick                                                                                                                                                         |
+| `SUNRED_WORKER_POOL_SIZE`     | `5`                                                              | Concurrent feed-processing workers                                                                                                                                                         |
+| `SUNRED_HTTP_CLIENT_TIMEOUT`  | `20s`                                                            | Timeout for fetching a single feed                                                                                                                                                         |
+| `SUNRED_HTTP_CLIENT_MAX_BODY` | `15728640`                                                       | Max feed body size in bytes (15 MB)                                                                                                                                                        |
+| `SUNRED_CLEANUP_FREQUENCY`    | `24h`                                                            | How often to run entry cleanup                                                                                                                                                             |
+| `SUNRED_ENTRY_MAX_AGE_DAYS`   | `60`                                                             | Entries older than this are eligible for cleanup                                                                                                                                           |
+| `SUNRED_DISABLE_SCHEDULER`    | (unset)                                                          | Set to any non-empty value to disable the scheduler                                                                                                                                        |
+| `SUNRED_COOKIE_SECURE`        | `false`                                                          | Mark session cookies as `Secure` (required for cookies over HTTPS)                                                                                                                         |
+| `SUNRED_COOKIE_SAMESITE`      | `lax`                                                            | Cookie SameSite mode: `lax`, `none`, or `strict`. `none` requires `SUNRED_COOKIE_SECURE=true`                                                                                              |
+| `SUNRED_COOKIE_DOMAIN`        | (unset)                                                          | Bare host to set as the cookie `Domain` (e.g. `sunred.app`), so the session is shared across subdomains. Set to the registrable domain shared by the API and web app                       |
+| `SUNRED_TRUSTED_ORIGINS`      | (unset)                                                          | Comma-separated list of allowed browser origins (e.g. `https://app.sunred.app`). When unset, any origin is allowed (dev only). When set, `SUNRED_WEB_URL` is always included automatically |
+| `SUNRED_RELAY_URL`            | (unset)                                                          | URL of the Sunred relay. Optional; enables cross-instance social features (global counts, federated shares). See [AT Proto & identity](/self-hosting/at-proto)                             |
+| `SUNRED_DEFAULT_PDS`          | `https://snrd.social`                                            | PDS URL for the `/auth/oauth/signup` endpoint (server-side fallback; the web UI uses `NEXT_PUBLIC_SUNRED_DEFAULT_PDS`). See [AT Proto & identity](/self-hosting/at-proto)                  |
+
+## Web variables
+
+| Variable                         | Default                 | Description                                                    |
+| -------------------------------- | ----------------------- | -------------------------------------------------------------- |
+| `SUNRED_API_URL`                 | `http://127.0.0.1:8080` | Server-side API URL (reachable from the container)             |
+| `NEXT_PUBLIC_SUNRED_API_URL`     | `http://localhost:8080` | Client-side API URL (reachable from the browser)               |
+| `NEXT_PUBLIC_SUNRED_DEFAULT_PDS` | `https://snrd.social`   | Default PDS for the first-party login button on the login page |
+| `TELEMETRY`                      | `false`                 | Enable Umami telemetry for the web app (`true` or `false`)     |
+
+The cookie and origin variables (`SUNRED_COOKIE_SECURE`, `SUNRED_COOKIE_SAMESITE`, `SUNRED_COOKIE_DOMAIN`, `SUNRED_TRUSTED_ORIGINS`) only matter once the API and web app sit on different origins. [Run Sunred in production](/self-hosting/production) walks through the combinations.
