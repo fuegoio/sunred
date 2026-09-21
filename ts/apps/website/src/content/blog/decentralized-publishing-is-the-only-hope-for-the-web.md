@@ -8,9 +8,9 @@ Twenty years ago you kept a short list of sites you trusted: a blogger you liked
 
 Then the opinions moved indoors. Twitter and Facebook solved real problems that personal sites made you handle yourself: hosting took work, and finding readers meant begging strangers for links. The platforms took both jobs, and the price looked small. It was not. They kept the audience, the archive, and the relationship. You published, and they decided who saw it.
 
-Twenty years into that arrangement, we know how it went. Your feed is no longer a feed. It is a slot machine stocked with whatever keeps you scrolling, interspersed with posts from people you never asked to hear from. Influence became a business, the business rewards volume, and the loudest voices win while everything else sinks. We do not think this is what anyone wanted. We think it is what happens when a middleman owns both ends of the conversation.
+Twenty years into that arrangement, we know how it went. Your feed is no longer a feed. It is a slot machine stocked with whatever keeps you scrolling, interspersed with posts from people you never asked to hear from. Influence became a business, the business rewards volume, and the loudest voices win while everything else sinks. This is what happens when a middleman owns both ends of the conversation.
 
-The way back is not a new protocol or a new startup. It is the web's own structure: individual websites, syndicated over open formats. That system never stopped working.
+The way back is the web's own structure: individual websites, syndicated over open formats. That system never stopped working.
 
 ## RSS is the future of the web
 
@@ -32,7 +32,7 @@ Put the two together and nobody sits in the middle. The writer owns the publicat
 
 ## Why we built Sunred
 
-We do not think the web is finished. We think it has been mismanaged by companies that profit from the mismanagement, and that the pieces needed to fix it have existed all along: pages with stable addresses, feeds that accept any reader, archives owned by their authors.
+The web is not finished. It has been mismanaged by companies that profit from the mismanagement, and the pieces needed to fix it have existed all along: pages with stable addresses, feeds that accept any reader, archives owned by their authors.
 
 So we built the reader we wanted to use. Sunred shows new posts from the sites you choose, in chronological order, with nothing in between. It is open source, and you can host it yourself. It will not recommend anything. It will not tell you what is worth your time. It brings the web to you, and you decide what to do with it.
 
