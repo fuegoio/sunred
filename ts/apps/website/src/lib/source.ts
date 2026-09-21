@@ -2,7 +2,6 @@ import type { StaticSource } from "fumadocs-core/source";
 import { loader } from "fumadocs-core/source";
 import { getCollection, type CollectionEntry } from "astro:content";
 import * as path from "node:path";
-import { resolveIcon } from "./icons";
 import { openapi } from "./openapi";
 
 const DOCS_DIR = "src/content/docs";
@@ -64,7 +63,11 @@ export const source = loader(
   },
   {
     baseUrl: "/docs",
-    icon: resolveIcon,
+    // Icons stay as name strings in the tree: the tree crosses the island
+    // serialization boundary as a prop, and React elements can't survive
+    // that. The island resolves the names to components (see
+    // components/docs/docs.tsx).
+    icon: (name) => name,
     url: (slugs) => {
       if (slugs[0] === "openapi") {
         const rest = slugs.slice(1);
@@ -81,6 +84,10 @@ export const source = loader(
       }
       return slugs.length ? `/docs/${slugs.join("/")}` : "/docs";
     },
-    plugins: [openapi.loaderPlugin()],
+    // No openapi.loaderPlugin() here: it wraps operation node names in React
+    // elements (method badges), which cannot cross the island serialization
+    // boundary. getSidebarTree() attaches the method as a plain string and
+    // the island renders the badge (see components/docs/docs.tsx).
+    plugins: [],
   },
 );
