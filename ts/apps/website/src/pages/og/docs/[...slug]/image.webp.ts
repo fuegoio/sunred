@@ -1,6 +1,8 @@
 import type { APIRoute } from "astro";
 import { generateOGImage } from "fumadocs-ui/og/takumi";
 import { source } from "../../../../lib/source";
+import { createElement } from "react";
+import { Logo } from "../../../../components/logo";
 
 // One OG image per docs page, generated at build time from the page's title
 // and description. URL shape: /og/docs/<page slugs>/image.webp (see
@@ -22,6 +24,7 @@ export const GET: APIRoute = ({ params }) => {
   return generateOGImage({
     title: page.data.title,
     description: page.data.description,
+    icon: createElement(Logo, { style: { width: 64, height: 64 } }),
     site: "Sunred",
     primaryColor: "rgba(255, 105, 35, 0.3)",
     primaryTextColor: "rgb(255, 105, 35)",
