@@ -15,11 +15,10 @@
     "html_handling": "drop-trailing-slash",
   },
   "vars": {
-    // Origin of the Next.js app the catch-all proxy forwards to. The local
-    // default matches the dev server. Deploying from this config replaces the
-    // Worker's vars, so set the production origin here (it's not secret) — it
-    // must be reachable from Workers, e.g. a Cloudflare-proxied hostname or a
-    // cloudflared tunnel.
-    "APP_URL": "http://localhost:3000",
+    // Origin of the Next.js app the catch-all proxy forwards to. It must be
+    // reachable from Workers (app.sunred.app is Cloudflare-proxied, so it
+    // is). Override locally with a .dev.vars file
+    // (APP_URL=http://localhost:3000).
+    "APP_URL": "https://app.sunred.app",
   },
 }
