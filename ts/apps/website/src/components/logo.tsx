@@ -1,7 +1,10 @@
-export function Logo({ className }: { className?: string }) {
+import type { CSSProperties } from "react";
+
+export function Logo({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
     <svg
       className={className}
+      style={style}
       viewBox="0 0 615 615"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
