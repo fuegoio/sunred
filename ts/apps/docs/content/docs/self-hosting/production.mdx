@@ -6,9 +6,9 @@ description: Reverse proxy, cross-origin sessions, and database backups.
 
 ## Terminate TLS with a reverse proxy
 
-Neither service terminates TLS directly, so put both behind a reverse proxy —
-nginx, Caddy, and Traefik all work. In the example below the API runs on its
 own subdomain (`api.your-domain.com`) and the web app serves the main domain.
+Neither service terminates TLS directly, so put both behind a reverse proxy:
+nginx, Caddy, and Traefik all work.
 
 ```nginx
 server {
@@ -56,7 +56,7 @@ this depends on whether the two share a registrable domain.
 If the API and web app share a registrable domain (e.g. `api.sunred.app` and
 `app.sunred.app` both under `sunred.app`), set the cookie `Domain` to that
 registrable domain. The browser then sends the session cookie to both the web
-app and the API — requests between them are same-site, so the default
+app and the API; requests between them are same-site, so the default
 `SameSite=Lax` works:
 
 ```
@@ -88,7 +88,7 @@ you only need to list any additional origins.
 
 ## Back up the databases
 
-Sunred uses two separate PostgreSQL databases — one for the instance (API) and
+Sunred uses two separate PostgreSQL databases: one for the instance (API) and
 one for the relay. See [Data responsibilities](/self-hosting/at-proto#data-responsibilities)
 for what each holds.
 

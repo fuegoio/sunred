@@ -1,7 +1,7 @@
 ---
 title: How Sunred works
 icon: layers
-description: Feed formats, background refresh, search, and content safety — what affects your reading.
+description: Feed formats, background refresh, search, and content safety: what affects your reading.
 ---
 
 Sunred fetches feeds, parses them, and stores entries in the background. You don't manage any of it, but a few details shape what you see.
@@ -16,7 +16,7 @@ Sunred reads the three formats sites actually publish:
 | Atom 1.0  | An older, XML-based standard.               |
 | JSON Feed | A modern, JSON-based format.                |
 
-Detection is automatic. Whichever format a site publishes, Sunred normalizes it into the same shape — title, link, content, author, date, tags, and any media attachments.
+Detection is automatic. Whichever format a site publishes, Sunred normalizes it into the same shape: title, link, content, author, date, tags, and any media attachments.
 
 ## When do feeds refresh?
 
@@ -26,7 +26,7 @@ If a fetch or parse fails, Sunred retries on a shorter interval. The feed page s
 
 ## Is entry content safe to read?
 
-Entry content comes from external sites, so Sunred sanitizes the HTML before storing it. Scripts and unsafe markup are stripped, links are forced to open safely, and `javascript:` or `data:` URLs are removed. What you read is the article's text and images — nothing the feed's author could sneak in.
+Entry content comes from external sites, so Sunred sanitizes the HTML before storing it. Scripts and unsafe markup are stripped, links are forced to open safely, and `javascript:` or `data:` URLs are removed. What you read is the article's text and images, nothing the feed's author could sneak in.
 
 ## How does search work?
 

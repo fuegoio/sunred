@@ -5,7 +5,7 @@ description: How Sunred uses AT Proto for identity, OAuth login with a PDS, and 
 ---
 
 Sunred uses the [AT Protocol](https://atproto.com) for identity. Users log in
-with an AT Proto handle — the same account they use on Bluesky or any other
+with an AT Proto handle, the same account they use on Bluesky or any other
 AT Proto client. There are no Sunred-specific passwords.
 
 This page covers what you need to know as an operator: which components are
@@ -14,7 +14,7 @@ Sunred.
 
 ## How identity works
 
-Every Sunred user is identified by a **DID** — a persistent identifier stored
+Every Sunred user is identified by a **DID**: a persistent identifier stored
 on their **PDS** (Personal Data Server). A handle (`alice.bsky.social`,
 `bob.sunred.app`) is a human-readable alias that resolves to a DID.
 
@@ -45,26 +45,26 @@ A full deployment has four pieces:
 | --- | --- | --- |
 | API | Sunred REST server, session issuer, PDS/relay client | yes |
 | Web | Next.js frontend | yes |
-| PDS | Hosts user records, handles OAuth | external — users bring their own |
+| PDS | Hosts user records, handles OAuth | external (users bring their own) |
 | Relay | Aggregates `io.sunred.*` records across PDSes | recommended |
 
 ### The PDS
 
-Each user's data lives on a PDS — but Sunred doesn't run or ship one. Users
+Each user's data lives on a PDS, but Sunred doesn't run or ship one. Users
 log in with their own AT Proto handle, typically a Bluesky account
 (`*.bsky.social`) or an account on a personal PDS they run themselves. Sunred
 authenticates against the user's PDS at login time via OAuth.
 
 If you want to offer accounts on your own domain, you can run a PDS
 separately with the [official PDS image](https://github.com/bluesky-social/pds).
-That's a deployment decision outside Sunred's scope — Sunred works with any
+That's a deployment decision outside Sunred's scope: Sunred works with any
 standards-compliant AT Proto PDS, yours or anyone else's.
 
 ### Offering signup
 
 The login page shows a **Continue with [PDS]** button that starts the OAuth
 flow against the instance's default PDS. The PDS decides whether to show
-login or signup — users without an existing account can create one on that
+login or signup; users without an existing account can create one on that
 PDS and are logged into Sunred in one step. Set the default PDS on the web
 side with `NEXT_PUBLIC_SUNRED_DEFAULT_PDS` (default `https://snrd.social`).
 
@@ -84,7 +84,7 @@ and follow.
 The relay is a separate Go service with its own database. Point the API at it
 with `SUNRED_RELAY_URL`. If you leave that unset, cross-instance social
 features (global follower counts, federated shares, cross-instance user
-search) are disabled — the instance still works standalone.
+search) are disabled, and the instance still works standalone.
 
 ## Data responsibilities
 
@@ -103,13 +103,13 @@ and for understanding what federates versus what stays local.
 
 The API keeps its own PostgreSQL database with three kinds of data:
 
-- **Feed content** — article bodies, enclosures, and feed metadata. The
+- **Feed content**: article bodies, enclosures, and feed metadata. The
   instance's scheduler fetches these from the source feeds on a poll cycle. They
   never come from the PDS or the relay.
 - **A derived cache** of each user's `io.sunred.*` records, mirrored from their
   PDS on first login and kept in sync through the relay. The PDS stays canonical;
   the cache can be rebuilt from it.
-- **Instance-local state** that never federates — read and starred state,
+- **Instance-local state** that never federates: read and starred state,
   folders, per-instance settings. It stays on the instance where it was created
   and does not follow the DID to another instance.
 
@@ -150,7 +150,7 @@ session cookie (host-only on `localhost`) is shared across the web (port 3000)
 and API (port 8080).
 
 Sunred holds a DPoP keypair per account so it can sign PDS requests with the
-bound access token. You don't need to manage these keys — Sunred generates and
+bound access token. You don't need to manage these keys; Sunred generates and
 stores them.
 
 ## What happens on first login
@@ -167,8 +167,8 @@ given instance Sunred backfills the local database from the PDS:
 4. Subscribe to the relay's event stream for that DID to receive live updates.
 
 Subsequent logins reuse the existing cache and resume the relay subscription.
-Local-only state that isn't part of the AT Proto records — read state,
-folders, per-instance settings — stays on the instance where it was created
+Local-only state that isn't part of the AT Proto records (read state,
+folders, per-instance settings) stays on the instance where it was created
 and doesn't transfer with the DID.
 
 ## Writing back to the PDS
@@ -176,7 +176,7 @@ and doesn't transfer with the DID.
 When a user follows someone, shares an article, or subscribes to a feed,
 Sunred writes an `io.sunred.*` record to their PDS repo (signed with the
 DPoP-bound access token). The relay picks up the record from the PDS repo
-stream and federates it. The local cache and the PDS stay in sync — the PDS is
+stream and federates it. The local cache and the PDS stay in sync: the PDS is
 the canonical copy, the cache is derived.
 
 ## Records Sunred uses
@@ -196,10 +196,10 @@ relay read them to build the federated social graph.
 See [Configuration](/self-hosting/configuration) for the environment variables
 that control relay and OAuth behavior. The key ones:
 
-- `SUNRED_RELAY_URL` — the relay endpoint (optional; enables cross-instance
+- `SUNRED_RELAY_URL`: the relay endpoint (optional; enables cross-instance
   social features).
-- `SUNRED_BASE_URL` — the public URL of the API. The OAuth callback URL
+- `SUNRED_BASE_URL`: the public URL of the API. The OAuth callback URL
   derives from this (`<BaseURL>/auth/oauth/callback`). Must use `127.0.0.1`
   (not `localhost`) in dev for RFC 8252 compliance.
-- `NEXT_PUBLIC_SUNRED_DEFAULT_PDS` — the default PDS shown on the login page
+- `NEXT_PUBLIC_SUNRED_DEFAULT_PDS`: the default PDS shown on the login page
   (web-only config; defaults to `https://snrd.social`).

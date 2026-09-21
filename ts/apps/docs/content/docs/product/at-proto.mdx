@@ -4,7 +4,7 @@ icon: at-sign
 description: Signing in with your AT Proto handle and how your data syncs across instances.
 ---
 
-Sunred runs identity on the [AT Protocol](https://atproto.com) — the same network Bluesky uses. Your Sunred account is your AT Proto account, the same one you use on Bluesky or any other AT Proto app. There is no separate Sunred password.
+Sunred runs identity on the [AT Protocol](https://atproto.com), the same network Bluesky uses. Your Sunred account is your AT Proto account, the same one you use on Bluesky or any other AT Proto app. There is no separate Sunred password.
 
 ## Sign in
 
@@ -14,7 +14,7 @@ You're not tied to one server: any Sunred instance accepts your handle, so if a 
 
 ## Where your data lives
 
-Your social data lives on your PDS as public records, not locked inside Sunred: who you follow, the articles you share and star, the feeds you subscribe to, and your Sunred profile (display name and bio, cached from your standard `app.bsky.actor.profile` record — the same profile Bluesky uses).
+Your social data lives on your PDS as public records, not locked inside Sunred: who you follow, the articles you share and star, the feeds you subscribe to, and your Sunred profile (display name and bio, cached from your standard `app.bsky.actor.profile` record, the same profile Bluesky uses).
 
 Sunred keeps a local cache of these records so the app stays fast, but your PDS is the source of truth. When you follow, share, star, or subscribe, Sunred writes the record to your PDS, and other Sunred users see it through the relay.
 
@@ -22,7 +22,7 @@ Sunred keeps a local cache of these records so the app stays fast, but your PDS 
 
 The first time you sign into an instance, it pulls your existing `io.sunred.*` records from your PDS into its local cache, so your follows, shares, stars, and feed subscriptions are all there immediately. After that, the relay keeps them in sync.
 
-Not everything travels. State that isn't part of your AT Proto records — which entries you've read, your folders, your per-instance settings — stays on the instance where you created it. Your social graph comes with you; your local reading state does not.
+Not everything travels. State that isn't part of your AT Proto records (which entries you've read, your folders, your per-instance settings) stays on the instance where you created it. Your social graph comes with you; your local reading state does not.
 
 ## Take your account elsewhere
 
