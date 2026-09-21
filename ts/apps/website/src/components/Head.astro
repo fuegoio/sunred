@@ -58,16 +58,33 @@ const {
 <!-- Start light; honour the visitor's saved theme before the first paint. -->
 <script is:inline>
   (function () {
-    var isDark = false;
-    try {
-      isDark = localStorage.getItem("theme") === "dark";
-    } catch (e) {
-      /* Storage is optional; the page remains light when it is unavailable. */
+    function savedThemeIsDark() {
+      try {
+        return localStorage.getItem("theme") === "dark";
+      } catch (e) {
+        /* Storage is optional; the page remains light when it is unavailable. */
+        return false;
+      }
     }
-    document.documentElement.classList.toggle("dark", isDark);
-    document.querySelector('meta[name="theme-color"]').setAttribute(
-      "content", isDark ? "#1a1815" : "#fffffd",
-    );
+
+    function syncThemeColor(root, meta) {
+      var isDark = root.classList.contains("dark");
+      meta.setAttribute("content", isDark ? "#1a1815" : "#fffffd");
+    }
+
+    var root = document.documentElement;
+    root.classList.toggle("dark", savedThemeIsDark());
+    syncThemeColor(root, document.querySelector('meta[name="theme-color"]'));
+
+    // Docs pages navigate client-side (astro:transitions ClientRouter). The
+    // incoming page's <html> is prerendered light, so the swap would drop the
+    // dark class; carry the saved theme over to the new document before the
+    // swap runs.
+    document.addEventListener("astro:before-swap", function (event) {
+      var newRoot = event.newDocument.documentElement;
+      newRoot.classList.toggle("dark", savedThemeIsDark());
+      syncThemeColor(newRoot, event.newDocument.querySelector('meta[name="theme-color"]'));
+    });
   })();
 </script>
 
