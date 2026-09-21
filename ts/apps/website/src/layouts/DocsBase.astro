@@ -67,7 +67,12 @@ const { title = "Sunred Docs", description = "Documentation for Sunred." } = Ast
 
     <title>{title}</title>
   </head>
-  <body class="flex flex-col min-h-screen">
+  <!--
+    transition:persist keeps this body across navigations and
+    transition:animate="none" disables Astro's default crossfade, so moving
+    between docs pages is instant like the rest of the site.
+  -->
+  <body class="flex flex-col min-h-screen" transition:persist transition:animate="none">
     <slot />
   </body>
 </html>
