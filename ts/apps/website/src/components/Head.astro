@@ -12,10 +12,18 @@ interface Props {
   rss?: boolean
   /** Social card image; docs pages pass their generated OG image. */
   ogImage?: string
+  /** Browser tab title when it should differ from the card title. */
+  windowTitle?: string
 }
 
-const { title, description, ogType = "website", rss = false, ogImage = "/favicon.svg" } =
-  Astro.props
+const {
+  title,
+  description,
+  ogType = "website",
+  rss = false,
+  ogImage = "/favicon.svg",
+  windowTitle,
+} = Astro.props
 ---
 
 <meta charset="UTF-8" />
@@ -74,4 +82,4 @@ const { title, description, ogType = "website", rss = false, ogImage = "/favicon
   )
 }
 
-<title>{title}</title>
+<title>{windowTitle ?? title}</title>
