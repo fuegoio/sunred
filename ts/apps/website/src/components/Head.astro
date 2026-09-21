@@ -10,9 +10,12 @@ interface Props {
   ogType?: "website" | "article"
   /** Include the blog RSS autodiscovery link. */
   rss?: boolean
+  /** Social card image; docs pages pass their generated OG image. */
+  ogImage?: string
 }
 
-const { title, description, ogType = "website", rss = false } = Astro.props
+const { title, description, ogType = "website", rss = false, ogImage = "/favicon.svg" } =
+  Astro.props
 ---
 
 <meta charset="UTF-8" />
@@ -27,9 +30,9 @@ const { title, description, ogType = "website", rss = false } = Astro.props
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:site_name" content="Sunred" />
-<meta property="og:image" content="/favicon.svg" />
+<meta property="og:image" content={ogImage} />
 <meta name="twitter:card" content="summary" />
-<meta name="twitter:image" content="/favicon.svg" />
+<meta name="twitter:image" content={ogImage} />
 
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 {

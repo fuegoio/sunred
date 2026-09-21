@@ -2,6 +2,7 @@
 import { render } from "astro:content";
 import { source } from "../../lib/source";
 import { getSidebarTree } from "../../lib/sidebar-tree";
+import { getPageImageUrl } from "../../lib/shared";
 import { Docs } from "../../components/docs/docs";
 import DocsBase from "../../layouts/DocsBase.astro";
 import defaultMdxComponents from "fumadocs-ui/mdx";
@@ -18,12 +19,12 @@ export async function getStaticPaths() {
       const rest = p.slugs.slice(1);
       return {
         params: { slug: rest.length ? rest.join("/") : undefined },
-        props: { page: p.data._raw },
+        props: { page: p.data._raw, ogImage: getPageImageUrl(p).url },
       };
     });
 }
 
-const { page } = Astro.props;
+const { page, ogImage } = Astro.props;
 const { Content, headings } = await render(page);
 const toc: TOCItemType[] = headings.map((heading) => ({
   depth: heading.depth,
@@ -32,7 +33,7 @@ const toc: TOCItemType[] = headings.map((heading) => ({
 }));
 ---
 
-<DocsBase title={page.data.title} description={page.data.description}>
+<DocsBase title={page.data.title} description={page.data.description} ogImage={ogImage}>
   <Docs
     tree={getSidebarTree()}
     pathname={Astro.url.pathname}

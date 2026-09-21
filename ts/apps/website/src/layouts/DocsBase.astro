@@ -6,15 +6,20 @@ import Head from "../components/Head.astro";
 interface Props {
   title?: string;
   description?: string;
+  ogImage?: string;
 }
 
-const { title = "Sunred Docs", description = "Documentation for Sunred." } = Astro.props;
+const {
+  title = "Sunred Docs",
+  description = "Documentation for Sunred.",
+  ogImage,
+} = Astro.props;
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
-    <Head title={title} description={description} />
+    <Head title={title} description={description} ogImage={ogImage} />
     <!-- Client-side navigation between docs pages (fumadocs' sidebar and TOC). -->
     <ClientRouter />
   </head>
