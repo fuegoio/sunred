@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutList, Circle, Star, Plus, Settings, LogOut, Sun, Moon, User, CircleHelp, Loader2 } from "lucide-react";
+import { LayoutList, Circle, Star, History, Plus, Settings, LogOut, Sun, Moon, User, CircleHelp, Loader2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Menu } from "@base-ui/react/menu";
 import { Skeleton } from "@workspace/ui/components/skeleton";
@@ -40,6 +40,7 @@ function SidebarNav() {
     { href: "/", label: "Unread", icon: Circle },
     { href: "/all", label: "All", icon: LayoutList },
     { href: "/starred", label: "Starred", icon: Star },
+    { href: "/history", label: "History", icon: History },
   ];
 
   return (
