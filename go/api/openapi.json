@@ -3279,6 +3279,66 @@
                 ]
             }
         },
+        "/v1/history": {
+            "get": {
+                "operationId": "list-history",
+                "parameters": [
+                    {
+                        "explode": false,
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "default": 50,
+                            "format": "int64",
+                            "maximum": 200,
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "explode": false,
+                        "in": "query",
+                        "name": "offset",
+                        "schema": {
+                            "default": 0,
+                            "format": "int64",
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/Entry"
+                                    },
+                                    "type": [
+                                        "array",
+                                        "null"
+                                    ]
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "default": {
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        },
+                        "description": "Error"
+                    }
+                },
+                "summary": "List read history (articles you've read, most recent first)",
+                "tags": [
+                    "entries"
+                ]
+            }
+        },
         "/v1/me": {
             "delete": {
                 "operationId": "delete-me",

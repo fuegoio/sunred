@@ -1868,6 +1868,34 @@ export type HealthResponses = {
 
 export type HealthResponse2 = HealthResponses[keyof HealthResponses];
 
+export type ListHistoryData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+    };
+    url: '/v1/history';
+};
+
+export type ListHistoryErrors = {
+    /**
+     * Error
+     */
+    default: ErrorModel;
+};
+
+export type ListHistoryError = ListHistoryErrors[keyof ListHistoryErrors];
+
+export type ListHistoryResponses = {
+    /**
+     * OK
+     */
+    200: Array<Entry> | null;
+};
+
+export type ListHistoryResponse = ListHistoryResponses[keyof ListHistoryResponses];
+
 export type DeleteMeData = {
     body?: never;
     path?: never;

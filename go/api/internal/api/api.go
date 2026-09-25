@@ -854,6 +854,31 @@ func (a *API) registerEntryRoutes() {
 	})
 
 	huma.Register(a.huma, huma.Operation{
+		OperationID: "list-history",
+		Method:      http.MethodGet,
+		Path:        "/v1/history",
+		Summary:     "List read history (articles you've read, most recent first)",
+		Tags:        []string{"entries"},
+	}, func(ctx context.Context, input *struct {
+		Limit  int `query:"limit" default:"50" maximum:"200"`
+		Offset int `query:"offset" default:"0"`
+	}) (*EntryListOutput, error) {
+		userID := auth.UserIDFromCtx(ctx)
+		if input.Limit == 0 {
+			input.Limit = 50
+		}
+		entries, err := a.store.ListHistory(ctx, userID, input.Limit, input.Offset)
+		if err != nil {
+			return nil, huma.Error500InternalServerError(err.Error())
+		}
+		if entries == nil {
+			entries = []store.Entry{}
+		}
+		a.enrichEntryCounts(ctx, entries)
+		return &EntryListOutput{Body: entries}, nil
+	})
+
+	huma.Register(a.huma, huma.Operation{
 		OperationID: "get-entry",
 		Method:      http.MethodGet,
 		Path:        "/v1/entries/{entryId}",

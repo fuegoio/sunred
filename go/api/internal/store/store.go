@@ -500,6 +500,71 @@ func (s *Store) GetEntryByID(ctx context.Context, id int64, userID int) (*Entry,
 	return &e, nil
 }
 
+// ListHistory returns the user's read history: every article with an explicit
+// 'read' status row, most recently read first. Re-reading an article updates
+// the single (user_id, article_url) row, so each article appears at most once,
+// at its latest read time. Entries are resolved by article URL (preferring
+// the linked entry_id); read-status rows whose entry no longer exists are
+// skipped. Unlike ListEntries, the visibility filter is not applied — history
+// is what the user read, regardless of current subscriptions. ChangedAt is
+// the read time (rs.changed_at).
+func (s *Store) ListHistory(ctx context.Context, userID int, limit, offset int) ([]Entry, error) {
+	rows, err := s.DB.QueryContext(ctx, `
+		SELECT e.id, e.feed_id, e.hash, e.title, e.url, e.comments_url,
+		       e.author, '' AS content, LEFT(e.description, 400) AS description,
+		       COALESCE(rs.status, 'read'), (es.article_url IS NOT NULL),
+		       e.published_at, rs.changed_at, e.tags,
+		       f.id, f.feed_url, f.site_url, COALESCE(s.title_override, f.title), f.description,
+		       f.etag_header, f.last_modified_header, f.parsing_error, f.parsing_error_count,
+		       f.disabled, f.scraper_rules, f.rewrite_rules, f.crawler,
+		       f.next_check_at, f.last_fetch_at, f.created_at, f.updated_at,
+		       COALESCE(sh.handle, ''), COALESCE(sh.display_name, ''),
+		       my_sa.id
+		FROM entry_read_status rs
+		JOIN LATERAL (
+		  SELECT e.* FROM entries e
+		  WHERE e.url = rs.article_url
+		  ORDER BY (e.id = rs.entry_id) DESC
+		  LIMIT 1
+		) e ON true
+		JOIN feeds f ON f.id = e.feed_id
+		LEFT JOIN subscriptions s ON s.feed_id = f.id AND s.user_id = $1
+		LEFT JOIN entry_stars es ON es.user_id = $1 AND es.article_url = rs.article_url
+		LEFT JOIN LATERAL (
+		  SELECT sa.user_id, sa.entry_id FROM shared_articles sa
+		  JOIN user_follows uf ON uf.followee_id = sa.user_id AND uf.follower_id = $1
+		  WHERE sa.entry_id = e.id
+		  LIMIT 1
+		) sh_row ON true
+		LEFT JOIN users sh ON sh.id = sh_row.user_id
+		LEFT JOIN shared_articles my_sa ON my_sa.user_id = $1 AND my_sa.article_url = rs.article_url
+		WHERE rs.user_id = $1 AND rs.status = 'read'
+		ORDER BY rs.changed_at DESC
+		LIMIT $2 OFFSET $3`, userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+	var entries []Entry
+	for rows.Next() {
+		var e Entry
+		var f Feed
+		if err := rows.Scan(&e.ID, &e.FeedID, &e.Hash, &e.Title, &e.URL, &e.CommentsURL,
+			&e.Author, &e.Content, &e.Description, &e.Status, &e.Starred,
+			&e.PublishedAt, &e.ChangedAt, pq.Array(&e.Tags),
+			&f.ID, &f.FeedURL, &f.SiteURL, &f.Title, &f.Description,
+			&f.EtagHeader, &f.LastModified, &f.ParsingError, &f.ParsingErrorCount,
+			&f.Disabled, &f.ScraperRules, &f.RewriteRules, &f.Crawler,
+			&f.NextCheckAt, &f.LastFetchAt, &f.CreatedAt, &f.UpdatedAt,
+			&e.SharedBy, &e.SharedByName, &e.ShareID); err != nil {
+			return nil, err
+		}
+		e.Feed = &f
+		entries = append(entries, e)
+	}
+	return entries, rows.Err()
+}
+
 // EntryStateByURL holds the read status and starred flag for a single
 // article URL, used to populate preview items with the user's existing state.
 type EntryStateByURL struct {
