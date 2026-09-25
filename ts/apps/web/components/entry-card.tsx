@@ -13,7 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { getClient, updateEntries, updateEntryStatusByUrl } from "@/lib/sunred";
 import { markReadSession, removeReadSession } from "@/lib/entry-read-session";
 import { getApiErrorMessage } from "@/lib/errors";
-import { formatRelative, htmlSnippet, siteDomain } from "@/lib/format";
+import { formatRelative, formatDateTime, htmlSnippet, siteDomain } from "@/lib/format";
 import { cn } from "@workspace/ui/lib/utils";
 import type { Entry, Feed } from "@/lib/types";
 
@@ -54,6 +54,7 @@ export function EntryCard({
   animateExit = false,
   shareId = null,
   preview = false,
+  history = false,
 }: {
   entry: Entry;
   feed?: Feed;
@@ -69,6 +70,13 @@ export function EntryCard({
    * recent articles with the same layout and actions as real entries.
    */
   preview?: boolean;
+  /**
+   * History mode: the card's timestamp is when the article was read
+   * (entry.changed_at on the history endpoint) instead of when it was
+   * published. The list is ordered by read time, so the displayed time must
+   * match or the ordering reads as arbitrary.
+   */
+  history?: boolean;
 }) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -80,6 +88,7 @@ export function EntryCard({
   const isRead = preview ? previewRead : readOptimistic;
   const unread = !isRead;
   const snippet = htmlSnippet(entry.description, 200);
+  const timeIso = history ? entry.changed_at : entry.published_at;
 
   // The entry carries its source feed on `entry.feed`, with the viewer's
   // title override already applied by the API. The `feed` prop is the same
@@ -294,7 +303,13 @@ export function EntryCard({
               </>
             )}
             <span aria-hidden>·</span>
-            <time className="shrink-0">{formatRelative(entry.published_at)}</time>
+            <time
+              className="shrink-0"
+              dateTime={timeIso}
+              title={history ? `Read ${formatDateTime(timeIso)}` : undefined}
+            >
+              {formatRelative(timeIso)}
+            </time>
           </div>
           <h3
             className={cn(
@@ -304,12 +319,7 @@ export function EntryCard({
           >
             {entry.title || "Untitled"}
           </h3>
-          <p
-            className={cn(
-              "mt-1 line-clamp-4 min-h-[5rem] text-sm sm:line-clamp-2 sm:min-h-[2.5rem]",
-              unread ? "text-muted-foreground" : "text-muted-foreground/80",
-            )}
-          >
+          <p className="mt-1 line-clamp-4 min-h-[5rem] text-sm sm:line-clamp-2 sm:min-h-[2.5rem] text-muted-foreground">
             {snippet}
           </p>
         </div>
