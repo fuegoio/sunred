@@ -28,6 +28,10 @@ The reader doesn't render the full article body, because most feeds only carry a
 
 Click the star icon on a card or in the reader header to bookmark an entry. Starred entries live under **Starred** in the sidebar whatever their read status. Click the star again to unstar.
 
+## Look back at your history
+
+**History** in the sidebar lists what you've read, most recent first — a trail of the articles you actually opened. Each article appears once, at the time you last read it: read something again and it moves back to the top. Marking an entry unread takes it back out of the history, and marking all as read adds the whole feed in one go.
+
 ## Share an entry
 
 Click the share icon on a card to pass the article on to people who follow you. Articles shared by people you follow appear in your **Unread** and **All** views alongside your own subscriptions. See [Follow people and share articles](/social) for the full picture.
@@ -42,4 +46,4 @@ To clear a feed at once, open its page and click **Mark all as read**. The unrea
 
 ## Use the Entries API
 
-List, filter, update, and star entries through the [Entries API](/api-reference?tag=Entries): filter by feed, folder, status, starred, or a search query, and paginate with `limit` and `offset`.
+List, filter, update, and star entries through the [Entries API](/api-reference?tag=Entries): filter by feed, folder, status, starred, or a search query, and paginate with `limit` and `offset`. The history view has its own endpoint, `GET /v1/history`, which returns the articles you've read most-recent-first with the same pagination.
