@@ -596,7 +596,7 @@ func (m Model) renderSidebarLines() []string {
 	feedsLabelShown := false
 	for i, item := range m.items {
 		// When in search/get-input mode (active or committed), skip nav items.
-		if (m.searching || m.searchQuery != "" || m.enteringURL) && (item.kind == sidebarAll || item.kind == sidebarUnread || item.kind == sidebarStarred) {
+		if (m.searching || m.searchQuery != "" || m.enteringURL) && (item.kind == sidebarAll || item.kind == sidebarUnread || item.kind == sidebarStarred || item.kind == sidebarHistory) {
 			continue
 		}
 		// Emit the "FEEDS" section label before the first feed or folder.
@@ -619,6 +619,8 @@ func (m Model) renderSidebarLines() []string {
 			icon = "○ "
 		case sidebarStarred:
 			icon = "✦ "
+		case sidebarHistory:
+			icon = "◷ "
 		case sidebarFolder:
 			icon = "▸ "
 		default:
@@ -725,6 +727,8 @@ func (m Model) renderEntryList(width int) string {
 			title = "Unread"
 		case sidebarStarred:
 			title = "Starred"
+		case sidebarHistory:
+			title = "History"
 		default:
 			title = item.label
 		}
@@ -773,6 +777,8 @@ func (m Model) renderEntryList(width int) string {
 				emptyMsg = "  You're all caught up — nothing left to read."
 			case sidebarStarred:
 				emptyMsg = "  No starred articles yet."
+			case sidebarHistory:
+				emptyMsg = "  Nothing in your history yet — read something and it'll show up here."
 			case sidebarAll:
 				emptyMsg = "  Nothing here yet. Subscribe to feeds to get started."
 			}

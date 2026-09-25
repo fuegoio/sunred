@@ -29,6 +29,7 @@ const (
 	sidebarAll sidebarItemKind = iota
 	sidebarUnread
 	sidebarStarred
+	sidebarHistory
 	sidebarFeed
 	sidebarFolder
 	sidebarSearch
@@ -268,6 +269,23 @@ func searchEntries(client *sunred.ClientWithResponses, query string) tea.Cmd {
 	})
 }
 
+// loadHistory loads the user's read history (most recently read first).
+func loadHistory(client *sunred.ClientWithResponses) tea.Cmd {
+	return func() tea.Msg {
+		limit := int64(200)
+		resp, err := client.ListHistoryWithResponse(context.Background(), &sunred.ListHistoryParams{
+			Limit: &limit,
+		})
+		if err != nil {
+			return loadEntriesMsg{err: err}
+		}
+		if resp.JSON200 == nil {
+			return loadEntriesMsg{err: fmt.Errorf("API error (status %d)", resp.StatusCode())}
+		}
+		return loadEntriesMsg{entries: *resp.JSON200}
+	}
+}
+
 func setEntryStatus(client *sunred.ClientWithResponses, entryID int64, status sunred.UpdateEntriesRequestStatus) tea.Cmd {
 	return func() tea.Msg {
 		ids := []int64{entryID}
@@ -399,6 +417,7 @@ func (m *Model) rebuildSidebar() {
 		{kind: sidebarUnread, label: "Unread"},
 		{kind: sidebarAll, label: "All"},
 		{kind: sidebarStarred, label: "Starred"},
+		{kind: sidebarHistory, label: "History"},
 	}
 
 	// feeds without a folder (depth 0)
@@ -448,7 +467,13 @@ func entriesParamsForItem(item sidebarItem) *sunred.ListEntriesParams {
 // loadSelection returns the commands to load the main panel for the given
 // sidebar item: entries, plus subscriber counts when the item is a feed.
 func (m *Model) loadSelection(item sidebarItem) tea.Cmd {
-	cmds := []tea.Cmd{loadEntriesByParams(m.client, entriesParamsForItem(item))}
+	var entriesCmd tea.Cmd
+	if item.kind == sidebarHistory {
+		entriesCmd = loadHistory(m.client)
+	} else {
+		entriesCmd = loadEntriesByParams(m.client, entriesParamsForItem(item))
+	}
+	cmds := []tea.Cmd{entriesCmd}
 	if item.kind == sidebarFeed {
 		m.subsFeedID = item.feedID
 		if cached, ok := m.subsCache[item.feedID]; ok {
