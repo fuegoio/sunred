@@ -82,6 +82,7 @@ sunred entries list --unread    # list unread only
 sunred entries list --starred   # list starred only
 sunred entries list --feed 1    # filter by feed ID
 sunred entries read <id>        # read a single entry
+sunred history                  # list what you've read, most recent first
 ```
 
 Run `sunred entries list --help` to see all available filters.
@@ -131,3 +132,5 @@ Pass `--login` to force a re-login even if a token is already saved:
 You move through three views: **Feeds** lists your subscriptions, and pressing enter opens one. **Entries** lists the entries in the selected feed; press enter to read. **Entry** shows the full content, and `esc` takes you back.
 
 Navigation is vim-flavored: move the cursor with `j` / `↓` and `k` / `↑`, open the selected item with `enter` / `l`, go back with `h` / `esc`, refresh the feed list with `r`, and quit with `q`.
+
+The sidebar also has the same views as the web app: **Unread**, **All**, **Starred**, and **History** (what you've read, most recent first), plus your feeds and folders below them.
