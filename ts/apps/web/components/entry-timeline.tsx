@@ -15,7 +15,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@workspace/ui/components/empty";
-import { getClient, listEntries } from "@/lib/sunred";
+import { getClient, listEntries, listHistory } from "@/lib/sunred";
 import { clearReadSession, getReadSessionEntries } from "@/lib/entry-read-session";
 import type { Entry } from "@/lib/types";
 import { buttonVariants } from "@workspace/ui/components/button";
@@ -64,6 +64,7 @@ function mergeSessionRead(fresh: Entry[]): Entry[] {
  */
 export function EntryTimeline({
   filter,
+  history = false,
   emptyTitle = "Nothing here yet",
   emptyDescription = "Subscribe to feeds and your latest articles will appear here.",
   emptyVariant = "default",
@@ -71,6 +72,12 @@ export function EntryTimeline({
   animateExit = false,
 }: {
   filter: EntryFilter;
+  /**
+   * Fetch from the read-history endpoint instead of the entries list:
+   * articles you've read, most recently read first, one row per article.
+   * `filter` is ignored in this mode.
+   */
+  history?: boolean;
   emptyTitle?: string;
   emptyDescription?: string;
   emptyVariant?: "default" | "celebration";
@@ -82,13 +89,13 @@ export function EntryTimeline({
   animateExit?: boolean;
 }) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } =
-    useInfiniteQuery<Entry[], Error, InfiniteData<Entry[]>, ["entries", EntryFilter], number>({
-      queryKey: ["entries", filter],
+    useInfiniteQuery<Entry[], Error, InfiniteData<Entry[]>, ["entries", EntryFilter | { history: true }], number>({
+      queryKey: ["entries", history ? { history: true } : filter],
       queryFn: async ({ pageParam }) => {
-        const result = await listEntries({
-          client: await getClient(),
-          query: { ...filter, limit: PAGE_SIZE, offset: pageParam },
-        });
+        const client = await getClient();
+        const result = history
+          ? await listHistory({ client, query: { limit: PAGE_SIZE, offset: pageParam } })
+          : await listEntries({ client, query: { ...filter, limit: PAGE_SIZE, offset: pageParam } });
         if (result.error) throw result.error;
         return (result.data ?? []) as Entry[];
       },
