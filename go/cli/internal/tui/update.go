@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -801,6 +802,18 @@ func (m Model) renderEntryList(width int) string {
 			titleWidth = 10
 		}
 
+		// History mode: the list is ordered by read time, so the date column
+		// shows when the article was read (ChangedAt) instead of published.
+		historyMode := !m.searching && m.searchQuery == "" &&
+			len(m.items) > 0 && m.sidebarCursor < len(m.items) &&
+			m.items[m.sidebarCursor].kind == sidebarHistory
+		entryDate := func(e sunred.Entry) time.Time {
+			if historyMode {
+				return e.ChangedAt
+			}
+			return e.PublishedAt
+		}
+
 		pageSize := m.entriesPageSize()
 		start := m.entriesOffset
 		end := start + pageSize
@@ -821,7 +834,7 @@ func (m Model) renderEntryList(width int) string {
 			buildPlain := func(dotCh, starCh string) string {
 				t := padRight(truncate(e.Title, titleWidth), titleWidth)
 				f := padRight(truncate(feedName, feedLen), feedLen)
-				d := e.PublishedAt.Format("2006-01-02")
+				d := entryDate(e).Format("2006-01-02")
 				return padRight(" "+dotCh+starCh+t+" "+f+" "+d+" ", width)
 			}
 
@@ -851,7 +864,7 @@ func (m Model) renderEntryList(width int) string {
 				}
 				t := padRight(truncate(e.Title, titleWidth), titleWidth)
 				f := padRight(truncate(feedName, feedLen), feedLen)
-				d := dimStyle.Render(e.PublishedAt.Format("2006-01-02"))
+				d := dimStyle.Render(entryDate(e).Format("2006-01-02"))
 				line = " " + dot + star + t + " " + dimStyle.Render(f) + " " + d + " "
 			}
 
