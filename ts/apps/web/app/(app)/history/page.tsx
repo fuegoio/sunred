@@ -18,6 +18,7 @@ export default function HistoryPage() {
             emptyTitle="Nothing in your history"
             emptyDescription="Articles you read show up here in the order you read them. Read something to get started."
             emptyAction={null}
+            animateExit
           />
         </div>
       </ScrollArea>

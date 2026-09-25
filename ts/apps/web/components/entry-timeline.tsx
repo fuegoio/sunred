@@ -251,6 +251,7 @@ export function EntryTimeline({
             staggerIndex={i}
             animateExit={animateExit}
             shareId={entry.share_id ?? null}
+            history={history}
           />
         ))}
       </AnimatePresence>
