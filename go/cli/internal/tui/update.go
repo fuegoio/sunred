@@ -376,7 +376,8 @@ func (m Model) handleEntriesKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		entry := m.entries[m.entriesCursor]
 		var cmds []tea.Cmd
 		if entry.Status != "read" {
-			cmds = append(cmds, setEntryStatus(m.client, entry.Id, sunred.UpdateEntriesRequestStatusRead))
+			// Opening in the browser is a real read: record it in history.
+			cmds = append(cmds, setEntryStatus(m.client, entry.Id, sunred.UpdateEntriesRequestStatusRead, true))
 		}
 		cmds = append(cmds, openURL(entry.Url))
 		m.clampEntriesOffset()
@@ -391,7 +392,8 @@ func (m Model) handleEntriesKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if entry.Status == "read" {
 			newStatus = sunred.UpdateEntriesRequestStatusUnread
 		}
-		return m, setEntryStatus(m.client, entry.Id, newStatus)
+		// Toggling is a status change, not a read: keep it out of history.
+		return m, setEntryStatus(m.client, entry.Id, newStatus, false)
 	case "s":
 		// Toggle star.
 		if len(m.entries) == 0 {
@@ -461,7 +463,8 @@ func (m Model) handleFeedGetKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		read := item.Status != nil && *item.Status == "read"
 		cmds := []tea.Cmd{openURL(item.Url)}
 		if !read {
-			cmds = append(cmds, setEntryStatusByUrl(m.client, item.Url, status))
+			// Opening in the browser is a real read: record it in history.
+			cmds = append(cmds, setEntryStatusByUrl(m.client, item.Url, status, true))
 		}
 		m.clampFeedGetOffset()
 		return m, tea.Batch(cmds...)
@@ -476,7 +479,8 @@ func (m Model) handleFeedGetKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if read {
 			status = sunred.UpdateEntryStatusByUrlRequestStatusUnread
 		}
-		return m, setEntryStatusByUrl(m.client, item.Url, status)
+		// Toggling is a status change, not a read: keep it out of history.
+		return m, setEntryStatusByUrl(m.client, item.Url, status, false)
 	case "s":
 		// Toggle star by URL.
 		item, ok := m.selectedFeedGetItem()

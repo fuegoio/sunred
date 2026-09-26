@@ -27,10 +27,10 @@ func TestListHistory_OrderAndDedup(t *testing.T) {
 	_, entryB := seedFeedAndEntryWithURL(t, s, userID, "History Feed B", "https://example.com/history-b", "Article B")
 
 	// Read A first, then B.
-	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "read"); err != nil {
+	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "read", true); err != nil {
 		t.Fatalf("mark A read: %v", err)
 	}
-	if err := s.UpdateEntryStatus(ctx, []int64{entryB}, userID, "read"); err != nil {
+	if err := s.UpdateEntryStatus(ctx, []int64{entryB}, userID, "read", true); err != nil {
 		t.Fatalf("mark B read: %v", err)
 	}
 	t1 := time.Date(2025, 6, 1, 10, 0, 0, 0, time.UTC)
@@ -53,7 +53,7 @@ func TestListHistory_OrderAndDedup(t *testing.T) {
 	}
 
 	// Re-read A: it moves to the top and still appears exactly once.
-	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "read"); err != nil {
+	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "read", true); err != nil {
 		t.Fatalf("re-read A: %v", err)
 	}
 	t3 := time.Date(2025, 6, 3, 10, 0, 0, 0, time.UTC)
@@ -80,10 +80,10 @@ func TestListHistory_ExcludesUnreadAndUnreadEntries(t *testing.T) {
 	_, _ = seedFeedAndEntryWithURL(t, s, userID, "History Feed D", "https://example.com/history-d", "Article D")
 
 	// A is read then marked unread again; B is never touched.
-	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "read"); err != nil {
+	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "read", true); err != nil {
 		t.Fatalf("mark A read: %v", err)
 	}
-	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "unread"); err != nil {
+	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "unread", true); err != nil {
 		t.Fatalf("mark A unread: %v", err)
 	}
 
@@ -113,7 +113,7 @@ func TestListHistory_ExcludesBulkMarks(t *testing.T) {
 	_, entryB := seedFeedAndEntryWithURL(t, s, userID, "History Feed G", "https://example.com/history-g", "Article G")
 
 	// Explicitly read A, pinned so we can assert its read time survives.
-	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "read"); err != nil {
+	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "read", true); err != nil {
 		t.Fatalf("mark A read: %v", err)
 	}
 	readAt := time.Date(2025, 6, 1, 10, 0, 0, 0, time.UTC)
@@ -147,7 +147,7 @@ func TestListHistory_ExcludesBulkMarks(t *testing.T) {
 	}
 
 	// Reading B explicitly afterwards does put it in history.
-	if err := s.UpdateEntryStatus(ctx, []int64{entryB}, userID, "read"); err != nil {
+	if err := s.UpdateEntryStatus(ctx, []int64{entryB}, userID, "read", true); err != nil {
 		t.Fatalf("mark B read: %v", err)
 	}
 	if history, err = s.ListHistory(ctx, userID, 50, 0); err != nil {
@@ -159,7 +159,7 @@ func TestListHistory_ExcludesBulkMarks(t *testing.T) {
 
 	// Marking A unread clears its explicit flag; a later bulk mark must not
 	// resurrect it in history.
-	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "unread"); err != nil {
+	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "unread", true); err != nil {
 		t.Fatalf("mark A unread: %v", err)
 	}
 	if err := s.MarkAllEntriesRead(ctx, userID); err != nil {
@@ -173,13 +173,63 @@ func TestListHistory_ExcludesBulkMarks(t *testing.T) {
 	}
 }
 
+// A non-explicit read (toggle mark, CLI mark) changes the status but is not a
+// read event: it stays out of history. Opening the article afterwards
+// (explicit read) does land it in history.
+func TestListHistory_NonExplicitReadExcluded(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	userID := seedUser(t, s, "history-toggle@example.com")
+
+	_, entryA := seedFeedAndEntryWithURL(t, s, userID, "History Feed H", "https://example.com/history-h", "Article H")
+	_, _ = seedFeedAndEntryWithURL(t, s, userID, "History Feed I", "https://example.com/history-i", "Article I")
+
+	// Toggle A read (non-explicit): read status set, but no history row.
+	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "read", false); err != nil {
+		t.Fatalf("toggle A read: %v", err)
+	}
+	// Same for B via the by-URL path.
+	if err := s.UpdateEntryStatusByURL(ctx, userID, "https://example.com/history-i", "read", false); err != nil {
+		t.Fatalf("toggle B read by URL: %v", err)
+	}
+	history, err := s.ListHistory(ctx, userID, 50, 0)
+	if err != nil {
+		t.Fatalf("ListHistory: %v", err)
+	}
+	if len(history) != 0 {
+		t.Fatalf("expected empty history after non-explicit reads, got %+v", history)
+	}
+
+	var status string
+	if err := s.DB.QueryRow(
+		`SELECT status FROM entry_read_status WHERE user_id = $1 AND article_url = $2`,
+		userID, "https://example.com/history-h",
+	).Scan(&status); err != nil {
+		t.Fatalf("query read status: %v", err)
+	}
+	if status != "read" {
+		t.Errorf("A status=%q, want 'read' (non-explicit still marks read)", status)
+	}
+
+	// Opening A afterwards records the read in history.
+	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "read", true); err != nil {
+		t.Fatalf("read A: %v", err)
+	}
+	if history, err = s.ListHistory(ctx, userID, 50, 0); err != nil {
+		t.Fatalf("ListHistory after explicit read: %v", err)
+	}
+	if len(history) != 1 || history[0].URL != "https://example.com/history-h" {
+		t.Fatalf("expected only A in history, got %+v", history)
+	}
+}
+
 func TestListHistory_StarredFlagAndFeed(t *testing.T) {
 	s := testDB(t)
 	ctx := context.Background()
 	userID := seedUser(t, s, "history-star@example.com")
 
 	_, entryA := seedFeedAndEntryWithURL(t, s, userID, "History Feed E", "https://example.com/history-e", "Article E")
-	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "read"); err != nil {
+	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "read", true); err != nil {
 		t.Fatalf("mark A read: %v", err)
 	}
 	if err := s.ToggleEntryStarred(ctx, entryA, userID, true); err != nil {

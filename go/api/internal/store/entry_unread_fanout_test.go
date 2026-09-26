@@ -36,7 +36,7 @@ func TestMarkEntryUnreadForSubscribers(t *testing.T) {
 
 	// sub2 already marked this article read before the fan-out ran (e.g. it
 	// was shared to them and they opened it). The fan-out must not resurrect it.
-	if err := s.UpdateEntryStatusByURL(ctx, sub2, articleURL, "read"); err != nil {
+	if err := s.UpdateEntryStatusByURL(ctx, sub2, articleURL, "read", true); err != nil {
 		t.Fatalf("mark read: %v", err)
 	}
 
@@ -235,7 +235,7 @@ func TestUpdateEntryStatus_DuplicateURLAcrossFeeds(t *testing.T) {
 	_, entryID1 := seedFeedAndEntryWithURL(t, s, userID, "Upd Feed A", articleURL, "Entry A")
 	_, entryID2 := seedFeedAndEntryWithURL(t, s, userID, "Upd Feed B", articleURL, "Entry B")
 
-	if err := s.UpdateEntryStatus(ctx, []int64{entryID1, entryID2}, userID, "read"); err != nil {
+	if err := s.UpdateEntryStatus(ctx, []int64{entryID1, entryID2}, userID, "read", true); err != nil {
 		t.Fatalf("UpdateEntryStatus with duplicate URL across feeds: %v", err)
 	}
 

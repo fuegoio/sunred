@@ -128,9 +128,10 @@ export function EntryCard({
       setPreviewRead(next === "read");
       setPending(true);
       void (async () => {
+        // Toggle is a status change, not a read: keep it out of history.
         const { error } = await updateEntryStatusByUrl({
           client: await getClient(),
-          body: { article_url: entry.url, status: next },
+          body: { article_url: entry.url, status: next, explicit: false },
         });
         if (error) {
           setPreviewRead(current === "read");
@@ -154,9 +155,10 @@ export function EntryCard({
     // previous state until the refetch lands.
     patchEntryStatus(queryClient, entry.id, next);
     void (async () => {
+      // Toggle is a status change, not a read: keep it out of history.
       const { error } = await updateEntries({
         client: await getClient(),
-        body: { entry_ids: [entry.id], status: next },
+        body: { entry_ids: [entry.id], status: next, explicit: false },
       });
       if (error) {
         patchEntryStatus(queryClient, entry.id, current);

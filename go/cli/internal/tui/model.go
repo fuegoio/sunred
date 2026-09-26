@@ -286,12 +286,16 @@ func loadHistory(client *sunred.ClientWithResponses) tea.Cmd {
 	}
 }
 
-func setEntryStatus(client *sunred.ClientWithResponses, entryID int64, status sunred.UpdateEntriesRequestStatus) tea.Cmd {
+// setEntryStatus marks an entry read/unread by ID. explicit says whether the
+// user opened the article (a real read, recorded in history) or just toggled
+// its status.
+func setEntryStatus(client *sunred.ClientWithResponses, entryID int64, status sunred.UpdateEntriesRequestStatus, explicit bool) tea.Cmd {
 	return func() tea.Msg {
 		ids := []int64{entryID}
 		_, err := client.UpdateEntriesWithResponse(context.Background(), sunred.UpdateEntriesRequest{
 			EntryIds: &ids,
 			Status:   status,
+			Explicit: &explicit,
 		})
 		return markReadMsg{entryID: entryID, status: status, err: err}
 	}
@@ -360,12 +364,15 @@ func getFeed(client *sunred.ClientWithResponses, feedURL string) tea.Cmd {
 	}
 }
 
-// setEntryStatusByUrl marks a feed-get article read/unread by URL.
-func setEntryStatusByUrl(client *sunred.ClientWithResponses, articleURL string, status sunred.UpdateEntryStatusByUrlRequestStatus) tea.Cmd {
+// setEntryStatusByUrl marks a feed-get article read/unread by URL. explicit
+// says whether the user opened the article (a real read, recorded in
+// history) or just toggled its status.
+func setEntryStatusByUrl(client *sunred.ClientWithResponses, articleURL string, status sunred.UpdateEntryStatusByUrlRequestStatus, explicit bool) tea.Cmd {
 	return func() tea.Msg {
 		_, err := client.UpdateEntryStatusByUrlWithResponse(context.Background(), sunred.UpdateEntryStatusByUrlRequest{
 			ArticleUrl: articleURL,
 			Status:     status,
+			Explicit:   &explicit,
 		})
 		return byUrlStatusMsg{articleURL: articleURL, status: status, err: err}
 	}

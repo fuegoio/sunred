@@ -1318,6 +1318,9 @@ export const Update_entriesRequestSchema = {
                 'null'
             ]
         },
+        explicit: {
+            type: 'boolean'
+        },
         status: {
             enum: [
                 'unread',
@@ -1350,6 +1353,9 @@ export const Update_entry_status_by_urlRequestSchema = {
             maxLength: 2048,
             minLength: 1,
             type: 'string'
+        },
+        explicit: {
+            type: 'boolean'
         },
         status: {
             enum: [
@@ -2518,6 +2524,9 @@ export const Update_entriesRequestWritableSchema = {
                 'null'
             ]
         },
+        explicit: {
+            type: 'boolean'
+        },
         status: {
             enum: [
                 'unread',
@@ -2541,6 +2550,9 @@ export const Update_entry_status_by_urlRequestWritableSchema = {
             maxLength: 2048,
             minLength: 1,
             type: 'string'
+        },
+        explicit: {
+            type: 'boolean'
         },
         status: {
             enum: [
