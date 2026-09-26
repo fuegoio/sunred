@@ -101,6 +101,78 @@ func TestListHistory_ExcludesUnreadAndUnreadEntries(t *testing.T) {
 	}
 }
 
+// Bulk marks (mark all, mark feed) must not flood history: only explicit
+// per-article reads belong there, and a bulk mark must not disturb the read
+// time of an article that was already read.
+func TestListHistory_ExcludesBulkMarks(t *testing.T) {
+	s := testDB(t)
+	ctx := context.Background()
+	userID := seedUser(t, s, "history-bulk@example.com")
+
+	feedID, entryA := seedFeedAndEntryWithURL(t, s, userID, "History Feed F", "https://example.com/history-f", "Article F")
+	_, entryB := seedFeedAndEntryWithURL(t, s, userID, "History Feed G", "https://example.com/history-g", "Article G")
+
+	// Explicitly read A, pinned so we can assert its read time survives.
+	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "read"); err != nil {
+		t.Fatalf("mark A read: %v", err)
+	}
+	readAt := time.Date(2025, 6, 1, 10, 0, 0, 0, time.UTC)
+	setReadTime(t, s, userID, "https://example.com/history-f", readAt)
+
+	// Mark all as read: B becomes read but must stay out of history, and A's
+	// read time must not move.
+	if err := s.MarkAllEntriesRead(ctx, userID); err != nil {
+		t.Fatalf("mark all read: %v", err)
+	}
+	history, err := s.ListHistory(ctx, userID, 50, 0)
+	if err != nil {
+		t.Fatalf("ListHistory: %v", err)
+	}
+	if len(history) != 1 || history[0].URL != "https://example.com/history-f" {
+		t.Fatalf("expected only explicitly-read A in history, got %+v", history)
+	}
+	if !history[0].ChangedAt.Equal(readAt) {
+		t.Errorf("A read time moved: %v, want %v", history[0].ChangedAt, readAt)
+	}
+
+	// The same bulk semantics apply to the per-feed mark.
+	if err := s.MarkFeedEntriesRead(ctx, feedID, userID); err != nil {
+		t.Fatalf("mark feed read: %v", err)
+	}
+	if history, err = s.ListHistory(ctx, userID, 50, 0); err != nil {
+		t.Fatalf("ListHistory after feed mark: %v", err)
+	}
+	if len(history) != 1 || history[0].URL != "https://example.com/history-f" {
+		t.Fatalf("expected only A in history after feed mark, got %+v", history)
+	}
+
+	// Reading B explicitly afterwards does put it in history.
+	if err := s.UpdateEntryStatus(ctx, []int64{entryB}, userID, "read"); err != nil {
+		t.Fatalf("mark B read: %v", err)
+	}
+	if history, err = s.ListHistory(ctx, userID, 50, 0); err != nil {
+		t.Fatalf("ListHistory after explicit read: %v", err)
+	}
+	if len(history) != 2 {
+		t.Fatalf("expected A and B in history after explicit read, got %d", len(history))
+	}
+
+	// Marking A unread clears its explicit flag; a later bulk mark must not
+	// resurrect it in history.
+	if err := s.UpdateEntryStatus(ctx, []int64{entryA}, userID, "unread"); err != nil {
+		t.Fatalf("mark A unread: %v", err)
+	}
+	if err := s.MarkAllEntriesRead(ctx, userID); err != nil {
+		t.Fatalf("mark all read again: %v", err)
+	}
+	if history, err = s.ListHistory(ctx, userID, 50, 0); err != nil {
+		t.Fatalf("ListHistory after bulk resurrection: %v", err)
+	}
+	if len(history) != 1 || history[0].URL != "https://example.com/history-g" {
+		t.Fatalf("expected only B in history (A not resurrected), got %+v", history)
+	}
+}
+
 func TestListHistory_StarredFlagAndFeed(t *testing.T) {
 	s := testDB(t)
 	ctx := context.Background()

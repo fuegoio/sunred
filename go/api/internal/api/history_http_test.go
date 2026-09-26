@@ -120,4 +120,42 @@ func TestListHistory_HTTP(t *testing.T) {
 	if entries[0].URL != urlA {
 		t.Errorf("expected A first after re-read, got %s", entries[0].URL)
 	}
+
+	// Mark all as read (entry_ids: null) bulk-clears unread entries without
+	// flooding history: only explicitly-read articles remain listed.
+	resp := env.do(t, http.MethodPut, "/v1/entries", map[string]any{
+		"entry_ids": nil,
+		"status":    "read",
+	})
+	_ = resp.Body.Close()
+	if resp.StatusCode != http.StatusNoContent {
+		t.Fatalf("mark all read: expected 204, got %d", resp.StatusCode)
+	}
+	if entries = listHistory(); len(entries) != 2 {
+		t.Fatalf("expected history unchanged after mark all read, got %d entries", len(entries))
+	}
+	if entries[0].URL != urlA || entries[1].URL != urlB {
+		t.Errorf("expected [A, B] after mark all read, got [%s, %s]", entries[0].URL, entries[1].URL)
+	}
+
+	// A third entry exists but was never explicitly read: it becomes read via
+	// the bulk mark and must not appear in history.
+	newEntry("c", "Article C")
+	resp = env.do(t, http.MethodPut, "/v1/entries", map[string]any{
+		"entry_ids": nil,
+		"status":    "read",
+	})
+	_ = resp.Body.Close()
+	if resp.StatusCode != http.StatusNoContent {
+		t.Fatalf("mark all read with C: expected 204, got %d", resp.StatusCode)
+	}
+	urlC := fmt.Sprintf("https://example.com/history-c-%s", suffix)
+	if entries = listHistory(); len(entries) != 2 {
+		t.Fatalf("expected 2 history entries after bulk mark (C excluded), got %d", len(entries))
+	}
+	for _, e := range entries {
+		if e.URL == urlC {
+			t.Error("bulk-marked entry C should not appear in history")
+		}
+	}
 }
