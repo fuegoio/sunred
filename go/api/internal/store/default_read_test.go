@@ -81,7 +81,7 @@ func TestShareArticle_MarksUnreadForFollowers(t *testing.T) {
 	}
 
 	// Mark read (upserts a 'read' row, overwriting 'unread').
-	if err := s.UpdateEntryStatusByURL(ctx, followerID, articleURL, "read"); err != nil {
+	if err := s.UpdateEntryStatusByURL(ctx, followerID, articleURL, "read", true); err != nil {
 		t.Fatalf("mark read: %v", err)
 	}
 	status, exists = entryReadStatus(t, s, followerID, articleURL)

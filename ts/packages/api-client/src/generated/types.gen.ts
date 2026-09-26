@@ -405,6 +405,7 @@ export type UpdateEntriesRequest = {
      */
     readonly $schema?: string;
     entry_ids: Array<number> | null;
+    explicit?: boolean;
     status: 'unread' | 'read' | 'removed';
 };
 
@@ -414,6 +415,7 @@ export type UpdateEntryStatusByUrlRequest = {
      */
     readonly $schema?: string;
     article_url: string;
+    explicit?: boolean;
     status: 'unread' | 'read' | 'removed';
 };
 
@@ -733,11 +735,13 @@ export type TokenOutputBodyWritable = {
 
 export type UpdateEntriesRequestWritable = {
     entry_ids: Array<number> | null;
+    explicit?: boolean;
     status: 'unread' | 'read' | 'removed';
 };
 
 export type UpdateEntryStatusByUrlRequestWritable = {
     article_url: string;
+    explicit?: boolean;
     status: 'unread' | 'read' | 'removed';
 };
 

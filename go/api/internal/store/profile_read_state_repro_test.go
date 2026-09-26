@@ -53,7 +53,7 @@ func TestProfileReadState_ReflectsViewerState(t *testing.T) {
 	}
 
 	// Viewer reads the article via the entry-id path (timeline read).
-	if err := s.UpdateEntryStatus(ctx, []int64{*sa.EntryID}, viewer, "read"); err != nil {
+	if err := s.UpdateEntryStatus(ctx, []int64{*sa.EntryID}, viewer, "read", true); err != nil {
 		t.Fatalf("UpdateEntryStatus: %v", err)
 	}
 	got, err = s.ListSharedArticlesByUser(ctx, sharer, viewer)
@@ -65,7 +65,7 @@ func TestProfileReadState_ReflectsViewerState(t *testing.T) {
 	}
 
 	// The URL-based read path (profile preview toggle) must also be reflected.
-	if err := s.UpdateEntryStatusByURL(ctx, viewer, articleURL, "unread"); err != nil {
+	if err := s.UpdateEntryStatusByURL(ctx, viewer, articleURL, "unread", true); err != nil {
 		t.Fatalf("mark unread by url: %v", err)
 	}
 	got, err = s.ListSharedArticlesByUser(ctx, sharer, viewer)
@@ -75,7 +75,7 @@ func TestProfileReadState_ReflectsViewerState(t *testing.T) {
 	if got[0].Status != "unread" {
 		t.Errorf("after mark unread by url: status=%q, want 'unread'", got[0].Status)
 	}
-	if err := s.UpdateEntryStatusByURL(ctx, viewer, articleURL, "read"); err != nil {
+	if err := s.UpdateEntryStatusByURL(ctx, viewer, articleURL, "read", true); err != nil {
 		t.Fatalf("mark read by url: %v", err)
 	}
 	got, err = s.ListSharedArticlesByUser(ctx, sharer, viewer)

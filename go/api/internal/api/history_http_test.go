@@ -140,7 +140,7 @@ func TestListHistory_HTTP(t *testing.T) {
 
 	// A third entry exists but was never explicitly read: it becomes read via
 	// the bulk mark and must not appear in history.
-	newEntry("c", "Article C")
+	entryC := newEntry("c", "Article C")
 	resp = env.do(t, http.MethodPut, "/v1/entries", map[string]any{
 		"entry_ids": nil,
 		"status":    "read",
@@ -157,5 +157,39 @@ func TestListHistory_HTTP(t *testing.T) {
 		if e.URL == urlC {
 			t.Error("bulk-marked entry C should not appear in history")
 		}
+	}
+
+	// Toggle-marking C read (explicit: false, like the web read-dot toggle)
+	// changes its status without adding it to history.
+	resp = env.do(t, http.MethodPut, "/v1/entries", map[string]any{
+		"entry_ids": []int64{entryC},
+		"status":    "unread",
+	})
+	_ = resp.Body.Close()
+	resp = env.do(t, http.MethodPut, "/v1/entries", map[string]any{
+		"entry_ids": []int64{entryC},
+		"status":    "read",
+		"explicit":  false,
+	})
+	_ = resp.Body.Close()
+	if resp.StatusCode != http.StatusNoContent {
+		t.Fatalf("toggle C read: expected 204, got %d", resp.StatusCode)
+	}
+	if entries = listHistory(); len(entries) != 2 {
+		t.Fatalf("expected 2 history entries after toggle read (C excluded), got %d", len(entries))
+	}
+	for _, e := range entries {
+		if e.URL == urlC {
+			t.Error("toggle-marked entry C should not appear in history")
+		}
+	}
+
+	// Opening C afterwards (default explicit) puts it in history.
+	markRead(entryC)
+	if entries = listHistory(); len(entries) != 3 {
+		t.Fatalf("expected 3 history entries after opening C, got %d", len(entries))
+	}
+	if entries[0].URL != urlC {
+		t.Errorf("expected C first after opening it, got %s", entries[0].URL)
 	}
 }

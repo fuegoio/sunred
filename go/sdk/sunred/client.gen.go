@@ -533,6 +533,7 @@ type UpdateEntriesRequest struct {
 	// Examples: https://example.com/schemas/Update-entriesRequest.json
 	Schema   *string                    `json:"$schema,omitempty"`
 	EntryIds *[]int64                   `json:"entry_ids"`
+	Explicit *bool                      `json:"explicit,omitempty"`
 	Status   UpdateEntriesRequestStatus `json:"status"`
 }
 
@@ -546,6 +547,7 @@ type UpdateEntryStatusByUrlRequest struct {
 	// Examples: https://example.com/schemas/Update-entry-status-by-urlRequest.json
 	Schema     *string                             `json:"$schema,omitempty"`
 	ArticleUrl string                              `json:"article_url"`
+	Explicit   *bool                               `json:"explicit,omitempty"`
 	Status     UpdateEntryStatusByUrlRequestStatus `json:"status"`
 }
 

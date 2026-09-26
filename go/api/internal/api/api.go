@@ -909,6 +909,10 @@ func (a *API) registerEntryRoutes() {
 		Body struct {
 			EntryIDs []int64 `json:"entry_ids"`
 			Status   string  `json:"status" enum:"unread,read,removed"`
+			// Explicit marks the action as a real read (the user opened the
+			// article) rather than a status change (toggle, bulk clear). Only
+			// explicit reads land in the history view. Defaults to true.
+			Explicit *bool `json:"explicit,omitempty"`
 		}
 	}) (*struct{}, error) {
 		userID := auth.UserIDFromCtx(ctx)
@@ -919,7 +923,8 @@ func (a *API) registerEntryRoutes() {
 			}
 			return nil, nil
 		}
-		if err := a.store.UpdateEntryStatus(ctx, input.Body.EntryIDs, userID, input.Body.Status); err != nil {
+		explicit := input.Body.Explicit == nil || *input.Body.Explicit
+		if err := a.store.UpdateEntryStatus(ctx, input.Body.EntryIDs, userID, input.Body.Status, explicit); err != nil {
 			return nil, huma.Error500InternalServerError(err.Error())
 		}
 		return nil, nil
@@ -1016,10 +1021,15 @@ func (a *API) registerEntryRoutes() {
 		Body struct {
 			ArticleURL string `json:"article_url" minLength:"1" maxLength:"2048"`
 			Status     string `json:"status" enum:"unread,read,removed"`
+			// Explicit marks the action as a real read (the user opened the
+			// article) rather than a status change (toggle, bulk clear). Only
+			// explicit reads land in the history view. Defaults to true.
+			Explicit *bool `json:"explicit,omitempty"`
 		}
 	}) (*struct{}, error) {
 		userID := auth.UserIDFromCtx(ctx)
-		if err := a.store.UpdateEntryStatusByURL(ctx, userID, input.Body.ArticleURL, input.Body.Status); err != nil {
+		explicit := input.Body.Explicit == nil || *input.Body.Explicit
+		if err := a.store.UpdateEntryStatusByURL(ctx, userID, input.Body.ArticleURL, input.Body.Status, explicit); err != nil {
 			return nil, huma.Error500InternalServerError(err.Error())
 		}
 		return nil, nil

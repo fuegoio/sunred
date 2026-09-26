@@ -356,7 +356,7 @@ func TestShareArticle_NoDuplicateInSubscribedFeed(t *testing.T) {
 
 	// Mark the article unread — the default read state is now 'read', so we
 	// must explicitly mark it to reproduce the "unread" scenario.
-	if err := s.UpdateEntryStatusByURL(ctx, u, articleURL, "unread"); err != nil {
+	if err := s.UpdateEntryStatusByURL(ctx, u, articleURL, "unread", true); err != nil {
 		t.Fatalf("UpdateEntryStatusByURL: %v", err)
 	}
 

@@ -624,11 +624,12 @@ func (s *Store) GetEntryStatesByURLs(ctx context.Context, userID int, urls []str
 // UpdateEntryStatus sets the status of a set of visible entries for the user
 // via upsert into entry_read_status, keyed by (user_id, article_url). Storing
 // an explicit 'read' row (rather than relying on the absence default) is a
-// stronger signal that the user has seen the article. Because it marks
-// specific entries, a 'read' here counts as an explicit read and sets the
-// history flag; any other status clears it, so a later bulk mark does not
-// resurrect the article in history.
-func (s *Store) UpdateEntryStatus(ctx context.Context, entryIDs []int64, userID int, status string) error {
+// stronger signal that the user has seen the article. explicit says whether
+// the action was a real read (the user opened the article) as opposed to a
+// status change (toggle, bulk clear): a 'read' with explicit = true goes to
+// history, any other status or a non-explicit read clears the flag, so a
+// later bulk mark does not resurrect the article in history.
+func (s *Store) UpdateEntryStatus(ctx context.Context, entryIDs []int64, userID int, status string, explicit bool) error {
 	if len(entryIDs) == 0 {
 		return nil
 	}
@@ -642,7 +643,7 @@ func (s *Store) UpdateEntryStatus(ctx context.Context, entryIDs []int64, userID 
 		   SET status = EXCLUDED.status,
 		       explicit = EXCLUDED.explicit,
 		       changed_at = NOW()`,
-		pq.Array(entryIDs), userID, status, status == "read")
+		pq.Array(entryIDs), userID, status, status == "read" && explicit)
 	return err
 }
 
@@ -718,8 +719,11 @@ func (s *Store) ToggleEntryStarredByURL(ctx context.Context, userID int,
 // (picks the first match if the same URL appears in multiple feeds);
 // otherwise the status row is created with a null entry_id. Used by the
 // URL-based read endpoint for preview and shared articles. Storing an
-// explicit 'read' row is a stronger signal than relying on absence.
-func (s *Store) UpdateEntryStatusByURL(ctx context.Context, userID int, articleURL, status string) error {
+// explicit 'read' row is a stronger signal than relying on absence. explicit
+// says whether the action was a real read (the user opened the article): a
+// 'read' with explicit = true goes to history, any other status or a
+// non-explicit read clears the flag.
+func (s *Store) UpdateEntryStatusByURL(ctx context.Context, userID int, articleURL, status string, explicit bool) error {
 	articleURL = urlnorm.URL(articleURL)
 	_, err := s.DB.ExecContext(ctx,
 		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, explicit, changed_at)
@@ -728,7 +732,7 @@ func (s *Store) UpdateEntryStatusByURL(ctx context.Context, userID int, articleU
 		   SET status = EXCLUDED.status,
 		       explicit = EXCLUDED.explicit,
 		       changed_at = NOW()`,
-		userID, articleURL, status, status == "read")
+		userID, articleURL, status, status == "read" && explicit)
 	return err
 }
 

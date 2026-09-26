@@ -110,9 +110,12 @@ var entriesMarkCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		ids := []int64{id}
+		// Manual mark, not an open: keep it out of history.
+		no := false
 		resp, err := c.UpdateEntriesWithResponse(context.Background(), sunred.UpdateEntriesRequest{
 			EntryIds: &ids,
 			Status:   status,
+			Explicit: &no,
 		})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -172,9 +175,12 @@ var entriesMarkByUrlCmd = &cobra.Command{
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
+		// Manual mark, not an open: keep it out of history.
+		no := false
 		resp, err := c.UpdateEntryStatusByUrlWithResponse(context.Background(), sunred.UpdateEntryStatusByUrlRequest{
 			ArticleUrl: args[0],
 			Status:     status,
+			Explicit:   &no,
 		})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)

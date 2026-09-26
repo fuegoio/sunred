@@ -257,7 +257,7 @@ func TestUpdateEntryStatusByURL_MarkReadWithoutEntry(t *testing.T) {
 	userID := seedUser(t, s, "read-url-noentry@example.com")
 	articleURL := "https://example.com/preview-read-article"
 
-	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "read"); err != nil {
+	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "read", true); err != nil {
 		t.Fatalf("mark read by URL: %v", err)
 	}
 
@@ -290,7 +290,7 @@ func TestUpdateEntryStatusByURL_MarkReadWithEntry(t *testing.T) {
 
 	_, entryID := seedFeedAndEntryWithURL(t, s, userID, "Read Feed", articleURL, "Read Entry")
 
-	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "read"); err != nil {
+	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "read", true); err != nil {
 		t.Fatalf("mark read by URL: %v", err)
 	}
 
@@ -325,10 +325,10 @@ func TestUpdateEntryStatusByURL_MarkUnread(t *testing.T) {
 	articleURL := "https://example.com/mark-unread"
 
 	// Mark read first, then unread.
-	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "read"); err != nil {
+	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "read", true); err != nil {
 		t.Fatalf("mark read: %v", err)
 	}
-	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "unread"); err != nil {
+	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "unread", true); err != nil {
 		t.Fatalf("mark unread: %v", err)
 	}
 
@@ -352,7 +352,7 @@ func TestUpdateEntryStatusByURL_SameURLInMultipleFeeds(t *testing.T) {
 	seedFeedAndEntryWithURL(t, s, userID, "Read Feed B", articleURL, "Entry B")
 
 	// Mark read by URL — must not error with "more than one row returned".
-	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "read"); err != nil {
+	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "read", true); err != nil {
 		t.Fatalf("mark read by URL with duplicate entries: %v", err)
 	}
 
@@ -374,7 +374,7 @@ func TestUpdateEntryStatusByURL_StatusPersistsAfterEntryDeleted(t *testing.T) {
 	_, entryID := seedFeedAndEntryWithURL(t, s, userID, "Persist Feed", articleURL, "Persist Entry")
 
 	// Mark read.
-	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "read"); err != nil {
+	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "read", true); err != nil {
 		t.Fatalf("mark read: %v", err)
 	}
 
@@ -587,7 +587,7 @@ func TestListEntries_ReadStatusFromURLKeyedTable(t *testing.T) {
 	feedID, entryID := seedFeedAndEntryWithURL(t, s, userID, "List Read Feed", articleURL, "List Read Entry")
 
 	// Mark read by URL.
-	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "read"); err != nil {
+	if err := s.UpdateEntryStatusByURL(ctx, userID, articleURL, "read", true); err != nil {
 		t.Fatalf("mark read by URL: %v", err)
 	}
 
@@ -650,7 +650,7 @@ func TestUpdateEntryStatus_ExistingEntryID(t *testing.T) {
 	_, entryID := seedFeedAndEntryWithURL(t, s, userID, "ID Read Feed", articleURL, "ID Read Entry")
 
 	// Mark read by entry IDs (the existing path).
-	if err := s.UpdateEntryStatus(ctx, []int64{entryID}, userID, "read"); err != nil {
+	if err := s.UpdateEntryStatus(ctx, []int64{entryID}, userID, "read", true); err != nil {
 		t.Fatalf("mark read by ID: %v", err)
 	}
 
@@ -707,7 +707,7 @@ func TestGetEntryStatesByURLs_WithReadAndStarred(t *testing.T) {
 	noneURL := "https://example.com/none-article"
 
 	// Mark one read by URL.
-	if err := s.UpdateEntryStatusByURL(ctx, userID, readURL, "read"); err != nil {
+	if err := s.UpdateEntryStatusByURL(ctx, userID, readURL, "read", true); err != nil {
 		t.Fatalf("mark read: %v", err)
 	}
 	// Star one by URL.
@@ -717,7 +717,7 @@ func TestGetEntryStatesByURLs_WithReadAndStarred(t *testing.T) {
 		t.Fatalf("star: %v", err)
 	}
 	// Both unread and starred.
-	if err := s.UpdateEntryStatusByURL(ctx, userID, bothURL, "unread"); err != nil {
+	if err := s.UpdateEntryStatusByURL(ctx, userID, bothURL, "unread", true); err != nil {
 		t.Fatalf("mark both unread: %v", err)
 	}
 	if err := s.ToggleEntryStarredByURL(ctx, userID,
@@ -813,7 +813,7 @@ func TestStarReadStateUniformAcrossURLVariants(t *testing.T) {
 	); err != nil {
 		t.Fatalf("star by variant: %v", err)
 	}
-	if err := s.UpdateEntryStatusByURL(ctx, userID, readVariant, "read"); err != nil {
+	if err := s.UpdateEntryStatusByURL(ctx, userID, readVariant, "read", true); err != nil {
 		t.Fatalf("mark read by variant: %v", err)
 	}
 
