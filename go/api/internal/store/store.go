@@ -501,7 +501,10 @@ func (s *Store) GetEntryByID(ctx context.Context, id int64, userID int) (*Entry,
 }
 
 // ListHistory returns the user's read history: every article with an explicit
-// 'read' status row, most recently read first. Re-reading an article updates
+// 'read' status row (per-article or by-URL mark), most recently read first.
+// Bulk marks (mark all, mark feed, subscribe backlog) write rows with
+// explicit = false, so they are excluded — history is what the user actually
+// read, not what a bulk sweep cleared. Re-reading an article updates
 // the single (user_id, article_url) row, so each article appears at most once,
 // at its latest read time. Entries are resolved by article URL (preferring
 // the linked entry_id); read-status rows whose entry no longer exists are
@@ -538,7 +541,7 @@ func (s *Store) ListHistory(ctx context.Context, userID int, limit, offset int) 
 		) sh_row ON true
 		LEFT JOIN users sh ON sh.id = sh_row.user_id
 		LEFT JOIN shared_articles my_sa ON my_sa.user_id = $1 AND my_sa.article_url = rs.article_url
-		WHERE rs.user_id = $1 AND rs.status = 'read'
+		WHERE rs.user_id = $1 AND rs.status = 'read' AND rs.explicit
 		ORDER BY rs.changed_at DESC
 		LIMIT $2 OFFSET $3`, userID, limit, offset)
 	if err != nil {
@@ -621,19 +624,25 @@ func (s *Store) GetEntryStatesByURLs(ctx context.Context, userID int, urls []str
 // UpdateEntryStatus sets the status of a set of visible entries for the user
 // via upsert into entry_read_status, keyed by (user_id, article_url). Storing
 // an explicit 'read' row (rather than relying on the absence default) is a
-// stronger signal that the user has seen the article.
+// stronger signal that the user has seen the article. Because it marks
+// specific entries, a 'read' here counts as an explicit read and sets the
+// history flag; any other status clears it, so a later bulk mark does not
+// resurrect the article in history.
 func (s *Store) UpdateEntryStatus(ctx context.Context, entryIDs []int64, userID int, status string) error {
 	if len(entryIDs) == 0 {
 		return nil
 	}
 	_, err := s.DB.ExecContext(ctx,
-		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
-		 SELECT DISTINCT ON (e.url) $2, e.url, e.id, $3, NOW()
+		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, explicit, changed_at)
+		 SELECT DISTINCT ON (e.url) $2, e.url, e.id, $3, $4, NOW()
 		 FROM entries e
 		 WHERE e.id = ANY($1) AND (`+visibleEntryFilter(userID)+`)
 		 ORDER BY e.url
-		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = EXCLUDED.status, changed_at = NOW()`,
-		pq.Array(entryIDs), userID, status)
+		 ON CONFLICT (user_id, article_url) DO UPDATE
+		   SET status = EXCLUDED.status,
+		       explicit = EXCLUDED.explicit,
+		       changed_at = NOW()`,
+		pq.Array(entryIDs), userID, status, status == "read")
 	return err
 }
 
@@ -713,23 +722,31 @@ func (s *Store) ToggleEntryStarredByURL(ctx context.Context, userID int,
 func (s *Store) UpdateEntryStatusByURL(ctx context.Context, userID int, articleURL, status string) error {
 	articleURL = urlnorm.URL(articleURL)
 	_, err := s.DB.ExecContext(ctx,
-		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
-		 SELECT $1, $2, (SELECT e.id FROM entries e WHERE e.url = $2 LIMIT 1), $3, NOW()
-		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = EXCLUDED.status, changed_at = NOW()`,
-		userID, articleURL, status)
+		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, explicit, changed_at)
+		 SELECT $1, $2, (SELECT e.id FROM entries e WHERE e.url = $2 LIMIT 1), $3, $4, NOW()
+		 ON CONFLICT (user_id, article_url) DO UPDATE
+		   SET status = EXCLUDED.status,
+		       explicit = EXCLUDED.explicit,
+		       changed_at = NOW()`,
+		userID, articleURL, status, status == "read")
 	return err
 }
 
 // MarkFeedEntriesRead marks all entries in the given feed as read for the
-// user (upserts entry_read_status to 'read').
+// user (upserts entry_read_status to 'read'). Bulk mark: the rows are not
+// explicit reads, so they are kept out of the history view (explicit = false
+// on insert, left untouched on conflict); already-read rows are not updated,
+// so their read time stays stable.
 func (s *Store) MarkFeedEntriesRead(ctx context.Context, feedID, userID int) error {
 	_, err := s.DB.ExecContext(ctx,
-		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
-		 SELECT DISTINCT ON (e.url) $2, e.url, e.id, 'read', NOW()
+		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, explicit, changed_at)
+		 SELECT DISTINCT ON (e.url) $2, e.url, e.id, 'read', false, NOW()
 		 FROM entries e
 		 WHERE e.feed_id = $1 AND (`+visibleEntryFilter(userID)+`)
 		 ORDER BY e.url
-		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = 'read', changed_at = NOW()`,
+		 ON CONFLICT (user_id, article_url) DO UPDATE
+		   SET status = 'read', changed_at = NOW()
+		 WHERE entry_read_status.status <> 'read'`,
 		feedID, userID)
 	return err
 }
@@ -745,15 +762,19 @@ func (s *Store) CountEntriesByFeed(ctx context.Context, feedID int) (int, error)
 
 // MarkAllEntriesRead marks every visible entry as read for the user (upserts
 // entry_read_status to 'read' for all subscribed feeds and shares by followed
-// users).
+// users). Bulk mark: the rows are not explicit reads, so they are kept out of
+// the history view (explicit = false on insert, left untouched on conflict);
+// already-read rows are not updated, so their read time stays stable.
 func (s *Store) MarkAllEntriesRead(ctx context.Context, userID int) error {
 	_, err := s.DB.ExecContext(ctx,
-		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, changed_at)
-		 SELECT DISTINCT ON (e.url) $1, e.url, e.id, 'read', NOW()
+		`INSERT INTO entry_read_status (user_id, article_url, entry_id, status, explicit, changed_at)
+		 SELECT DISTINCT ON (e.url) $1, e.url, e.id, 'read', false, NOW()
 		 FROM entries e
 		 WHERE (`+visibleEntryFilter(userID)+`)
 		 ORDER BY e.url
-		 ON CONFLICT (user_id, article_url) DO UPDATE SET status = 'read', changed_at = NOW()`,
+		 ON CONFLICT (user_id, article_url) DO UPDATE
+		   SET status = 'read', changed_at = NOW()
+		 WHERE entry_read_status.status <> 'read'`,
 		userID)
 	return err
 }
